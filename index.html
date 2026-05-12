@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Work Records">
+<meta name="theme-color" content="#0f0f0f">
+<title>Work Records</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Work Records">
+<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="icon" type="image/png" href="icon-512.png">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #242424;
+    --border: #2e2e2e;
+    --accent: #c8f065;
+    --accent2: #a8d444;
+    --red: #ff5c5c;
+    --text: #f0f0f0;
+    --text2: #888;
+    --text3: #555;
+    --radius: 14px;
+  }
+  
+  body.light-mode {
+    --bg: #f9f9f9;
+    --bg2: #ffffff;
+    --bg3: #f0f0f0;
+    --border: #e0e0e0;
+    --accent: #789c1b;
+    --accent2: #658316;
+    --text: #121212;
+    --text2: #555;
+    --text3: #888;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+    overscroll-behavior: none;
+  }
+  .header { padding: 20px 20px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+  .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .header h1 span { color: var(--accent); }
+  
+  .lang-container { position: relative; margin-top: 10px; }
+  .lang-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .lang-dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; z-index: 1000; min-width: 130px; margin-top: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow-y: auto; max-height: 300px; }
+  .lang-opt { padding: 10px 15px; font-size: 12px; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); }
+  .lang-opt:last-child { border: none; }
+  .lang-opt:hover { background: var(--bg3); }
+
+  .date-badge { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text2); background: var(--bg3); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border); }
+  
+  .nav { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 8px; 
+    padding: 12px 20px; 
+    position: sticky; 
+    top: 0; 
+    background: var(--bg); 
+    z-index: 100; 
+    border-bottom: 1px solid var(--border); 
+  }
+  .nav-btn { 
+    background: var(--bg3); 
+    border: 1px solid var(--border); 
+    color: var(--text2); 
+    font-family: 'Syne', sans-serif; 
+    font-size: 13px; 
+    font-weight: 700; 
+    padding: 14px 10px; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    gap: 8px; 
+    width: 100%;
+  }
+  .nav-btn.active { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
+  .nav-btn span { font-size: 18px; position: relative; }
+  .badge-dot { position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: var(--red); border-radius: 50%; border: 2px solid var(--bg3); display: none; }
+  .nav-btn.full-width { grid-column: span 2; }
+
+  .screen { display: none; padding: 16px 20px; }
+  .screen.active { display: block; }
+  
+  .section-label { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; margin-top: 20px; }
+  
+  .services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .service-btn { position: relative; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; padding: 12px 10px; border-radius: var(--radius); cursor: pointer; text-align: left; width: 100%; }
+  .service-btn.selected { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
+  .service-btn.add-new { border-style: dashed; color: var(--text3); font-size: 20px; text-align: center; }
+  .service-delete { position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; background: var(--red); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; border: 2px solid var(--bg); z-index: 10; }
+
+  .type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .type-btn { padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .type-btn.active-pay { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
+  .type-btn.active-dug { background: var(--red); color: #fff; border-color: var(--red); }
+
+  .input-row { display: flex; align-items: center; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .input-row input { flex: 1; background: transparent; border: none; color: var(--text); font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 20px; padding: 14px 16px; outline: none; width: 100%; }
+  .input-suffix { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--text2); padding-right: 14px; }
+  
+  .input-plain { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px; padding: 14px 16px; outline: none; }
+
+  .submit-btn { width: 100%; padding: 16px; border-radius: var(--radius); border: none; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 24px; }
+  .submit-btn.pay { background: var(--accent); color: #0f0f0f; }
+  .submit-btn.dug { background: var(--red); color: #fff; }
+
+  .calendar-strip { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; scrollbar-width: none; }
+  .calendar-strip::-webkit-scrollbar { display: none; }
+  .day-card { min-width: 55px; height: 70px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+  .day-card.active { background: var(--accent); border-color: var(--accent); }
+  .day-card.active span { color: #0f0f0f; }
+  .day-name { font-size: 10px; text-transform: uppercase; color: var(--text3); font-weight: 700; }
+  .day-num { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 600; color: var(--text); }
+
+  .appointment-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .appointment-time { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 600; color: var(--accent); }
+  .appointment-info { flex: 1; margin-left: 15px; }
+  .appointment-client { font-size: 14px; font-weight: 700; }
+  .appointment-service { font-size: 11px; color: var(--text2); }
+  .appointment-actions { display: flex; gap: 8px; }
+  .btn-icon { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; }
+  .btn-icon.wa { color: #25D366; }
+  .btn-icon.viber { color: #7360f2; }
+  .btn-icon.del { color: var(--red); }
+
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; }
+  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; font-weight: 700; }
+  .stat-value { font-size: 28px; font-weight: 800; font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; color: var(--accent); margin: 5px 0; }
+  .stat-sub { font-size: 12px; color: var(--text3); }
+  
+  .filter-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+  .tab { flex: 1; padding: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; color: var(--text2); font-size: 10px; font-weight: 800; cursor: pointer; text-align: center; }
+  .tab.active { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
+
+  .list-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: block; }
+  .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .detail-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-size: 11px; color: var(--text2); padding: 4px 0; border-top: 1px solid var(--border); }
+  .paid-badge { background: #25D366; color: #000; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+  .history-item { font-size: 10px; color: var(--text3); padding: 2px 0; font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--accent); color: #0f0f0f; padding: 12px 24px; border-radius: 30px; opacity: 0; transition: all 0.3s; z-index: 10000; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: #000000cc; z-index: 200; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 480px; }
+  .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+  
+  .screen-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 15px;
+  }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  .screen-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  @media print {
+    .nav, .header, .submit-btn, .btn-icon, .filter-tabs, .back-btn, .lang-container, .lang-btn, .type-toggle, #themeToggleBtn { display: none !important; }
+    .screen { display: block !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+    body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+    .stat-card { background: white !important; border: 1px solid #000 !important; color: black !important; box-shadow: none !important; margin-bottom: 20px !important; }
+    .stat-value { color: black !important; font-size: 24px !important; }
+    .stat-label { color: #333 !important; }
+    .chart-container { border: 1px solid #ccc !important; background: white !important; margin-top: 30px !important; }
+    .list-item { border: 1px solid #ccc !important; background: white !important; color: black !important; page-break-inside: avoid; margin-bottom: 10px !important; }
+    .screen-header { border-bottom: 2px solid #000 !important; margin-bottom: 30px !important; }
+    .screen-title { font-size: 24px !important; color: black !important; }
+    * { color: black !important; }
+  }
+  
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .chart-container { background: var(--bg2); padding: 15px; border-radius: 15px; border: 1px solid var(--border); margin-top: 20px; min-height: 200px; }
+  
+  .history-log { font-size: 10px; color: var(--text3); margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--border); }
+
+  /* ── BLOK 1: Trial Banner ── */
+  #trialBanner {
+    display: none;
+    background: linear-gradient(90deg, #fef3c7, #fde68a);
+    border-bottom: 1px solid #f59e0b;
+    padding: 0.6rem 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #92400e;
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  #trialBanner.danger {
+    background: linear-gradient(90deg, #fee2e2, #fca5a5);
+    border-bottom-color: #ef4444;
+    color: #7f1d1d;
+  }
+  #trialBanner a {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 0.4rem;
+  }
+
+  /* ── BLOK 1: ToS, Trial Expired, Upgrade — centriran overlay umjesto bottom sheet ── */
+  .blok1-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 900;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .blok1-overlay.active { display: flex; }
+  .blok1-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    max-width: 420px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .blok1-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .blok1-card p {
+    color: var(--text2);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+  .blok1-btn-primary {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #0f0f0f;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .blok1-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .blok1-btn-secondary {
+    display: block;
+    width: 100%;
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* ToS scroll box */
+  .tos-body {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 0.82rem;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    background: var(--bg3);
+  }
+  .tos-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .tos-checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Upgrade plan kartice */
+  .plan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 1rem 0;
+  }
+  @media (max-width: 480px) {
+    .plan-grid {
+      grid-template-columns: 1fr;
+    }
+    .blok1-card {
+      padding: 1.5rem 1rem;
+    }
+  }
+  .plan-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 0.75rem;
+    text-align: center;
+    position: relative;
+    background: var(--bg3);
+  }
+  .plan-card.featured { border-color: var(--accent); background: var(--bg2); }
+  .plan-badge {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #0f0f0f;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+  }
+  .plan-card h3 { font-size: 1rem; font-weight: 800; color: var(--text); margin: 0 0 0.2rem; }
+  .plan-price { font-size: 1.5rem; font-weight: 800; font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; color: var(--accent); margin: 0.2rem 0 0.1rem; }
+  .plan-note { font-size: 0.7rem; color: var(--text3); margin-bottom: 0.6rem; }
+  .plan-features { list-style: none; padding: 0; margin: 0 0 0.75rem; font-size: 0.75rem; color: var(--text2); text-align: left; }
+  .plan-features li::before { content: "✓ "; color: var(--accent); font-weight: 800; }
+  .plan-features li { margin-bottom: 0.2rem; }
+  .plan-soon {
+    display: block;
+    background: var(--bg);
+    color: var(--text3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: not-allowed;
+  }
+  .upgrade-note {
+    font-size: 0.75rem;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 0.5rem;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body onclick="hideLangMenu()">
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:999; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+  <div id="authInitial" style="width:100%; max-width:340px; display:flex; flex-direction:column; align-items:center;">
+    <h1 style="font-size:32px; font-weight:800; margin-bottom:4px;">Work <span style="color:var(--accent)">Records</span></h1>
+    <p style="font-size:14px; color:var(--text2); margin-bottom:48px;" data-i18n="tagline">evidencija rada</p>
+    
+    <button class="submit-btn pay" onclick="setAuthMode('register')" data-i18n="get_started">ZAPOČNI</button>
+    <button class="submit-btn" style="background:var(--bg3); color:var(--text); margin-top:12px;" onclick="setAuthMode('login')" data-i18n="login_btn">PRIJAVA</button>
+  </div>
+
+  <div id="authForm" style="display:none; width:100%; max-width:340px; flex-direction:column; gap:12px;">
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+      <button class="back-btn" onclick="setAuthMode('initial')">←</button>
+      <h2 id="authTitle" style="font-size:24px; font-weight:800;"></h2>
+    </div>
+    
+    <div id="registerFields" style="display:none; flex-direction:column; gap:12px;">
+      <input class="input-plain" type="text" id="authName" placeholder="Ime i prezime" data-i18n-placeholder="full_name">
+    </div>
+    
+    <input class="input-plain" type="email" id="authEmail" placeholder="Email" data-i18n-placeholder="email">
+    <input class="input-plain" type="password" id="authPass" placeholder="Lozinka (min. 6 znakova)" data-i18n-placeholder="password">
+    
+    <div id="authError" style="color:var(--red); font-size:12px; min-height:16px;"></div>
+    
+    <button id="authSubmitBtn" class="submit-btn pay" style="margin-top:10px;"></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BLOK 1 — ToS ekran
+     ══════════════════════════════════════════════ -->
+<div id="tosScreen" class="blok1-overlay">
+  <div class="blok1-card">
+    <h2>📋 Uvjeti korištenja</h2>
+    <p>Pročitajte i prihvatite uvjete prije nastavka.</p>
+    <div class="tos-body">
+      <strong>Uvjeti korištenja — Evidencija rada</strong><br><br>
+
+      <strong>1. Prihvatanje uvjeta</strong><br>
+      Korištenjem ove aplikacije potvrđujete da ste pročitali i razumjeli ove Uvjete
+      korištenja te da ih prihvatate u potpunosti.<br><br>
+
+      <strong>2. Korisnički račun</strong><br>
+      Odgovorni ste za sigurnost svog korisničkog računa i lozinke. Molimo vas da
+      odmah prijavite svaku neovlaštenu upotrebu vašeg računa.<br><br>
+
+      <strong>3. Podaci i privatnost</strong><br>
+      Vaši podaci se pohranjuju sigurno putem Firebase infrastrukture. Nećemo
+      prodavati vaše podatke trećim stranama.<br><br>
+
+      <strong>4. Pretplatni planovi</strong><br>
+      Aplikacija nudi besplatni probni period od 30 dana. Nakon isteka, potrebna je
+      aktivna pretplata za nastavak korištenja. Plaćanje se vrši putem Paddle
+      payment processora.<br><br>
+
+      <strong>5. Ograničenje odgovornosti</strong><br>
+      Aplikacija se pruža "kakva jest". Ne odgovaramo za gubitak podataka ili štetu
+      nastalu korištenjem aplikacije.<br><br>
+
+      <strong>6. Izmjene uvjeta</strong><br>
+      Zadržavamo pravo izmjene ovih uvjeta uz prethodnu obavijest u aplikaciji.<br><br>
+
+      <em>Verzija 1.0 — Placeholder. Bit će ažurirano pri registraciji obrta.</em>
+    </div>
+    <label class="tos-checkbox-row">
+      <input type="checkbox" id="tosCheckbox" onchange="onTosCheckboxChange()">
+      Pročitao/la sam i prihvatam Uvjete korištenja
+    </label>
+    <button id="tosAcceptBtn" class="blok1-btn-primary" disabled onclick="onTosAccept()">
+      Prihvatam i nastavljam →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BLOK 1 — Trial istekao
+     ══════════════════════════════════════════════ -->
+<div id="trialExpiredScreen" class="blok1-overlay">
+  <div class="blok1-card" style="text-align:center;">
+    <div style="font-size:3rem; margin-bottom:0.75rem;">⏳</div>
+    <h2>Probni period je istekao</h2>
+    <p>Vaših 30 besplatnih dana je završilo. Pretplatite se kako biste nastavili koristiti aplikaciju.</p>
+    <button class="blok1-btn-primary" onclick="onShowUpgradeFromExpired()">
+      Pogledaj planove pretplate
+    </button>
+    <button class="blok1-btn-secondary" onclick="window.logout()">
+      Odjava
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BLOK 1 — Upgrade ekran
+     ══════════════════════════════════════════════ -->
+<div id="upgradeScreen" class="blok1-overlay">
+  <div class="blok1-card">
+    <h2 data-i18n="choose_plan_title">🚀 Odaberi plan</h2>
+    <p data-i18n="choose_plan_desc">Nastavi koristiti Evidenciju rada — odaberi plan koji ti odgovara.</p>
+
+    <div class="plan-grid">
+      <div class="plan-card">
+        <h3 data-i18n="plan_basic_name">Basic</h3>
+        <div class="plan-price" id="upgradeBasicPrice">€2.49</div>
+        <div class="plan-note" data-i18n="per_user_month">po korisniku / mj</div>
+        <ul class="plan-features">
+          <li data-i18n="feature_work_records">Evidencija radnog vremena</li>
+          <li data-i18n="feature_5_workers">Do 5 zaposlenika</li>
+          <li data-i18n="feature_basic_stats">Osnovna statistika</li>
+          <li data-i18n="feature_export">Export podataka</li>
+        </ul>
+        <span class="plan-soon" data-i18n="coming_soon">Uskoro dostupno</span>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-badge" data-i18n="popular_badge">POPULARNO</div>
+        <h3 data-i18n="plan_premium_name">Premium</h3>
+        <div class="plan-price" id="upgradePremiumPrice">€9.99</div>
+        <div class="plan-note" data-i18n="per_user_month">po korisniku / mj</div>
+        <ul class="plan-features">
+          <li data-i18n="feature_all_basic">Sve iz Basic plana</li>
+          <li data-i18n="feature_unlimited_workers">Neograničeni radnici</li>
+          <li data-i18n="feature_advanced_stats">Napredna statistika</li>
+          <li data-i18n="feature_priority_support">Prioritetna podrška</li>
+        </ul>
+        <span class="plan-soon" data-i18n="coming_soon">Uskoro dostupno</span>
+      </div>
+    </div>
+
+    <p class="upgrade-note" data-i18n="secure_payment_note">
+      💳 Sigurno plaćanje putem Paddle — bez dugoročnih obveza.<br>
+      Pretplate uskoro dostupne. Hvala na strpljenju!
+    </p>
+    <button class="blok1-btn-secondary" id="upgradeCloseBtn" onclick="onHideUpgradeScreen()" data-i18n="close_btn">
+      Zatvori
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BLOK 1 — Trial banner (ubačen IZNAD #appContent)
+     ══════════════════════════════════════════════ -->
+<div id="trialBanner"></div>
+
+<!-- APP CONTENT -->
+<div id="appContent" style="display:none;">
+
+<div class="header">
+  <div>
+    <h1 data-i18n="title">Work <span>Records</span></h1>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <div class="lang-container" onclick="event.stopPropagation()">
+        <button class="lang-btn" id="langMenuBtn" onclick="toggleLangMenu()">
+          🌐 <span data-i18n="language">Language</span>
+        </button>
+        <div class="lang-dropdown" id="langDropdown">
+          <div class="lang-opt" onclick="setLanguage('en')">English</div>
+          <div class="lang-opt" onclick="setLanguage('bs')">Bosanski</div>
+          <div class="lang-opt" onclick="setLanguage('hr')">Hrvatski</div>
+          <div class="lang-opt" onclick="setLanguage('sr')">Srpski</div>
+          <div class="lang-opt" onclick="setLanguage('de')">Deutsch</div>
+          <div class="lang-opt" onclick="setLanguage('fr')">Français</div>
+          <div class="lang-opt" onclick="setLanguage('it')">Italiano</div>
+          <div class="lang-opt" onclick="setLanguage('es')">Español</div>
+          <div class="lang-opt" onclick="setLanguage('bg')">Български</div>
+          <div class="lang-opt" onclick="setLanguage('da')">Dansk</div>
+          <div class="lang-opt" onclick="setLanguage('el')">Ελληνικά</div>
+          <div class="lang-opt" onclick="setLanguage('fi')">Suomi</div>
+          <div class="lang-opt" onclick="setLanguage('hu')">Magyar</div>
+          <div class="lang-opt" onclick="setLanguage('ja')">日本語</div>
+          <div class="lang-opt" onclick="setLanguage('mk')">Македонски</div>
+          <div class="lang-opt" onclick="setLanguage('nl')">Nederlands</div>
+          <div class="lang-opt" onclick="setLanguage('no')">Norsk</div>
+          <div class="lang-opt" onclick="setLanguage('pl')">Polski</div>
+          <div class="lang-opt" onclick="setLanguage('pt')">Português</div>
+          <div class="lang-opt" onclick="setLanguage('ro')">Română</div>
+          <div class="lang-opt" onclick="setLanguage('ru')">Русский</div>
+          <div class="lang-opt" onclick="setLanguage('sl')">Slovenščina</div>
+          <div class="lang-opt" onclick="setLanguage('sv')">Svenska</div>
+          <div class="lang-opt" onclick="setLanguage('tr')">Türkçe</div>
+          <div class="lang-opt" onclick="setLanguage('fa')">فارسی</div>
+          <div class="lang-opt" onclick="setLanguage('ur')">اردو</div>
+          <div class="lang-opt" onclick="setLanguage('et')">Eesti</div>
+          <div class="lang-opt" onclick="setLanguage('ar')">العربية</div>
+          <div class="lang-opt" onclick="setLanguage('zh')">中文</div>
+        </div>
+      </div>
+      <button class="lang-btn" id="themeToggleBtn" onclick="toggleTheme()">☀️</button>
+      <button class="lang-btn" onclick="logout()" style="color:var(--red)" data-i18n="logout_btn">Logout</button>
+    </div>
+    
+    <div id="userBadge" style="margin-top:10px; font-size:11px; color:var(--text2); display:flex; align-items:center; gap:5px;">
+      <span id="userNameDisplay"></span> (<span id="userRoleDisplay" data-i18n-role></span>)
+      <span id="syncStatus" style="width:8px; height:8px; border-radius:50%; background:var(--text3);"></span>
+    </div>
+  </div>
+  <div class="date-badge" id="todayDate"></div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showScreen('unos')"><span>✏️</span><div data-i18n="new_entry">New Entry</div></button>
+  <button class="nav-btn" onclick="showScreen('termini')"><span>📅<div id="reminderDot" class="badge-dot"></div></span><div data-i18n="appointments">Appointments</div></button>
+  <button class="nav-btn" onclick="showScreen('pregled')"><span>📊</span><div data-i18n="overview">Overview</div></button>
+  <button class="nav-btn" onclick="showScreen('izvjestaji')"><span>📈</span><div data-i18n="reports">Reports</div></button>
+  <button class="nav-btn full-width" id="navOwner" style="display:none;" onclick="showScreen('owner')"><span>🏢</span><div data-i18n="shop">Shop</div></button>
+</nav>
+
+<div class="screen" id="screen-izvjestaji">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('unos')">←</button>
+    <div class="screen-title" data-i18n="reports_title">Izvještaji i Statistika</div>
+  </div>
+  
+  <div style="margin-bottom: 20px;">
+    <div class="section-label" data-i18n="select_period">PERIOD</div>
+    <div style="display:flex; gap:10px;">
+      <input type="month" id="reportMonthSelect" onchange="renderIzvjestaji()" class="input-plain" style="flex:1;">
+      <button class="lang-btn" onclick="renderIzvjestaji('all')" data-i18n="all_time">Svi podaci</button>
+    </div>
+  </div>
+  
+  <div class="report-grid">
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="selected_period_income">ZARADA ZA PERIOD</div>
+      <div class="stat-value" id="reportSelected">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="today_income">DANAŠNJA ZARADA</div>
+      <div class="stat-value" id="reportToday">-</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="earningsChart"></canvas>
+  </div>
+
+  <button class="submit-btn" style="margin-top:20px; background:var(--bg3); color:var(--text);" onclick="exportData()" data-i18n="export_data">📥 EKSPORT PODATAKA (CSV)</button>
+  <button class="submit-btn pay" onclick="window.print()" data-i18n="print_report">🖨️ ŠTAMPAJ IZVJEŠTAJ</button>
+</div>
+
+<div class="screen" id="screen-owner">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('unos')">←</button>
+    <div class="screen-title" data-i18n="shop_management">Upravljanje radnjom</div>
+  </div>
+
+  <div id="ownerDashboard" style="display:none;">
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="shop_name">NAZIV RADNJE</div>
+      <div class="stat-value" id="shopNameDisplay">-</div>
+      <button class="lang-btn" style="margin-top:10px;" onclick="openInviteModal()">➕ <span data-i18n="invite_worker">Pozovi radnika</span></button>
+    </div>
+    
+    <div class="section-label" data-i18n="active_workers">AKTIVNI RADNICI</div>
+    <div id="workersList" style="margin-bottom:20px;"></div>
+
+    <div class="section-label" data-i18n="sent_invites">POSLATE POZIVNICE</div>
+    <div id="invitesList"></div>
+  </div>
+  
+  <div id="becomeOwnerSection" style="display:none; text-align:center; padding:40px 20px;">
+    <div style="font-size:40px; margin-bottom:20px;">🚀</div>
+    <h3 data-i18n="become_owner_title">Postanite vlasnik radnje</h3>
+    <p style="font-size:14px; color:var(--text2); margin:15px 0;" data-i18n="become_owner_desc">Otvorite sopstvenu radnju, dodajte usluge i pozovite radnike da vode evidenciju za vas.</p>
+    <button class="submit-btn pay" onclick="openCreateShopModal()" data-i18n="create_shop_btn">KREIRAJ RADNJU</button>
+  </div>
+</div>
+
+<div class="screen active" id="screen-unos">
+  <div class="screen-header">
+    <div class="screen-title" data-i18n="new_entry">Novi unos</div>
+  </div>
+  <div class="section-label" data-i18n="select_service">Select service</div>
+  <div class="services-grid" id="servicesGrid"></div>
+  <div class="section-label" style="margin-top:16px;" data-i18n="entry_type">Entry type</div>
+  <div class="type-toggle">
+    <button class="type-btn active-pay" id="btnPay" onclick="setType('pay')">💰 <span data-i18n="paid">Paid</span></button>
+    <button class="type-btn" id="btnDug" onclick="setType('dug')">⚠️ <span data-i18n="debt">Debt</span></button>
+  </div>
+  <div class="cijena-field" id="cijenaField">
+    <div class="section-label" data-i18n="amount">Amount</div>
+    <div class="input-row"><input type="number" id="cijenaInput" placeholder="0.00" inputmode="decimal"><span class="input-suffix currency-symbol" onclick="openCurrencyModal()" style="cursor: pointer; text-decoration: underline dotted;">USD</span></div>
+  </div>
+  <div class="dug-fields" id="dugFields" style="display:none;">
+    <div class="section-label" data-i18n="debtor_name">Debtor name</div>
+    <input class="input-plain" type="text" id="duznikInput" placeholder="..." data-i18n-placeholder="debtor_placeholder">
+    <div class="section-label" data-i18n="debt_amount">Debt amount</div>
+    <div class="input-row"><input type="number" id="dugIznosInput" placeholder="0.00" inputmode="decimal"><span class="input-suffix currency-symbol" onclick="openCurrencyModal()" style="cursor: pointer; text-decoration: underline dotted;">USD</span></div>
+  </div>
+  <button class="submit-btn pay" id="submitBtn" onclick="submitEntry()" data-i18n="save_entry">SAVE ENTRY</button>
+</div>
+
+<div class="screen" id="screen-termini">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('unos')">←</button>
+    <div class="screen-title" data-i18n="appointments">Termini</div>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <div class="section-label" data-i18n="calendar" style="margin:0;">Calendar</div>
+    <input type="date" id="calendarJump" onchange="jumpToDate(this.value)" style="background:var(--bg3); border:1px solid var(--border); color:var(--accent); font-family:'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size:12px; padding:4px 8px; border-radius:10px; outline:none;">
+  </div>
+  <div class="calendar-strip" id="calendarStrip"></div>
+  <div id="workerAppointmentFilter" style="margin-bottom: 15px; display: none; background: var(--bg2); padding: 15px; border-radius: 15px; border: 1px solid var(--border);">
+    <div class="section-label" data-i18n="filter_by_worker" style="margin-bottom: 10px;">FILTER PO RADNIKU</div>
+    <input type="text" id="workerSearchInput" class="input-plain" placeholder="Pretraži radnike..." data-i18n-placeholder="search_workers" oninput="filterWorkerOptions(this.value)" style="margin-bottom: 10px; font-size: 12px; height: 35px;">
+    <select id="workerAppSelect" class="input-plain" onchange="renderAppointments()" style="font-size: 13px; padding: 10px 15px;"></select>
+  </div>
+  <div id="appointmentsList"></div>
+  <button class="submit-btn pay" onclick="openAppointmentModal()" data-i18n="book_appointment">➕ BOOK APPOINTMENT</button>
+</div>
+
+<div class="screen" id="screen-pregled">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('unos')">←</button>
+    <div class="screen-title" data-i18n="overview">Pregled</div>
+  </div>
+  <div class="filter-tabs" style="flex-wrap: wrap;">
+    <div class="tab active" onclick="setFilter('day')" data-i18n="day">DAY</div>
+    <div class="tab" onclick="setFilter('week')" data-i18n="week">WEEK</div>
+    <div class="tab" onclick="setFilter('month')" data-i18n="month">MONTH</div>
+    <div class="tab" onclick="setFilter('year')" data-i18n="year">YEAR</div>
+    <div class="tab" onclick="setFilter('all_debts')" style="border-color: var(--red); color: var(--red);" data-i18n="all_debts">ALL DEBTS</div>
+  </div>
+  
+  <div style="margin-bottom: 15px;">
+    <input type="text" id="pregledSearch" class="input-plain" style="font-size: 13px; padding: 10px 15px;" placeholder="Pretraži klijente ili usluge..." data-i18n-placeholder="search_placeholder" oninput="handlePregledSearch()">
+  </div>
+
+  <div id="pregledContent"></div>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <h3 data-i18n="confirm_delete_title">Confirm Delete</h3>
+    <p style="font-size:14px; color:var(--text2); margin-top:10px;" data-i18n="confirm_delete_msg">Are you sure you want to delete this?</p>
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeConfirmModal()" data-i18n="cancel">Cancel</button>
+      <button class="submit-btn dug" style="margin-top:0;" id="confirmDeleteBtn" data-i18n="confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 data-i18n="new_service">New service</h3>
+    <input class="input-plain" type="text" id="newServiceInput" placeholder="...">
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeModal()" data-i18n="cancel">Cancel</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="saveNewService()" data-i18n="add">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="appointmentModal">
+  <div class="modal">
+    <h3 data-i18n="book_appointment">Book Appointment</h3>
+    <div class="section-label" data-i18n="client">Client</div>
+    <input class="input-plain" type="text" id="appClient" placeholder="...">
+    <div class="section-label" data-i18n="phone">Phone</div>
+    <input class="input-plain" type="tel" id="appPhone" placeholder="+387...">
+    <div class="section-label" data-i18n="time">Time</div>
+    <input class="input-plain" type="time" id="appTime">
+    <div class="section-label" data-i18n="service">Service</div>
+    <select id="appService" class="input-plain" style="width:100%;"></select>
+    <div class="section-label">Notify Platform</div>
+    <div class="type-toggle">
+      <button class="type-btn active-pay" id="btnWA" onclick="setPlatform('WA')">WhatsApp</button>
+      <button class="type-btn" id="btnViber" onclick="setPlatform('Viber')">Viber</button>
+    </div>
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeAppointmentModal()" data-i18n="cancel">Cancel</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="saveAppointment()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="currencyModal">
+  <div class="modal">
+    <h3 data-i18n="currency_selection">Valuta</h3>
+    <div class="section-label" data-i18n="enter_currency">Unesite ili izaberite valutu:</div>
+    <input class="input-plain" type="text" id="customCurrencyInput" placeholder="Npr. EUR, GBP, KM..." maxlength="5" style="text-transform: uppercase;">
+    <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+      <button class="type-btn" onclick="setCurrency('EUR')">EUR</button>
+      <button class="type-btn" onclick="setCurrency('USD')">USD</button>
+      <button class="type-btn" onclick="setCurrency('GBP')">GBP</button>
+      <button class="type-btn" onclick="setCurrency('CHF')">CHF</button>
+      <button class="type-btn" onclick="setCurrency('KM')">KM</button>
+      <button class="type-btn" onclick="setCurrency('RSD')">RSD</button>
+    </div>
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeModal()" data-i18n="cancel">Odustani</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="setCurrency(document.getElementById('customCurrencyInput').value.toUpperCase())" data-i18n="save">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="reminderModal">
+  <div class="modal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+      <h3 style="font-size:20px; font-weight:800; color:var(--accent);" data-i18n="reminder_time">Vrijeme je za podsjetnik</h3>
+      <button onclick="closeModal()" style="background:transparent; border:none; color:var(--text3); font-size:24px; cursor:pointer;">×</button>
+    </div>
+    <div id="reminderModalContent" style="margin-bottom:20px; font-size:14px; line-height:1.5;"></div>
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeModal()" data-i18n="cancel">Odustani</button>
+      <button class="submit-btn pay" style="margin-top:0;" id="reminderSendBtn" data-i18n="send_now">POŠALJI ODMAH</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="createShopModal">
+  <div class="modal">
+    <h3 data-i18n="create_new_shop">Kreiraj novu radnju</h3>
+    <div class="section-label" data-i18n="shop_name">NAZIV RADNJE</div>
+    <input class="input-plain" type="text" id="newShopName" placeholder="Npr. Frizerski salon 'Goga'" data-i18n-placeholder="shop_name">
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeModal()" data-i18n="cancel">Odustani</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="handleCreateShop()" data-i18n="create_btn">Kreiraj</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="inviteModal">
+  <div class="modal">
+    <h3 data-i18n="invite_worker">Pozovi radnika</h3>
+    <div class="section-label" data-i18n="email">EMAIL RADNIKA</div>
+    <input class="input-plain" type="email" id="inviteEmail" placeholder="email@primjer.com" data-i18n-placeholder="email">
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeModal()" data-i18n="cancel">Odustani</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="handleInviteWorker()" data-i18n="send_invite">Pošalji poziv</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div> <!-- kraj appContent -->
+
+<script type="module">
+import { 
+  initAuth, 
+  hideAuthScreen, 
+  showAuthScreen, 
+  register, 
+  login, 
+  logout,
+  createShop,
+  inviteWorker,
+  // ── BLOK 1 ──
+  isTrialExpired,
+  trialDaysLeft,
+  hasTosAccepted,
+  acceptTos
+} from './auth.js';
+import { getPriceLabel } from './billing/pricing.js';
+import { 
+  saveData, 
+  getAllData, 
+  deleteData, 
+  syncWithFirestore, 
+  pullFromFirestore 
+} from './db.js';
+import { db as fdb } from './firebase.js';
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// ── BLOK 1: Expose helpers na window za non-module skriptu ──
+window._isTrialExpired = isTrialExpired;
+window._trialDaysLeft  = trialDaysLeft;
+window._hasTosAccepted = hasTosAccepted;
+window._acceptTos      = acceptTos;
+window._getPriceLabel  = getPriceLabel;
+
+// Globalne varijable
+let currentUser = null;
+let currentAuthMode = 'initial';
+let currentType = 'pay';
+let selectedService = null;
+let currentLang = localStorage.getItem('evidencija_lang') || 'en';
+let translations = {};
+let currentCurrency = localStorage.getItem('evidencija_currency') || 'USD';
+let selectedDate = new Date().toISOString().split('T')[0];
+let currentFilter = 'day';
+let currentSearch = '';
+let currentPlatform = 'WA';
+let deleteId = null;
+let isOffline = false;
+let workerFilter = null;
+let earningsChart = null;
+let dismissedReminders = JSON.parse(localStorage.getItem('dismissed_reminders') || '[]');
+
+// Global Error Logging
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  const errorObj = {
+    message: msg, url: url, line: lineNo, column: columnNo,
+    stack: error ? error.stack : 'N/A',
+    userId: currentUser ? currentUser.uid : 'N/A',
+    shopId: currentUser ? currentUser.shopId : 'N/A',
+    userAgent: navigator.userAgent,
+    timestamp: new Date().toISOString()
+  };
+  console.error("[Global Error]", errorObj);
+  return false;
+};
+
+window.onunhandledrejection = function(event) {
+  console.error("[Unhandled Rejection]", event.reason);
+};
+
+function cleanupDismissedReminders() {
+  const now = Date.now();
+  dismissedReminders = dismissedReminders.filter(r => (now - r.timestamp) < (48 * 60 * 60 * 1000));
+  localStorage.setItem('dismissed_reminders', JSON.stringify(dismissedReminders));
+}
+cleanupDismissedReminders();
+
+const DEFAULT_CURRENCIES = { 
+  bs: 'KM', hr: 'EUR', sr: 'RSD', mk: 'DEN', sl: 'EUR', bg: 'BGN', ro: 'RON', hu: 'HUF', 
+  pl: 'PLN', nl: 'EUR', el: 'EUR', it: 'EUR', da: 'DKK', sv: 'SEK', no: 'NOK', fi: 'EUR', 
+  pt: 'EUR', en: 'USD', de: 'EUR', fr: 'EUR', es: 'EUR', tr: 'TL', ru: 'RUB', zh: 'CNY', 
+  fa: 'IRR', ur: 'PKR', ja: 'JPY', et: 'EUR', ar: 'USD' 
+};
+
+async function initI18n() {
+  try {
+    const enRes = await fetch(`lang/en.json`);
+    const enTranslations = await enRes.json();
+    if (currentLang !== 'en') {
+      const res = await fetch(`lang/${currentLang}.json`);
+      const selectedTranslations = await res.json();
+      translations = { ...enTranslations, ...selectedTranslations };
+    } else {
+      translations = enTranslations;
+    }
+    window._translations = translations; // Expose za non-module skripte
+    applyTranslations();
+    console.log(`[I18n] Loaded language: ${currentLang}`);
+  } catch (e) {
+    console.error("[I18n] Error loading language:", e);
+    if (currentLang !== 'en') { currentLang = 'en'; await initI18n(); }
+  }
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[key]) {
+      if (translations[key].includes('<') && translations[key].includes('>')) {
+        el.innerHTML = translations[key];
+      } else {
+        el.textContent = translations[key];
+      }
+    }
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (translations[key]) el.placeholder = translations[key];
+  });
+  const roleEl = document.querySelector('[data-i18n-role]');
+  if (roleEl && currentUser) {
+    const roleKey = currentUser.role === 'owner' ? 'owner_label' : (currentUser.role === 'worker' ? 'worker_label' : 'solo_label');
+    roleEl.textContent = translations[roleKey] || currentUser.role;
+  }
+  const savedCurrency = localStorage.getItem('evidencija_currency');
+  if (!savedCurrency) {
+    currentCurrency = DEFAULT_CURRENCIES[currentLang] || 'USD';
+  } else {
+    currentCurrency = savedCurrency;
+  }
+  document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = currentCurrency);
+  const d = new Date();
+  document.getElementById('todayDate').textContent = d.toLocaleDateString(currentLang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function openCurrencyModal() {
+  document.getElementById('customCurrencyInput').value = currentCurrency;
+  document.getElementById('currencyModal').classList.add('open');
+}
+
+async function setCurrency(newSymbol, silent = false) {
+  if (!newSymbol || newSymbol.trim().length === 0) return;
+  currentCurrency = newSymbol.trim().toUpperCase();
+  localStorage.setItem('evidencija_currency', currentCurrency);
+  if (currentUser && currentUser.uid) {
+    try {
+      const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      await updateDoc(doc(fdb, "users", currentUser.uid), { currency: currentCurrency });
+      // Ažuriraj i lokalni currentUser objekat da se izbjegne overwrite u refreshAppData
+      currentUser.currency = currentCurrency;
+    } catch (e) { console.error("Failed to sync currency to Firestore:", e); }
+  }
+  if (!silent) {
+    closeModal();
+    showToast(translations['currency_changed'] || "Valuta uspješno promijenjena!");
+  }
+  applyTranslations();
+  refreshAppData();
+}
+
+async function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('evidencija_lang', lang);
+  
+  // Automatski izbor valute ima prioritet pri promjeni jezika
+  const newCurrency = DEFAULT_CURRENCIES[lang] || 'USD';
+  await setCurrency(newCurrency, true); // true = silent update
+  
+  await initI18n();
+  hideLangMenu();
+}
+
+function toggleLangMenu() {
+  const d = document.getElementById('langDropdown');
+  if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
+}
+
+function hideLangMenu() {
+  const d = document.getElementById('langDropdown');
+  if (d) d.style.display = 'none';
+}
+
+function setAuthMode(mode) {
+  currentAuthMode = mode;
+  const initial = document.getElementById('authInitial');
+  const form = document.getElementById('authForm');
+  const regFields = document.getElementById('registerFields');
+  const title = document.getElementById('authTitle');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const error = document.getElementById('authError');
+  if (error) error.textContent = '';
+  if (mode === 'initial') {
+    if (initial) initial.style.display = 'flex';
+    if (form) form.style.display = 'none';
+  } else {
+    if (initial) initial.style.display = 'none';
+    if (form) form.style.display = 'flex';
+    if (regFields) regFields.style.display = mode === 'register' ? 'flex' : 'none';
+    if (title) title.textContent = mode === 'register' ? (translations['register_title'] || 'Registracija') : (translations['login_title'] || 'Prijava');
+    if (submitBtn) {
+      submitBtn.textContent = mode === 'register' ? (translations['register_btn'] || 'Registruj se') : (translations['login_btn'] || 'Prijavi se');
+      submitBtn.onclick = mode === 'register' ? handleRegister : handleLogin;
+    }
+  }
+}
+
+async function handleRegister() {
+  const name = document.getElementById('authName').value;
+  const email = document.getElementById('authEmail').value;
+  const pass = document.getElementById('authPass').value;
+  if (!email || !pass || (currentAuthMode === 'register' && !name)) {
+    document.getElementById('authError').textContent = translations['error_fill_all'] || 'Popunite sva polja!';
+    return;
+  }
+  try {
+    await register(name, email, pass);
+    showToast(translations['reg_success'] || "Registracija uspješna!");
+  } catch (e) { document.getElementById('authError').textContent = e.message; }
+}
+
+async function handleLogin() {
+  const email = document.getElementById('authEmail').value;
+  const pass = document.getElementById('authPass').value;
+  if (!email || !pass) {
+    document.getElementById('authError').textContent = translations['error_fill_all'] || 'Popunite sva polja!';
+    return;
+  }
+  try {
+    await login(email, pass);
+  } catch (e) { document.getElementById('authError').textContent = e.message; }
+}
+
+async function handleLogout() {
+  if (confirm(translations['confirm_logout'] || "Da li ste sigurni da želite da se odjavite?")) {
+    await logout();
+  }
+}
+
+async function refreshAppData() {
+  if (!currentUser) return;
+  if (currentUser.currency) {
+    currentCurrency = currentUser.currency;
+    localStorage.setItem('evidencija_currency', currentCurrency);
+    // Osvježi simbole valuta u UI-u
+    document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = currentCurrency);
+  }
+  document.getElementById('userNameDisplay').textContent = currentUser.name;
+  const roleEl = document.getElementById('userRoleDisplay');
+  if (roleEl) {
+    const roleKey = currentUser.role === 'owner' ? 'owner_label' : (currentUser.role === 'worker' ? 'worker_label' : 'solo_label');
+    roleEl.textContent = translations[roleKey] || currentUser.role;
+  }
+  const navOwner = document.getElementById('navOwner');
+  if (currentUser.role === 'owner' || currentUser.role === 'solo') {
+    if (navOwner) navOwner.style.display = 'flex';
+  } else {
+    if (navOwner) navOwner.style.display = 'none';
+  }
+  if (currentUser.role === 'owner') {
+    document.getElementById('ownerDashboard').style.display = 'block';
+    document.getElementById('becomeOwnerSection').style.display = 'none';
+    loadShopInfo();
+  } else if (currentUser.role === 'solo') {
+    document.getElementById('ownerDashboard').style.display = 'none';
+    document.getElementById('becomeOwnerSection').style.display = 'block';
+  } else {
+    document.getElementById('ownerDashboard').style.display = 'none';
+    document.getElementById('becomeOwnerSection').style.display = 'none';
+  }
+  renderServices();
+  renderPregled();
+  renderAppointments();
+  
+  // Ažuriraj trial banner ako postoji
+  if (typeof blok1UpdateTrialBanner === 'function') {
+    blok1UpdateTrialBanner(currentUser);
+  }
+}
+
+async function loadShopInfo() {
+  if (!currentUser.shopId) return;
+  const shopSnap = await getDoc(doc(fdb, "shops", currentUser.shopId));
+  if (shopSnap.exists()) {
+    document.getElementById('shopNameDisplay').textContent = shopSnap.data().name;
+    loadWorkers();
+    loadInvites();
+  }
+}
+
+async function loadInvites() {
+  const q = query(collection(fdb, "invites"), where("shopId", "==", currentUser.shopId), where("status", "==", "pending"));
+  const snap = await getDocs(q);
+  const list = document.getElementById('invitesList');
+  if (!list) return;
+  list.innerHTML = '';
+  if (snap.empty) {
+    list.innerHTML = `<div class="empty-state">${translations['no_invites'] || 'Nema aktivnih pozivnica'}</div>`;
+    return;
+  }
+  snap.forEach(doc => {
+    const d = doc.data();
+    const item = document.createElement('div');
+    item.className = 'list-item';
+    item.innerHTML = `<div><strong>${d.email}</strong><br><small>⏳ ${translations['waiting_reg'] || 'Čeka na registraciju'}</small></div>`;
+    list.appendChild(item);
+  });
+  applyTranslations();
+}
+
+async function loadWorkers() {
+  const q = query(collection(fdb, "users"), where("shopId", "==", currentUser.shopId));
+  const snap = await getDocs(q);
+  const list = document.getElementById('workersList');
+  if (!list) return;
+  list.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    if (d.uid === currentUser.uid) return;
+    const item = document.createElement('div');
+    item.className = 'list-item';
+    item.style.cursor = 'pointer';
+    item.onclick = () => { workerFilter = { uid: d.uid, name: d.name }; showScreen('pregled'); };
+    item.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div><strong>${d.name}</strong><br><small>${d.email}</small></div>
+        <div style="color:var(--accent); font-size:18px;">›</div>
+      </div>`;
+    list.appendChild(item);
+  });
+  applyTranslations();
+}
+
+async function handleCreateShop() {
+  const name = document.getElementById('newShopName').value.trim();
+  if (!name) return;
+  if (!currentUser || !currentUser.uid) {
+    showToast(translations['error_login_failed'] || "Greska: Niste ispravno prijavljeni.", true);
+    return;
+  }
+  try {
+    await createShop(currentUser.uid, name);
+    showToast(translations['shop_created'] || "Radnja kreirana!");
+    closeModal();
+    location.reload();
+  } catch (e) { showToast(e.message, true); }
+}
+
+async function handleInviteWorker() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  if (!email) return;
+  try {
+    await inviteWorker(currentUser.uid, currentUser.shopId, email);
+    showToast(translations['invite_sent'] || "Pozivnica poslana!");
+    closeModal();
+  } catch (e) { showToast(e.message, true); }
+}
+
+async function submitEntry() {
+  if (!selectedService) { showToast(translations['error_service'] || 'Select service!', true); return; }
+  const now = new Date();
+  let entry = {
+    id: Date.now().toString(),
+    date: now.toISOString().split('T')[0],
+    time: now.toLocaleTimeString(),
+    services: [{ name: selectedService, price: 0, qty: 1 }],
+    status: 'paid',
+    type: currentType,
+    userId: currentUser.uid,
+    userName: currentUser.name,
+    shopId: currentUser.shopId || null
+  };
+  if (currentType === 'pay') {
+    const p = parseFloat(document.getElementById('cijenaInput').value);
+    if (isNaN(p)) return showToast(translations['error_price'] || 'Unesite cijenu!', true);
+    entry.services[0].price = p;
+    entry.total = p;
+  } else {
+    const d = document.getElementById('duznikInput').value.trim();
+    const a = parseFloat(document.getElementById('dugIznosInput').value);
+    if (!d || isNaN(a)) return showToast('Greška!', true);
+    entry.debtor = d;
+    entry.services[0].price = a;
+    entry.total = a;
+    entry.status = 'unpaid';
+    entry.history = [];
+  }
+  await saveData('entries', entry);
+  await syncWithFirestore(currentUser);
+  showToast(translations['saved'] || 'Sačuvano!');
+  resetForm();
+  renderPregled();
+}
+
+function resetForm() {
+  selectedService = null;
+  document.getElementById('cijenaInput').value = '';
+  document.getElementById('duznikInput').value = '';
+  document.getElementById('dugIznosInput').value = '';
+  renderServices();
+}
+
+async function renderServices() {
+  const grid = document.getElementById('servicesGrid');
+  if (!grid) return;
+  const services = await getAllData('services');
+  grid.innerHTML = '';
+  services.forEach(s => {
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    const btn = document.createElement('button');
+    btn.className = 'service-btn' + (s.name === selectedService ? ' selected' : '');
+    btn.textContent = s.name;
+    btn.onclick = () => { selectedService = s.name; renderServices(); };
+    const del = document.createElement('div');
+    del.className = 'service-delete';
+    del.textContent = '×';
+    del.onclick = (e) => { e.stopPropagation(); deleteS(s.id); };
+    container.appendChild(btn); container.appendChild(del); grid.appendChild(container);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'service-btn add-new';
+  addBtn.textContent = '+';
+  addBtn.onclick = () => document.getElementById('modalOverlay').classList.add('open');
+  grid.appendChild(addBtn);
+  applyTranslations();
+}
+
+async function saveNewService() {
+  const v = document.getElementById('newServiceInput').value.trim();
+  if (v) {
+    await saveData('services', { id: Date.now().toString(), name: v, userId: currentUser.uid, shopId: currentUser.shopId || null });
+    await syncWithFirestore(currentUser);
+  }
+  closeModal();
+  renderServices();
+}
+
+async function deleteS(id) {
+  await deleteData('services', id);
+  await syncWithFirestore(currentUser);
+  renderServices();
+}
+
+async function renderPregled() {
+  const content = document.getElementById('pregledContent');
+  if (!content) return;
+  const rawEntries = await getAllData('entries');
+  const entries = [];
+  const seenIds = new Set();
+  rawEntries.forEach(e => { if (!seenIds.has(e.id)) { entries.push(e); seenIds.add(e.id); } });
+
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  
+  const filtered = entries.filter(e => {
+    if (workerFilter && e.userId !== workerFilter.uid) return false;
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      const serviceMatch = e.services && e.services.some(s => s.name.toLowerCase().includes(q));
+      const debtorMatch = e.debtor && e.debtor.toLowerCase().includes(q);
+      const workerMatch = e.userName && e.userName.toLowerCase().includes(q);
+      if (!serviceMatch && !debtorMatch && !workerMatch) return false;
+    }
+    if (currentFilter === 'all_debts') return e.type === 'dug' && e.status !== 'paid';
+    const ed = new Date(e.date);
+    if (currentFilter === 'day') return e.date === todayStr;
+    if (currentFilter === 'week') { const s = new Date(now); s.setDate(now.getDate() - 7); s.setHours(0,0,0,0); return ed >= s; }
+    if (currentFilter === 'month') { const s = new Date(now); s.setDate(now.getDate() - 30); s.setHours(0,0,0,0); return ed >= s; }
+    if (currentFilter === 'year') return ed.getFullYear() === now.getFullYear();
+    return true;
+  });
+
+  const total = filtered.reduce((sum, e) => {
+    if (e.status === 'paid' && e.type === 'pay') return sum + (parseFloat(e.total) || 0);
+    const historyTotal = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
+    return sum + historyTotal;
+  }, 0);
+  
+  const totalDebts = filtered.reduce((sum, e) => {
+    if (e.type !== 'dug') return sum;
+    const paid = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
+    const remaining = (parseFloat(e.total) || 0) - paid;
+    return sum + (remaining > 0 ? remaining : 0);
+  }, 0);
+
+  let headerHTML = '';
+  if (workerFilter) {
+    headerHTML = `
+      <div style="background:var(--bg3); padding:10px; border-radius:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--accent);">
+        <div style="font-size:12px;">${translations['showing_entries_for'] || 'Prikaz unosa:'} <strong>${workerFilter.name}</strong></div>
+        <button onclick="clearWorkerFilter()" style="background:transparent; border:none; color:var(--red); font-weight:800; cursor:pointer;">${translations['remove'] || 'Ukloni'} X</button>
+      </div>`;
+  }
+
+  content.innerHTML = `
+    ${headerHTML}
+    <div class="stat-card">
+      <div class="stat-label" data-i18n="total_earnings">UKUPNA ZARADA</div>
+      <div class="stat-value">${total.toFixed(2)} ${currentCurrency}</div>
+      <div class="stat-sub"><span data-i18n="entry_count">Broj unosa</span>: ${filtered.length}</div>
+      ${totalDebts > 0 ? `<div class="stat-sub" style="color:var(--red); margin-top:5px;"><span data-i18n="remaining_debts">Preostali dugovi</span>: ${totalDebts.toFixed(2)} ${currentCurrency}</div>` : ''}
+    </div>
+    ${[...filtered].reverse().map(e => {
+      const paidAmount = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
+      const isPaid = e.status === 'paid';
+      const serviceName = e.services && e.services[0] ? e.services[0].name : (e.type === 'pay' ? (translations['service'] || 'Usluga') : (translations['debt'] || 'Dug'));
+      return `
+      <div class="list-item">
+        <div class="list-header">
+          <div style="flex: 1;">
+            <strong style="font-size: 15px;">${serviceName}</strong>
+            ${e.type === 'dug' ? `<div style="font-size:12px; color:var(--accent)"><span data-i18n="client">Klijent</span>: ${e.debtor || 'N/A'}</div>` : ''}
+            <div style="font-size:10px; color:var(--text2)">${e.date} ${e.time || ''}</div>
+          </div>
+          <div style="text-align:right; display: flex; align-items: center; gap: 10px;">
+            <div>
+              <div class="stat-value" style="font-size:18px; margin:0">${(parseFloat(e.total) || 0).toFixed(2)}</div>
+              ${!isPaid ? `<span style="color:var(--red); font-size:10px;"><span data-i18n="remaining">Preostalo</span>: ${(e.total - paidAmount).toFixed(2)}</span>` : ''}
+            </div>
+            <div style="font-size: 24px;">
+              ${isPaid ? '<span title="Plaćeno" style="color:#25D366">☑</span>' : '<span title="Nije plaćeno" style="color:var(--text3)">☐</span>'}
+            </div>
+          </div>
+        </div>
+        ${!isPaid && e.type === 'dug' ? `<button class="submit-btn pay" style="margin-top:10px; padding:8px; font-size:12px;" onclick="payDebt('${e.id}')" data-i18n="pay_debt_btn">NAPLATI DUG</button>` : ''}
+        ${e.history && e.history.length > 0 ? `
+          <div class="history-log">
+            <strong data-i18n="payment_history">Istorija plaćanja:</strong>
+            ${e.history.map(h => {
+              const hDate = new Date(h.date);
+              const displayDate = isNaN(hDate.getTime()) ? h.date : hDate.toLocaleString(currentLang, {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+              return `<div>${displayDate}: ${h.amount.toFixed(2)} ${currentCurrency}</div>`;
+            }).join('')}
+          </div>` : ''}
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="btn-icon del" style="flex:1;" onclick="handleDeleteEntry('${e.id}')">×</button>
+        </div>
+      </div>`;
+    }).join('')}`;
+  applyTranslations();
+}
+
+async function payDebt(id) {
+  const entries = await getAllData('entries');
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  const paidSoFar = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
+  const remaining = (parseFloat(e.total) || 0) - paidSoFar;
+  const promptMsg = (translations['pay_debt_prompt'] || 'Unesite iznos naplate (Preostalo: ${r}):').replace('${r}', remaining.toFixed(2));
+  const amount = prompt(promptMsg, remaining.toFixed(2));
+  if (amount === null || isNaN(parseFloat(amount))) return;
+  const newAmount = parseFloat(amount);
+  const now = new Date();
+  if (!e.history) e.history = [];
+  e.history.push({ date: now.toISOString(), amount: newAmount, by: currentUser.name });
+  if ((paidSoFar + newAmount) >= (parseFloat(e.total) || 0)) e.status = 'paid';
+  await saveData('entries', e);
+  await syncWithFirestore(currentUser);
+  showToast(translations['payment_processed'] || "Uplata proknjižena!");
+  renderPregled();
+}
+
+async function handleDeleteEntry(id) {
+  if (confirm(translations['confirm_delete_entry'] || "Obrisati ovaj unos?")) {
+    await deleteData('entries', id);
+    await syncWithFirestore(currentUser);
+    renderPregled();
+  }
+}
+
+async function renderAppointments() {
+  const l = document.getElementById('appointmentsList');
+  if (!l) return;
+  const rawApps = await getAllData('appointments');
+  const filterDiv = document.getElementById('workerAppointmentFilter');
+  const select = document.getElementById('workerAppSelect');
+  if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'worker') && filterDiv && select) {
+    if (currentUser.shopId) {
+      filterDiv.style.display = 'block';
+      if (select.options.length === 0) {
+        try {
+          const q = query(collection(fdb, "users"), where("shopId", "==", currentUser.shopId));
+          const snap = await getDocs(q);
+          let options = `<option value="all" data-i18n="all_workers">${translations['all_workers'] || 'Svi radnici'}</option>`;
+          options += `<option value="${currentUser.uid}">${currentUser.name} (${translations[currentUser.role + '_label'] || currentUser.role})</option>`;
+          snap.forEach(doc => { const w = doc.data(); if (w.uid !== currentUser.uid) options += `<option value="${w.uid}">${w.name}</option>`; });
+          select.innerHTML = options;
+        } catch (e) { console.error("Error loading workers for filter:", e); }
+      }
+    }
+  }
+  const appsMap = new Map();
+  rawApps.forEach(a => {
+    if (a.datum === selectedDate) {
+      const canSee = (currentUser.role === 'owner' || currentUser.role === 'worker') ? (a.shopId === currentUser.shopId) : (a.userId === currentUser.uid);
+      const selectedWorker = (select && select.options.length > 0) ? select.value : 'all';
+      const matchesWorker = selectedWorker === 'all' || a.userId === selectedWorker;
+      if (canSee && matchesWorker) appsMap.set(a.id, a);
+    }
+  });
+  const apps = Array.from(appsMap.values()).sort((a, b) => a.vrijeme.localeCompare(b.vrijeme));
+  l.innerHTML = apps.length === 0 
+    ? `<div class="empty-state" data-i18n="no_appointments">${translations['no_appointments'] || 'Nema termina'}</div>` 
+    : apps.map(a => `
+      <div class="appointment-item">
+        <div class="appointment-time">${a.vrijeme}</div>
+        <div class="appointment-info">
+          <strong>${a.klijent}</strong><br>
+          <small>${a.usluga}</small>
+          ${currentUser.role === 'owner' ? `<br><small style="color:var(--accent)">${translations['worker_label'] || 'Radnik'}: ${a.userName || 'N/A'}</small>` : ''}
+        </div>
+        <div style="display:flex; gap:5px;">
+          <button class="btn-icon" onclick="sendAppointmentReminder('${a.id}')">💬</button>
+          <button class="btn-icon del" onclick="handleDeleteApp('${a.id}')">×</button>
+        </div>
+      </div>`).join('');
+  applyTranslations();
+}
+
+function filterWorkerOptions(val) {
+  const select = document.getElementById('workerAppSelect');
+  const term = val.toLowerCase();
+  for (let i = 0; i < select.options.length; i++) {
+    const opt = select.options[i];
+    opt.style.display = opt.text.toLowerCase().includes(term) ? 'block' : 'none';
+  }
+}
+window.filterWorkerOptions = filterWorkerOptions;
+
+async function sendAppointmentReminder(id) {
+  const apps = await getAllData('appointments');
+  const a = apps.find(x => x.id === id);
+  if (!a || !a.telefon) return showToast(translations['error_no_phone'] || "Nema broja telefona!", true);
+  let msg = translations['appointment_reminder'] || "Pozdrav ${c}, podsjetnik za vas termin: ${s} u ${t}. Vidimo se!";
+  msg = msg.replace('${c}', a.klijent).replace('${s}', a.usluga).replace('${t}', a.vrijeme);
+  const phone = a.telefon.replace(/\D/g,'');
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const url = currentPlatform === 'WA' ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : `viber://chat?number=%2B${phone}`;
+  if (isMobile) { location.href = url; } else { window.open(url, '_blank'); }
+}
+
+async function handleDeleteApp(id) {
+  if (confirm(translations['confirm_delete_app'] || "Obrisati ovaj termin?")) {
+    await deleteData('appointments', id);
+    await syncWithFirestore(currentUser);
+    renderAppointments();
+  }
+}
+
+async function saveAppointment() {
+  const c = document.getElementById('appClient').value.trim();
+  const t = document.getElementById('appTime').value;
+  const s = document.getElementById('appService').value;
+  const p = document.getElementById('appPhone').value.trim();
+  if (!c) return showToast(translations['error_debtor'] || "Unesite ime klijenta!", true);
+  if (!t) return showToast(translations['time'] || "Odaberite vrijeme!", true);
+  if (!selectedDate) selectedDate = new Date().toISOString().split('T')[0];
+  const saveBtn = document.querySelector('button[onclick="saveAppointment()"]');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = translations['saving'] || 'Spremanje...'; }
+  try {
+    const appointmentData = {
+      id: Date.now().toString(), datum: selectedDate, klijent: c, vrijeme: t,
+      usluga: s, telefon: p, userName: currentUser.name, userId: currentUser.uid,
+      shopId: currentUser.shopId || null, remindersSent: []
+    };
+    await saveData('appointments', appointmentData);
+    await syncWithFirestore(currentUser);
+    closeModal();
+    renderAppointments();
+    checkUpcomingAppointments();
+    showToast(translations['saved'] || "Sačuvano!");
+    document.getElementById('appClient').value = '';
+    document.getElementById('appTime').value = '';
+    document.getElementById('appPhone').value = '';
+  } catch (e) {
+    console.error("[App] Save appointment error:", e);
+    showToast(translations['error'] || "Greška pri spašavanju!", true);
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = translations['save'] || 'Spremi'; }
+  }
+}
+
+async function markReminderSent(id, type) {
+  try {
+    const apps = await getAllData('appointments');
+    const a = apps.find(x => x.id === id);
+    if (!a) return;
+    if (!a.remindersSent) a.remindersSent = [];
+    if (!a.remindersSent.includes(type)) {
+      a.remindersSent.push(type);
+      await saveData('appointments', a);
+      await syncWithFirestore(currentUser);
+      checkUpcomingAppointments();
+    }
+  } catch (e) { console.error("Mark reminder error:", e); }
+}
+
+function closeReminderModal() {
+  const modal = document.getElementById('reminderModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  history.pushState(null, null, location.href);
+}
+
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const diffY = e.changedTouches[0].clientY - touchStartY;
+  if (diffY > 100) { const openModal = document.querySelector('.modal-overlay.open'); if (openModal) closeModal(); }
+}, { passive: true });
+window.onpopstate = () => { const openModal = document.querySelector('.modal-overlay.open'); if (openModal) closeModal(); };
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+async function renderIzvjestaji(mode = 'selected') {
+  const rawEntries = await getAllData('entries');
+  const entries = [];
+  const seenIds = new Set();
+  rawEntries.forEach(e => { if (!seenIds.has(e.id)) { entries.push(e); seenIds.add(e.id); } });
+
+  const monthInput = document.getElementById('reportMonthSelect');
+  let selectedMonth = monthInput.value;
+  if (!selectedMonth) {
+    const now = new Date();
+    selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    monthInput.value = selectedMonth;
+  }
+  const [year, month] = selectedMonth.split('-').map(Number);
+  const now = new Date();
+
+  const sumPaid = (arr, targetMonth = null, targetYear = null) => arr.reduce((sum, e) => {
+    let paidInPeriod = 0;
+    if (e.type === 'pay' && e.status === 'paid') {
+      const ed = new Date(e.date);
+      if (!targetMonth || (ed.getMonth() + 1 === targetMonth && ed.getFullYear() === targetYear)) paidInPeriod += (parseFloat(e.total) || 0);
+    }
+    if (e.history) {
+      e.history.forEach(h => {
+        const hd = new Date(h.date);
+        if (!targetMonth || (hd.getMonth() + 1 === targetMonth && hd.getFullYear() === targetYear)) paidInPeriod += (parseFloat(h.amount) || 0);
+      });
+    }
+    return sum + paidInPeriod;
+  }, 0);
+
+  const todayEntries = entries.filter(e => {
+    const today = new Date().toISOString().split('T')[0];
+    if (e.date === today) return true;
+    if (e.history && e.history.some(h => new Date(h.date).toISOString().split('T')[0] === today)) return true;
+    return false;
+  });
+
+  const filtered = entries.filter(e => {
+    if (mode === 'all') return true;
+    const ed = new Date(e.date);
+    return ed.getFullYear() === year && (ed.getMonth() + 1) === month;
+  });
+
+  document.getElementById('reportToday').textContent = `${sumPaid(todayEntries, now.getMonth() + 1, now.getFullYear()).toFixed(2)} ${currentCurrency}`;
+  document.getElementById('reportSelected').textContent = `${sumPaid(filtered, month, year).toFixed(2)} ${currentCurrency}`;
+
+  let chartLabels = [], chartData = [];
+  if (mode === 'all' || filtered.length > 20) {
+    const last6Months = [...Array(6)].map((_, i) => { const d = new Date(); d.setMonth(d.getMonth() - i); return { y: d.getFullYear(), m: d.getMonth() }; }).reverse();
+    chartLabels = last6Months.map(d => `${d.m + 1}/${d.y}`);
+    chartData = last6Months.map(d => { const mEntries = entries.filter(e => { const ed = new Date(e.date); return ed.getFullYear() === d.y && ed.getMonth() === d.m; }); return sumPaid(mEntries); });
+  } else {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    chartLabels = [...Array(daysInMonth)].map((_, i) => i + 1);
+    chartData = chartLabels.map(day => { const dEntries = filtered.filter(e => { const ed = new Date(e.date); return ed.getDate() === day; }); return sumPaid(dEntries); });
+  }
+
+  if (earningsChart) earningsChart.destroy();
+  const canvas = document.getElementById('earningsChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const isLight = document.body.classList.contains('light-mode');
+  const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c8f065';
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  earningsChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: chartLabels, datasets: [{ label: translations['income'] || 'Zarada', data: chartData, backgroundColor: accentColor, borderRadius: 5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, aspectRatio: isMobile ? 1.2 : 2,
+      layout: { padding: { top: 10, bottom: 10, left: 5, right: 5 } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => `${context.raw.toFixed(2)} ${currentCurrency}` } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' }, ticks: { color: isLight ? '#666' : '#888', font: { size: isMobile ? 10 : 12 } } },
+        x: { grid: { display: false }, ticks: { color: isLight ? '#666' : '#888', font: { size: isMobile ? 10 : 12 }, maxRotation: 45, minRotation: 45 } }
+      }
+    }
+  });
+}
+
+async function exportData() {
+  const rawEntries = await getAllData('entries');
+  const entries = [];
+  const seenIds = new Set();
+  rawEntries.forEach(e => { if (!seenIds.has(e.id)) { entries.push(e); seenIds.add(e.id); } });
+  let csv = "ID,Datum,Vrijeme,Usluga,Klijent/Duznik,Tip,Status,Ukupno,Naplaceno,Preostalo\n";
+  entries.forEach(e => {
+    const serviceName = e.services && e.services[0] ? e.services[0].name : (e.type === 'pay' ? 'Usluga' : 'Dug');
+    const paidAmount = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
+    const total = parseFloat(e.total) || 0;
+    csv += `"${e.id}","${e.date}","${e.time || ''}","${serviceName}","${e.debtor || ''}","${e.type}","${e.status}",${total.toFixed(2)},${paidAmount.toFixed(2)},${(total - paidAmount).toFixed(2)}\n`;
+  });
+  const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.setAttribute('href', url);
+  a.setAttribute('download', `izvjestaj_radova_${new Date().toISOString().split('T')[0]}.csv`);
+  a.click();
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('screen-' + name);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (name === 'unos') document.querySelector('.nav-btn:nth-child(1)')?.classList.add('active');
+  if (name === 'termini') { document.querySelector('.nav-btn:nth-child(2)')?.classList.add('active'); renderCalendar(); renderAppointments(); }
+  if (name === 'pregled') { document.querySelector('.nav-btn:nth-child(3)')?.classList.add('active'); renderPregled(); }
+  if (name === 'izvjestaji') { document.querySelector('.nav-btn:nth-child(4)')?.classList.add('active'); renderIzvjestaji(); }
+  if (name === 'owner') document.getElementById('navOwner')?.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function renderCalendar() {
+  const s = document.getElementById('calendarStrip');
+  if (!s) return;
+  s.innerHTML = '';
+  const base = new Date(selectedDate);
+  for (let i = -3; i < 10; i++) {
+    const d = new Date(base);
+    d.setDate(base.getDate() + i);
+    const iso = d.toISOString().split('T')[0];
+    const card = document.createElement('div');
+    card.className = 'day-card' + (iso === selectedDate ? ' active' : '');
+    card.onclick = () => { selectedDate = iso; renderCalendar(); renderAppointments(); };
+    card.innerHTML = `<span class="day-name">${d.toLocaleDateString(currentLang, {weekday:'short'})}</span><span class="day-num">${d.getDate()}</span>`;
+    s.appendChild(card);
+    if (iso === selectedDate) setTimeout(() => card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }), 50);
+  }
+}
+
+async function checkUpcomingAppointments() {
+  if (!currentUser) return;
+  const rawApps = await getAllData('appointments');
+  const appsMap = new Map();
+  rawApps.forEach(a => appsMap.set(a.id, a));
+  const allApps = Array.from(appsMap.values());
+  const now = new Date();
+  let pendingReminders = [];
+  allApps.forEach(a => {
+    if (!a.datum || !a.vrijeme) return;
+    const appDate = new Date(a.datum + 'T' + a.vrijeme + ':00');
+    const diffHours = (appDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const isDue24h = diffHours > 0 && diffHours <= 24;
+    const isDue1h = diffHours > 0 && diffHours <= 1;
+    let type = null;
+    if (isDue24h && (!a.remindersSent || !a.remindersSent.includes('24h'))) type = '24h';
+    else if (isDue1h && (!a.remindersSent || !a.remindersSent.includes('1h'))) type = '1h';
+    if (type) {
+      const isDismissed = dismissedReminders.some(r => r.id === a.id && r.type === type);
+      if (!isDismissed) pendingReminders.push({ ...a, type });
+    }
+  });
+  const dot = document.getElementById('reminderDot');
+  if (dot) dot.style.display = pendingReminders.length > 0 ? 'block' : 'none';
+  if (pendingReminders.length > 0) {
+    const next = pendingReminders[0];
+    const modal = document.getElementById('reminderModal');
+    const content = document.getElementById('reminderModalContent');
+    const sendBtn = document.getElementById('reminderSendBtn');
+    if (modal && content && !modal.classList.contains('open')) {
+      const typeText = next.type === '24h' ? (translations['upcoming_24h'] || '24 sata') : (translations['upcoming_1h'] || '1 sat');
+      content.innerHTML = `
+        <div style="background:var(--bg3); padding:15px; border-radius:12px; border-left:4px solid var(--accent);">
+          <strong>${next.klijent}</strong><br>
+          <span style="color:var(--text2); font-size:12px;">${translations['appointments'] || 'Termin'}: ${next.datum} u ${next.vrijeme}</span><br>
+          <span style="color:var(--accent); font-weight:700;">${translations['reminder_time'] || 'Podsjetnik'} (${typeText})</span>
+        </div>
+        <p style="margin-top:15px; color:var(--text2); font-size:13px;">${translations['reminder_desc'] || 'Kliknite na dugme ispod da pošaljete poruku klijentu.'}</p>
+        <button onclick="dismissReminder('${next.id}', '${next.type}')" style="width:100%; margin-top:10px; background:transparent; border:1px solid var(--border); color:var(--text2); padding:10px; border-radius:12px; font-size:12px; cursor:pointer;">${translations['not_remind_again'] || 'Ne podsjećaj me više za ovaj termin'}</button>`;
+      sendBtn.onclick = async () => {
+        sendBtn.disabled = true;
+        try { await sendAppointmentReminder(next.id); await markReminderSent(next.id, next.type); closeModal(); }
+        catch (e) { console.error("Reminder failed:", e); showToast(translations['error_saving_reminder'] || "Greška pri slanju!", true); }
+        finally { sendBtn.disabled = false; }
+      };
+      modal.classList.add('open');
+    }
+  }
+}
+
+function dismissReminder(id, type) {
+  dismissedReminders.push({ id, type, timestamp: Date.now() });
+  localStorage.setItem('dismissed_reminders', JSON.stringify(dismissedReminders));
+  closeReminderModal();
+  checkUpcomingAppointments();
+}
+window.dismissReminder = dismissReminder;
+
+// ── Global window exposures ──
+window.setAuthMode = setAuthMode;
+window.handleRegister = handleRegister;
+window.handleLogin = handleLogin;
+window.logout = handleLogout;
+window.handleCreateShop = handleCreateShop;
+window.handleInviteWorker = handleInviteWorker;
+window.submitEntry = submitEntry;
+window.saveNewService = saveNewService;
+window.payDebt = payDebt;
+window.handleDeleteEntry = handleDeleteEntry;
+window.sendAppointmentReminder = sendAppointmentReminder;
+window.handleDeleteApp = handleDeleteApp;
+window.saveAppointment = saveAppointment;
+window.exportData = exportData;
+window.showScreen = showScreen;
+window.toggleLangMenu = toggleLangMenu;
+window.hideLangMenu = hideLangMenu;
+window.setLanguage = setLanguage;
+window.closeReminderModal = closeReminderModal;
+
+window.toggleTheme = () => {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('evidencija_theme', isLight ? 'light' : 'dark');
+  document.getElementById('themeToggleBtn').textContent = isLight ? '🌙' : '☀️';
+};
+window.setType = (t) => {
+  currentType = t;
+  document.getElementById('btnPay').className = 'type-btn' + (t === 'pay' ? ' active-pay' : '');
+  document.getElementById('btnDug').className = 'type-btn' + (t === 'dug' ? ' active-dug' : '');
+  document.getElementById('cijenaField').style.display = t === 'pay' ? 'block' : 'none';
+  document.getElementById('dugFields').style.display = t === 'dug' ? 'block' : 'none';
+};
+window.setFilter = (f) => {
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.getAttribute('onclick').includes(f)));
+  renderPregled();
+};
+window.closeModal = () => document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+window.openCreateShopModal = () => document.getElementById('createShopModal').classList.add('open');
+window.openInviteModal = () => document.getElementById('inviteModal').classList.add('open');
+window.openCurrencyModal = openCurrencyModal;
+window.setCurrency = setCurrency;
+window.openAppointmentModal = async () => {
+  const s = await getAllData('services');
+  if (s.length === 0) return showToast('Prvo dodajte usluge!', true);
+  document.getElementById('appService').innerHTML = s.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
+  document.getElementById('appointmentModal').classList.add('open');
+};
+window.closeAppointmentModal = () => document.getElementById('appointmentModal').classList.remove('open');
+window.showToast = (m, e=false, duration=2000) => {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = m;
+  t.style.background = e ? 'var(--red)' : 'var(--accent)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+};
+window.jumpToDate = (date) => { selectedDate = date; renderCalendar(); renderAppointments(); };
+window.clearWorkerFilter = () => { workerFilter = null; renderPregled(); };
+window.handlePregledSearch = () => { currentSearch = document.getElementById('pregledSearch').value; renderPregled(); };
+window.setPlatform = (p) => {
+  currentPlatform = p;
+  document.getElementById('btnWA').className = 'type-btn' + (p === 'WA' ? ' active-pay' : '');
+  document.getElementById('btnViber').className = 'type-btn' + (p === 'Viber' ? ' active-pay' : '');
+};
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async () => {
+  const savedTheme = localStorage.getItem('evidencija_theme');
+  const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (savedTheme === 'light' || (!savedTheme && !systemDark)) {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeToggleBtn').textContent = '🌙';
+  } else {
+    document.body.classList.remove('light-mode');
+    document.getElementById('themeToggleBtn').textContent = '☀️';
+  }
+
+  await initI18n();
+
+  initAuth(async (user, userData) => {
+    currentUser = { ...user, ...userData };
+
+    // ── BLOK 1: Expose user state za non-module skriptu, pa provjeri ToS/Trial ──
+    window._currentUser     = user;
+    window._currentUserData = currentUser;
+
+    hideAuthScreen();
+    window.checkAndShowTos(user, currentUser);
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const updateOnlineStatus = () => {
+      const statusDot = document.getElementById('syncStatus');
+      if (statusDot) {
+        if (navigator.onLine) {
+          statusDot.style.background = '#25D366';
+          syncWithFirestore(currentUser).then(() => refreshAppData());
+        } else {
+          statusDot.style.background = '#ff5c5c';
+        }
+      }
+    };
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+
+    if (navigator.onLine) await pullFromFirestore(currentUser);
+
+    refreshAppData();
+    checkUpcomingAppointments();
+    setInterval(checkUpcomingAppointments, 60000);
+  }, () => {
+    currentUser = null;
+    showAuthScreen();
+    setAuthMode('initial');
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW Registered', reg))
+      .catch(err => console.log('SW Error', err));
+  }
+});
+</script>
+
+<!-- ══════════════════════════════════════════════
+     BLOK 1 — Non-module JS (koristi window._ helpere)
+     ══════════════════════════════════════════════ -->
+<script>
+// Prices config (Tier A default; Blok 2 dodaje dinamiku)
+const BLOK1_PRICES = {
+  A: { basic: '€2.49', premium: '€9.99'  },
+  B: { basic: '€4.99', premium: '€19.99' }
+};
+
+// ── Trial banner ──
+function blok1UpdateTrialBanner(userData) {
+  const banner = document.getElementById('trialBanner');
+  if (!banner) return;
+  if (userData?.subscriptionStatus === 'active') { banner.style.display = 'none'; return; }
+  const days = window._trialDaysLeft(userData);
+  if (days <= 0) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  banner.classList.toggle('danger', days <= 5);
+  
+  const trans = window._translations || {};
+  const prefix = trans['trial_banner_prefix'] || '⏳ Probni period:';
+  const suffix = trans['trial_banner_suffix'] || 'preostalo.';
+  const subscribe = trans['subscribe_now'] || 'Pretplati se →';
+  const dayWord = days === 1 
+    ? (trans['trial_banner_day'] || 'dan') 
+    : (trans['trial_banner_days'] || 'dana');
+
+  banner.innerHTML = `${prefix} <strong>${days} ${dayWord}</strong> ${suffix}
+    <a onclick="window.onShowUpgradeFromBanner()">${subscribe}</a>`;
+}
+
+// ── ToS ──
+window.onTosCheckboxChange = function() {
+  document.getElementById('tosAcceptBtn').disabled = !document.getElementById('tosCheckbox').checked;
+};
+
+window.onTosAccept = async function() {
+  const btn = document.getElementById('tosAcceptBtn');
+  btn.disabled = true;
+  btn.textContent = 'Snimanje...';
+  try {
+    await window._acceptTos(window._currentUser.uid);
+    window._currentUserData.tosAcceptedAt = new Date();
+    document.getElementById('tosScreen').classList.remove('active');
+    window.checkAppAccess(window._currentUser, window._currentUserData);
+  } catch(e) {
+    console.error('ToS accept error:', e);
+    btn.disabled = false;
+    btn.textContent = 'Prihvatam i nastavljam →';
+    alert('Greška pri snimanju. Pokušajte ponovo.');
+  }
+};
+
+// ── Upgrade screen ──
+window.onShowUpgradeFromBanner = function() {
+  window.showUpgradeScreen(window._currentUserData);
+};
+window.onShowUpgradeFromExpired = function() {
+  // Sakrij expired screen, prikaži upgrade
+  document.getElementById('trialExpiredScreen').classList.remove('active');
+  window.showUpgradeScreen(window._currentUserData, true);
+};
+
+window.showUpgradeScreen = function(userData, fromExpired = false) {
+  const ud = userData || window._currentUserData;
+document.getElementById('upgradeBasicPrice').textContent = window._getPriceLabel(ud, 'basic');
+  document.getElementById('upgradePremiumPrice').textContent = window._getPriceLabel(ud, 'premium');
+  // Sakrij gumb "Zatvori" ako je korisnik stigao sa expired ekrana
+  const isExpired = window._isTrialExpired(ud);
+  document.getElementById('upgradeCloseBtn').style.display = (isExpired || fromExpired) ? 'none' : 'block';
+  document.getElementById('upgradeScreen').classList.add('active');
+};
+
+window.onHideUpgradeScreen = function() {
+  document.getElementById('upgradeScreen').classList.remove('active');
+};
+
+// ── Glavni access check — poziva se iz initAuth callbacka ──
+window.checkAndShowTos = function(user, userData) {
+  window._currentUser     = user;
+  window._currentUserData = userData;
+
+  if (!window._hasTosAccepted(userData)) {
+    document.getElementById('tosScreen').classList.add('active');
+    return; // onTosAccept nastavlja
+  }
+  window.checkAppAccess(user, userData);
+};
+
+window.checkAppAccess = function(user, userData) {
+  if (window._isTrialExpired(userData)) {
+    // Sakrij app, prikaži expired screen
+    const appContent = document.getElementById('appContent');
+    if (appContent) appContent.style.display = 'none';
+    document.getElementById('trialExpiredScreen').classList.add('active');
+    return;
+  }
+  // Sve OK — prikaži trial banner
+  blok1UpdateTrialBanner(userData);
+};
+</script>
+
+</body>
+</html>

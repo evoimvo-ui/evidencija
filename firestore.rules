@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Funkcija za provjeru da li je korisnik prijavljen
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Korisnički profili
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      // Vlasnik može vidjeti profile svojih radnika
+      allow read: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == resource.data.shopId;
+    }
+
+    // Radnje (Shops)
+    match /shops/{shopId} {
+      allow read: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == shopId
+      );
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Unosi (Entries), Termini (Appointments), Usluge (Services)
+    match /{collection}/{docId} {
+      allow read, write: if isSignedIn() && (
+        // Korisnik može upravljati svojim podacima
+        request.auth.uid == (resource == null ? request.resource.data.userId : resource.data.userId) ||
+        // Vlasnik radnje može upravljati svim podacima koji pripadaju njegovoj radnji
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == (resource == null ? request.resource.data.shopId : resource.data.shopId)
+        )
+      );
+      
+      // Dozvoli kreiranje ako su userId i shopId ispravno postavljeni
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+    }
+
+    // Pozivnice (Invites)
+    match /invites/{inviteId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+    }
+    
+    // Logovi (Logs) - samo pisanje
+    match /logs/{logId} {
+      allow create: if true; 
+      allow read, update, delete: if false;
+    }
+  }
+}

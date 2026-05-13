@@ -1894,6 +1894,7 @@ function blok1UpdateTrialBanner(userData) {
   if (!banner) return;
   if (userData?.subscriptionStatus === 'active') { banner.style.display = 'none'; return; }
   const days = window._trialDaysLeft(userData);
+  if (userData?.subscriptionStatus === 'lifetime') { banner.style.display = 'none'; return; }
   if (days <= 0) { banner.style.display = 'none'; return; }
   banner.style.display = 'block';
   banner.classList.toggle('danger', days <= 5);

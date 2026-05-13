@@ -28,18 +28,16 @@ const TRIAL_DAYS = 30;
 
 /**
  * Vraća true ako je trial period istekao.
- * Ako userData nema trialStartedAt, smatra se da trial nije počeo
- * (stari korisnici) — tretiramo kao da nije istekao, ali vidi napomenu ispod.
  */
 export function isTrialExpired(userData) {
   if (!userData) return false;
-  // Aktivna pretplata uvijek prolazi
+  // Lifetime i aktivna pretplata uvijek prolaze
   if (userData.subscriptionStatus === 'active') return false;
-  
-  const started = userData.trialStartedAt;
-  if (!started) return false; // Stari korisnici bez trialStartedAt — ne blokiraj
+  if (userData.subscriptionStatus === 'lifetime') return false;
 
-  // Firestore Timestamp ili JS Date/string
+  const started = userData.trialStartedAt;
+  if (!started) return false;
+
   const startMs = started.toMillis ? started.toMillis() : new Date(started).getTime();
   const expiresMs = startMs + TRIAL_DAYS * 24 * 60 * 60 * 1000;
   return Date.now() > expiresMs;
@@ -51,9 +49,10 @@ export function isTrialExpired(userData) {
 export function trialDaysLeft(userData) {
   if (!userData) return 0;
   if (userData.subscriptionStatus === 'active') return Infinity;
+  if (userData.subscriptionStatus === 'lifetime') return Infinity;
 
   const started = userData.trialStartedAt;
-  if (!started) return TRIAL_DAYS; // Stari korisnici — prikaži puni period
+  if (!started) return TRIAL_DAYS;
 
   const startMs = started.toMillis ? started.toMillis() : new Date(started).getTime();
   const expiresMs = startMs + TRIAL_DAYS * 24 * 60 * 60 * 1000;
@@ -74,8 +73,28 @@ export function hasTosAccepted(userData) {
 export async function acceptTos(userId) {
   await updateDoc(doc(db, "users", userId), {
     tosAcceptedAt: serverTimestamp(),
-    tosVersion: "1.0" // Povećaj kad se ToS promijeni
+    tosVersion: "1.0"
   });
+}
+
+// ---------------------------------------------------------------------------
+// Whitelist helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Provjerava da li je email na whitelist listi u Firestore config/whitelist.
+ * Ako dokument ne postoji ili detekcija ne uspije, vraća false.
+ */
+async function isWhitelisted(email) {
+  try {
+    const whitelistDoc = await getDoc(doc(db, "config", "whitelist"));
+    if (!whitelistDoc.exists()) return false;
+    const emails = whitelistDoc.data().emails || [];
+    return emails.includes(email.toLowerCase());
+  } catch (e) {
+    console.warn('[Auth] Whitelist provjera neuspješna:', e.message);
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -92,7 +111,6 @@ export function initAuth(onLoggedIn, onLoggedOut) {
           const userData = userDoc.data();
           onLoggedIn(user, userData);
         } else {
-          // Fallback if doc doesn't exist yet
           const fallbackData = { role: 'solo', uid: user.uid, name: user.displayName || 'Korisnik' };
           onLoggedIn(user, fallbackData);
         }
@@ -124,8 +142,13 @@ export async function register(name, email, pass, role = 'solo') {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, pass);
 
-    // Detekcija zemlje i tier-a (async, s fallbackom na Tier A)
-    const { country, tier } = await detectCountryAndTier();
+    // Paralelno: detekcija tiera i whitelist provjera
+    const [{ country, tier }, whitelisted] = await Promise.all([
+      detectCountryAndTier(),
+      isWhitelisted(email)
+    ]);
+
+    console.log(`[Auth] Whitelist: ${whitelisted}, country: ${country}, tier: ${tier}`);
 
     const userData = {
       uid: res.user.uid,
@@ -139,11 +162,12 @@ export async function register(name, email, pass, role = 'solo') {
       trialStartedAt: serverTimestamp(),
       tosAcceptedAt: null,
       tosVersion: null,
-      subscriptionStatus: 'trial',
-      subscriptionPlan: null,
+      // Whitelist korisnici dobivaju lifetime status odmah
+      subscriptionStatus: whitelisted ? 'lifetime' : 'trial',
+      subscriptionPlan: whitelisted ? 'premium' : null,
       // Billing tier
-      country: country,   // 'BA', 'DE', 'XX' (fallback)...
-      tier: tier,         // 'A' ili 'B'
+      country: country,
+      tier: tier,
     };
 
     await setDoc(doc(db, "users", res.user.uid), userData);

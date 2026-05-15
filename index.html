@@ -16,6 +16,7 @@
 <link rel="apple-touch-icon" href="icon-512.png">
 <link rel="icon" type="image/png" href="icon-512.png">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
   :root {
@@ -54,11 +55,91 @@
     padding-bottom: 80px;
     overscroll-behavior: none;
   }
-  .header { padding: 20px 20px 0; display: flex; justify-content: space-between; align-items: flex-start; }
-  .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .header {
+    padding: 16px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    background: #0f1117;
+  }
+  body.light-mode .header { background: #ffffff; }
+  .header-left { flex: 1; min-width: 0; }
+  .header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; line-height: 1.2; }
   .header h1 span { color: var(--accent); }
-  
-  .lang-container { position: relative; margin-top: 10px; }
+  .header .date-badge {
+    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: #9a9a94;
+    background: none;
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    margin-top: 4px;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .header-user-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .header-user-row #syncStatus {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #22c55e;
+  }
+  .user-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #f0f0ea;
+    border: 0.5px solid #e0e0da;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.3;
+  }
+  body:not(.light-mode) .user-pill { color: #9a9a94; }
+  .lang-container { position: relative; margin-top: 0; }
+  .header-actions .lang-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  #langMenuBtn.lang-btn {
+    padding: 6px 10px;
+    font-size: 18px;
+    line-height: 1;
+  }
+  #langMenuBtn.lang-btn .ti { display: block; }
+  .header-actions .lang-btn.header-logout {
+    background: #fef2f2;
+    border: 0.5px solid #fecaca;
+    color: #ef4444;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
   .lang-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
   .lang-dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; z-index: 1000; min-width: 130px; margin-top: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow-y: auto; max-height: 300px; }
   .lang-opt { padding: 10px 15px; font-size: 12px; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); }
@@ -67,37 +148,90 @@
 
   .date-badge { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text2); background: var(--bg3); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border); }
   
-  .nav { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 8px; 
-    padding: 12px 20px; 
-    position: sticky; 
-    top: 0; 
-    background: var(--bg); 
-    z-index: 100; 
-    border-bottom: 1px solid var(--border); 
+  .nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 20px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
   }
-  .nav-btn { 
-    background: var(--bg3); 
-    border: 1px solid var(--border); 
-    color: var(--text2); 
-    font-family: 'Syne', sans-serif; 
-    font-size: 13px; 
-    font-weight: 700; 
-    padding: 14px 10px; 
-    border-radius: 12px; 
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    gap: 8px; 
+  .nav-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
     width: 100%;
   }
-  .nav-btn.active { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
-  .nav-btn span { font-size: 18px; position: relative; }
-  .badge-dot { position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: var(--red); border-radius: 50%; border: 2px solid var(--bg3); display: none; }
-  .nav-btn.full-width { grid-column: span 2; }
+  .nav-btn.active {
+    background: rgba(98, 196, 99, 0.15);
+    border-color: rgba(98, 196, 99, 0.35);
+  }
+  .nav-btn > div {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.2;
+  }
+  .nav-btn span {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    font-size: 18px;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  body.light-mode .nav-btn {
+    background: #ffffff;
+    border: 0.5px solid #e2e2dc;
+  }
+  body.light-mode .nav-btn.active {
+    background: #f0faf0;
+    border-color: #86efac;
+  }
+  body.light-mode .nav-btn > div {
+    color: #1a1a18;
+  }
+  body.light-mode .nav-btn span {
+    background: #f0f0ea;
+  }
+  body.light-mode .nav-btn.active span {
+    background: #dcfce7;
+  }
+  .badge-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background: var(--red);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.07);
+    display: none;
+  }
+  body.light-mode .badge-dot {
+    border-color: #f0f0ea;
+  }
+  body.light-mode .nav-btn.active .badge-dot {
+    border-color: #dcfce7;
+  }
+  .nav-btn.full-width {
+    grid-column: 1 / -1;
+  }
 
   .screen { display: none; padding: 16px 20px; }
   .screen.active { display: block; }
@@ -124,6 +258,958 @@
   .submit-btn { width: 100%; padding: 16px; border-radius: var(--radius); border: none; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 24px; }
   .submit-btn.pay { background: var(--accent); color: #0f0f0f; }
   .submit-btn.dug { background: var(--red); color: #fff; }
+
+  /* New Entry form — visual redesign */
+  #screen-unos .services-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  #screen-unos .services-grid > div {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 4px 4px 4px 12px;
+  }
+  #screen-unos .services-grid > div:has(.service-btn.selected) {
+    background: rgba(98, 196, 99, 0.12);
+    border-color: rgba(98, 196, 99, 0.35);
+  }
+  body.light-mode #screen-unos .services-grid > div {
+    background: #f0f0ea;
+    border: 0.5px solid #e0e0da;
+  }
+  body.light-mode #screen-unos .services-grid > div:has(.service-btn.selected) {
+    background: #f0faf0;
+    border-color: #86efac;
+  }
+  #screen-unos .service-btn {
+    position: static;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0 4px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    width: auto;
+    text-align: left;
+    cursor: pointer;
+  }
+  #screen-unos .service-btn.selected {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  body.light-mode #screen-unos .service-btn,
+  body.light-mode #screen-unos .service-btn.selected {
+    color: #4a4a44;
+  }
+  #screen-unos .service-delete {
+    position: static;
+    width: auto;
+    height: auto;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0 10px 0 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1;
+  }
+  body.light-mode #screen-unos .service-delete {
+    color: #c0c0ba;
+  }
+  #screen-unos .service-btn.add-new {
+    background: transparent;
+    border: 0.5px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 18px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.3);
+    width: auto;
+    min-width: 36px;
+    text-align: center;
+  }
+  body.light-mode #screen-unos .service-btn.add-new {
+    border-color: #c8c8c2;
+    color: #9a9a94;
+  }
+  #screen-unos .type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  #screen-unos .type-btn {
+    padding: 12px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+  }
+  #screen-unos .type-btn.active-pay {
+    background: rgba(98, 196, 99, 0.15);
+    border: 0.5px solid rgba(98, 196, 99, 0.4);
+    color: #86efac;
+  }
+  #screen-unos .type-btn.active-dug {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+  }
+  body.light-mode #screen-unos .type-btn,
+  body.light-mode #screen-unos .type-btn.active-dug {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+    color: #9a9a94;
+  }
+  body.light-mode #screen-unos .type-btn.active-pay {
+    background: #f0faf0;
+    border: 0.5px solid #86efac;
+    color: #16a34a;
+  }
+  #screen-unos .input-row {
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  #screen-unos .input-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 20px;
+    font-weight: 500;
+    padding: 10px 14px;
+    outline: none;
+    width: 100%;
+  }
+  #screen-unos .input-suffix {
+    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    padding-right: 14px;
+  }
+  body.light-mode #screen-unos .input-row {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+  }
+  body.light-mode #screen-unos .input-suffix {
+    color: #9a9a94;
+  }
+  #screen-unos #submitBtn.submit-btn {
+    width: 100%;
+    margin-top: 24px;
+    background: #4ade80;
+    color: #0f1117;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  body.light-mode #screen-unos #submitBtn.submit-btn {
+    background: #16a34a;
+    color: #ffffff;
+  }
+
+  /* Overview / Pregled — visual redesign */
+  #screen-pregled #pregledSearch.input-plain {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  body.light-mode #screen-pregled #pregledSearch.input-plain {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+    color: #1a1a18;
+  }
+  #screen-pregled .filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+  #screen-pregled .filter-tabs .tab {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.5);
+  }
+  #screen-pregled .filter-tabs .tab.active {
+    background: rgba(98, 196, 99, 0.15);
+    border-color: rgba(98, 196, 99, 0.35);
+    color: #86efac;
+  }
+  #screen-pregled .filter-tabs .tab[onclick*="all_debts"] {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+  #screen-pregled .filter-tabs .tab[onclick*="all_debts"].active {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #f87171 !important;
+  }
+  body.light-mode #screen-pregled .filter-tabs .tab {
+    background: #f0f0ea;
+    border: 0.5px solid #e0e0da;
+    color: #6a6a64;
+  }
+  body.light-mode #screen-pregled .filter-tabs .tab.active {
+    background: #f0faf0;
+    border-color: #86efac;
+    color: #16a34a;
+  }
+  body.light-mode #screen-pregled .filter-tabs .tab[onclick*="all_debts"] {
+    border-color: #e0e0da !important;
+    color: #6a6a64 !important;
+  }
+  body.light-mode #screen-pregled .filter-tabs .tab[onclick*="all_debts"].active {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+    color: #ef4444 !important;
+  }
+  #screen-pregled #pregledContent .stat-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  body.light-mode #screen-pregled #pregledContent .stat-card {
+    background: #fff;
+    border: 0.5px solid #e2e2dc;
+  }
+  #screen-pregled #pregledContent .stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 4px;
+  }
+  body.light-mode #screen-pregled #pregledContent .stat-card .stat-label {
+    color: #9a9a94;
+  }
+  #screen-pregled #pregledContent .stat-card .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: #ffffff;
+    margin: 4px 0;
+  }
+  body.light-mode #screen-pregled #pregledContent .stat-card .stat-value {
+    color: #1a1a18;
+  }
+  #screen-pregled #pregledContent .stat-card .stat-sub {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+  }
+  body.light-mode #screen-pregled #pregledContent .stat-card .stat-sub {
+    color: #9a9a94;
+  }
+  #screen-pregled #pregledContent .stat-card .stat-sub[style*="color:var(--red)"] {
+    color: #f87171 !important;
+  }
+  body.light-mode #screen-pregled #pregledContent .stat-card .stat-sub[style*="color:var(--red)"] {
+    color: #ef4444 !important;
+  }
+  #screen-pregled #pregledContent .list-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item {
+    background: #fff;
+    border: 0.5px solid #e2e2dc;
+  }
+  #screen-pregled #pregledContent .list-item .list-header strong {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  #screen-pregled #pregledContent .list-item .list-header > div:first-child > div:last-child {
+    font-size: 11px !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item .list-header > div:first-child > div:last-child {
+    color: #9a9a94 !important;
+  }
+  #screen-pregled #pregledContent .list-item .list-header .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px !important;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+    color: #f87171;
+  }
+  #screen-pregled #pregledContent .list-item:has(span[title="Plaćeno"]) .list-header .stat-value {
+    color: #4ade80;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item:has(span[title="Plaćeno"]) .list-header .stat-value {
+    color: #16a34a;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item .list-header .stat-value {
+    color: #ef4444;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item:has(span[title="Plaćeno"]) .list-header .stat-value {
+    color: #16a34a;
+  }
+  #screen-pregled #pregledContent .list-item .list-header span:has([data-i18n="remaining"]) {
+    font-size: 11px;
+    color: #f87171 !important;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item .list-header span:has([data-i18n="remaining"]) {
+    color: #ef4444 !important;
+  }
+  #screen-pregled #pregledContent .list-item button.submit-btn.pay[onclick*="payDebt"] {
+    width: 100%;
+    margin-top: 10px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 0.5px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item button.submit-btn.pay[onclick*="payDebt"] {
+    background: #fef2f2;
+    border: 0.5px solid #fecaca;
+    color: #ef4444;
+  }
+  #screen-pregled #pregledContent .list-item .btn-icon.del {
+    flex: 1;
+    width: auto;
+    height: auto;
+    min-height: 36px;
+    background: transparent;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.3);
+    padding: 6px 12px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  body.light-mode #screen-pregled #pregledContent .list-item .btn-icon.del {
+    background: transparent;
+    border: 0.5px solid #e2e2dc;
+    color: #c0c0ba;
+  }
+
+  /* Appointments / Termini — visual redesign */
+  #screen-termini .calendar-strip {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    scrollbar-width: none;
+  }
+  #screen-termini .calendar-strip::-webkit-scrollbar {
+    display: none;
+  }
+  #screen-termini .day-card {
+    min-width: 52px;
+    height: auto;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  #screen-termini .day-card.active {
+    background: rgba(98, 196, 99, 0.15);
+    border-color: rgba(98, 196, 99, 0.35);
+  }
+  body.light-mode #screen-termini .day-card {
+    background: #fff;
+    border: 0.5px solid #e2e2dc;
+  }
+  body.light-mode #screen-termini .day-card.active {
+    background: #f0faf0;
+    border-color: #86efac;
+  }
+  #screen-termini .day-card .day-name {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.2;
+  }
+  #screen-termini .day-card .day-num {
+    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+  body.light-mode #screen-termini .day-card .day-name {
+    color: #9a9a94;
+  }
+  body.light-mode #screen-termini .day-card .day-num {
+    color: #1a1a18;
+  }
+  #screen-termini .day-card.active .day-name,
+  #screen-termini .day-card.active .day-num {
+    color: #86efac;
+  }
+  body.light-mode #screen-termini .day-card.active .day-name,
+  body.light-mode #screen-termini .day-card.active .day-num {
+    color: #16a34a;
+  }
+  #screen-termini #calendarJump {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    font-family: 'DM Mono', monospace !important;
+    font-variant-numeric: tabular-nums !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    outline: none;
+  }
+  body.light-mode #screen-termini #calendarJump {
+    background: #f8f8f6 !important;
+    border: 0.5px solid #e2e2dc !important;
+    color: #6a6a64 !important;
+  }
+  #screen-termini #workerAppointmentFilter {
+    margin-bottom: 15px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+  }
+  body.light-mode #screen-termini #workerAppointmentFilter {
+    background: #fff !important;
+    border: 0.5px solid #e2e2dc !important;
+  }
+  #screen-termini #workerAppointmentFilter .section-label {
+    font-size: 11px !important;
+    letter-spacing: 0.08em !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+    margin-bottom: 10px !important;
+    margin-top: 0 !important;
+  }
+  body.light-mode #screen-termini #workerAppointmentFilter .section-label {
+    color: #9a9a94 !important;
+  }
+  #screen-termini #workerSearchInput {
+    width: 100%;
+    margin-bottom: 10px !important;
+    height: auto !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: var(--text);
+  }
+  body.light-mode #screen-termini #workerSearchInput {
+    background: #f8f8f6 !important;
+    border: 0.5px solid #e2e2dc !important;
+  }
+  #screen-termini #workerAppSelect {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: var(--text);
+  }
+  body.light-mode #screen-termini #workerAppSelect {
+    background: #f8f8f6 !important;
+    border: 0.5px solid #e2e2dc !important;
+  }
+  #screen-termini > button.submit-btn.pay[onclick*="openAppointmentModal"] {
+    width: 100%;
+    margin-top: 16px;
+    background: #4ade80;
+    color: #0f1117;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  body.light-mode #screen-termini > button.submit-btn.pay[onclick*="openAppointmentModal"] {
+    background: #16a34a;
+    color: #fff;
+  }
+
+  /* Reports / Izvještaji — visual redesign */
+  #screen-izvjestaji #reportMonthSelect {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: var(--text);
+  }
+  body.light-mode #screen-izvjestaji #reportMonthSelect {
+    background: #f8f8f6 !important;
+    border: 0.5px solid #e2e2dc !important;
+  }
+  #screen-izvjestaji button.lang-btn[onclick*="renderIzvjestaji('all')"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  body.light-mode #screen-izvjestaji button.lang-btn[onclick*="renderIzvjestaji('all')"] {
+    background: #f0f0ea;
+    border: 0.5px solid #e0e0da;
+    color: #6a6a64;
+  }
+  #screen-izvjestaji .report-grid .stat-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 0;
+  }
+  body.light-mode #screen-izvjestaji .report-grid .stat-card {
+    background: #fff;
+    border: 0.5px solid #e2e2dc;
+  }
+  #screen-izvjestaji .report-grid .stat-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 4px;
+  }
+  body.light-mode #screen-izvjestaji .report-grid .stat-label {
+    color: #9a9a94;
+  }
+  #screen-izvjestaji .report-grid .stat-value,
+  #screen-izvjestaji #reportSelected,
+  #screen-izvjestaji #reportToday {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: #4ade80;
+    margin: 4px 0;
+  }
+  body.light-mode #screen-izvjestaji .report-grid .stat-value,
+  body.light-mode #screen-izvjestaji #reportSelected,
+  body.light-mode #screen-izvjestaji #reportToday {
+    color: #16a34a;
+  }
+  #screen-izvjestaji .chart-container {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 20px;
+    min-height: 200px;
+  }
+  body.light-mode #screen-izvjestaji .chart-container {
+    background: #fff;
+    border: 0.5px solid #e2e2dc;
+  }
+  #screen-izvjestaji button.submit-btn[onclick*="exportData"] {
+    width: 100%;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+  }
+  body.light-mode #screen-izvjestaji button.submit-btn[onclick*="exportData"] {
+    background: #f0f0ea;
+    border: 0.5px solid #e0e0da;
+    color: #4a4a44;
+  }
+  #screen-izvjestaji button.submit-btn.pay[onclick*="print"] {
+    width: 100%;
+    margin-top: 12px;
+    background: #4ade80;
+    color: #0f1117;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+  }
+  body.light-mode #screen-izvjestaji button.submit-btn.pay[onclick*="print"] {
+    background: #16a34a;
+    color: #fff;
+  }
+
+  /* Shop / Radnja — visual redesign */
+  #screen-owner #ownerDashboard .stat-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  body.light-mode #screen-owner #ownerDashboard .stat-card {
+    background: #fff;
+    border: 0.5px solid #e2e2dc;
+  }
+  #screen-owner #ownerDashboard .stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 4px;
+  }
+  body.light-mode #screen-owner #ownerDashboard .stat-card .stat-label {
+    color: #9a9a94;
+  }
+  #screen-owner #shopNameDisplay {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    font-variant-numeric: normal;
+    color: #4ade80;
+    margin: 4px 0;
+  }
+  body.light-mode #screen-owner #shopNameDisplay {
+    color: #16a34a;
+  }
+  #screen-owner #ownerDashboard .stat-card button.lang-btn[onclick*="openInviteModal"] {
+    margin-top: 10px;
+    background: rgba(98, 196, 99, 0.15);
+    border: 0.5px solid rgba(98, 196, 99, 0.35);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #86efac;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  body.light-mode #screen-owner #ownerDashboard .stat-card button.lang-btn[onclick*="openInviteModal"] {
+    background: #f0faf0;
+    border: 0.5px solid #86efac;
+    color: #16a34a;
+  }
+  #screen-owner #ownerDashboard .section-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+  body.light-mode #screen-owner #ownerDashboard .section-label {
+    color: #9a9a94;
+  }
+  #screen-owner #workersList .list-item,
+  #screen-owner #invitesList .list-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  body.light-mode #screen-owner #workersList .list-item,
+  body.light-mode #screen-owner #invitesList .list-item {
+    background: #fff;
+    border: 0.5px solid #e2e2dc;
+  }
+
+  /* Appointment booking modal — visual redesign */
+  #appointmentModal.modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    padding: 20px;
+  }
+  body.light-mode #appointmentModal.modal-overlay {
+    background: rgba(0, 0, 0, 0.4);
+  }
+  #appointmentModal .modal {
+    background: #1a1a1f;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0;
+  }
+  body.light-mode #appointmentModal .modal {
+    background: #ffffff;
+    border: 0.5px solid #e2e2dc;
+  }
+  #appointmentModal .modal h3 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+  body.light-mode #appointmentModal .modal h3 {
+    color: #1a1a18;
+  }
+  #appointmentModal .modal .section-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+  }
+  #appointmentModal .modal h3 + .section-label {
+    margin-top: 0;
+  }
+  body.light-mode #appointmentModal .modal .section-label {
+    color: #9a9a94;
+  }
+  #appointmentModal .modal .input-plain,
+  #appointmentModal #appService {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Syne', sans-serif;
+    box-sizing: border-box;
+  }
+  body.light-mode #appointmentModal .modal .input-plain,
+  body.light-mode #appointmentModal #appService {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+    color: #1a1a18;
+  }
+  #appointmentModal .modal .type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  #appointmentModal .modal .type-toggle .type-btn {
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.4);
+  }
+  #appointmentModal .modal .type-toggle .type-btn.active-pay {
+    background: rgba(98, 196, 99, 0.15);
+    border: 0.5px solid rgba(98, 196, 99, 0.4);
+    color: #86efac;
+  }
+  body.light-mode #appointmentModal .modal .type-toggle .type-btn {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+    color: #9a9a94;
+  }
+  body.light-mode #appointmentModal .modal .type-toggle .type-btn.active-pay {
+    background: #f0faf0;
+    border: 0.5px solid #86efac;
+    color: #16a34a;
+  }
+  #appointmentModal .modal .modal-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  #appointmentModal .modal .modal-btns .lang-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    width: 100%;
+  }
+  body.light-mode #appointmentModal .modal .modal-btns .lang-btn {
+    background: #f0f0ea;
+    border: 0.5px solid #e0e0da;
+    color: #6a6a64;
+  }
+  #appointmentModal .modal .modal-btns .submit-btn.pay {
+    margin-top: 0;
+    width: 100%;
+    background: #4ade80;
+    color: #0f1117;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+  }
+  body.light-mode #appointmentModal .modal .modal-btns .submit-btn.pay {
+    background: #16a34a;
+    color: #ffffff;
+  }
+
+  /* New service modal — visual redesign */
+  #modalOverlay.modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    padding: 20px;
+  }
+  body.light-mode #modalOverlay.modal-overlay {
+    background: rgba(0, 0, 0, 0.4);
+  }
+  #modalOverlay .modal {
+    background: #1a1a1f;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0;
+  }
+  body.light-mode #modalOverlay .modal {
+    background: #ffffff;
+    border: 0.5px solid #e2e2dc;
+  }
+  #modalOverlay .modal h3 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+  body.light-mode #modalOverlay .modal h3 {
+    color: #1a1a18;
+  }
+  #modalOverlay #newServiceInput {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Syne', sans-serif;
+    box-sizing: border-box;
+  }
+  body.light-mode #modalOverlay #newServiceInput {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+    color: #1a1a18;
+  }
+  #modalOverlay .modal .modal-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  #modalOverlay .modal .modal-btns .lang-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    width: 100%;
+  }
+  body.light-mode #modalOverlay .modal .modal-btns .lang-btn {
+    background: #f0f0ea;
+    border: 0.5px solid #e0e0da;
+    color: #6a6a64;
+  }
+  #modalOverlay .modal .modal-btns .submit-btn.pay {
+    margin-top: 0;
+    width: 100%;
+    background: #4ade80;
+    color: #0f1117;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+  }
+  body.light-mode #modalOverlay .modal .modal-btns .submit-btn.pay {
+    background: #16a34a;
+    color: #ffffff;
+  }
 
   .calendar-strip { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; scrollbar-width: none; }
   .calendar-strip::-webkit-scrollbar { display: none; }
@@ -196,7 +1282,7 @@
   }
   
   @media print {
-    .nav, .header, .submit-btn, .btn-icon, .filter-tabs, .back-btn, .lang-container, .lang-btn, .type-toggle, #themeToggleBtn { display: none !important; }
+    .nav, .header, .header-actions, .submit-btn, .btn-icon, .filter-tabs, .back-btn, .lang-container, .lang-btn, .type-toggle, #themeToggleBtn { display: none !important; }
     .screen { display: block !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
     body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
     .stat-card { background: white !important; border: 1px solid #000 !important; color: black !important; box-shadow: none !important; margin-bottom: 20px !important; }
@@ -555,12 +1641,20 @@
 <div id="appContent" style="display:none;">
 
 <div class="header">
-  <div>
+  <div class="header-left">
     <h1 data-i18n="title">Work <span>Records</span></h1>
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div class="date-badge" id="todayDate"></div>
+    <div id="userBadge" class="header-user-row">
+      <span id="syncStatus"></span>
+      <span class="user-pill">
+        <span id="userNameDisplay"></span> (<span id="userRoleDisplay" data-i18n-role></span>)
+      </span>
+    </div>
+  </div>
+  <div class="header-actions">
       <div class="lang-container" onclick="event.stopPropagation()">
         <button class="lang-btn" id="langMenuBtn" onclick="toggleLangMenu()">
-          🌐 <span data-i18n="language">Language</span>
+          <i class="ti ti-language" aria-hidden="true"></i>
         </button>
         <div class="lang-dropdown" id="langDropdown">
           <div class="lang-opt" onclick="setLanguage('en')">English</div>
@@ -595,15 +1689,8 @@
         </div>
       </div>
       <button class="lang-btn" id="themeToggleBtn" onclick="toggleTheme()">☀️</button>
-      <button class="lang-btn" onclick="logout()" style="color:var(--red)" data-i18n="logout_btn">Logout</button>
-    </div>
-    
-    <div id="userBadge" style="margin-top:10px; font-size:11px; color:var(--text2); display:flex; align-items:center; gap:5px;">
-      <span id="userNameDisplay"></span> (<span id="userRoleDisplay" data-i18n-role></span>)
-      <span id="syncStatus" style="width:8px; height:8px; border-radius:50%; background:var(--text3);"></span>
-    </div>
+      <button class="lang-btn header-logout" onclick="logout()" data-i18n="logout_btn">Logout</button>
   </div>
-  <div class="date-badge" id="todayDate"></div>
 </div>
 
 <nav class="nav">
@@ -886,6 +1973,28 @@ let currentAuthMode = 'initial';
 let currentType = 'pay';
 let selectedService = null;
 let currentLang = localStorage.getItem('evidencija_lang') || 'en';
+
+function formatAppDate(dateStr, lang, includeTime = false) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const bsLangs = ['bs', 'hr', 'sr'];
+  const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+  if (includeTime) { options.hour = '2-digit'; options.minute = '2-digit'; }
+  if (bsLangs.includes(lang)) {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    if (includeTime) {
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${dd}.${mm}.${yyyy}. ${hh}:${min}`;
+    }
+    return `${dd}.${mm}.${yyyy}.`;
+  }
+  return d.toLocaleString(lang, options);
+}
+
 let translations = {};
 let currentCurrency = localStorage.getItem('evidencija_currency') || 'USD';
 let selectedDate = new Date().toISOString().split('T')[0];
@@ -977,8 +2086,7 @@ function applyTranslations() {
     currentCurrency = savedCurrency;
   }
   document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = currentCurrency);
-  const d = new Date();
-  document.getElementById('todayDate').textContent = d.toLocaleDateString(currentLang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+  document.getElementById('todayDate').textContent = formatAppDate(new Date().toISOString().split('T')[0], currentLang);
 }
 
 function openCurrencyModal() {
@@ -1358,7 +2466,7 @@ async function renderPregled() {
           <div style="flex: 1;">
             <strong style="font-size: 15px;">${serviceName}</strong>
             ${e.type === 'dug' ? `<div style="font-size:12px; color:var(--accent)"><span data-i18n="client">Klijent</span>: ${e.debtor || 'N/A'}</div>` : ''}
-            <div style="font-size:10px; color:var(--text2)">${e.date} ${e.time || ''}</div>
+            <div style="font-size:10px; color:var(--text2)">${formatAppDate(e.date, currentLang)} ${e.time || ''}</div>
           </div>
           <div style="text-align:right; display: flex; align-items: center; gap: 10px;">
             <div>
@@ -1374,11 +2482,7 @@ async function renderPregled() {
         ${e.history && e.history.length > 0 ? `
           <div class="history-log">
             <strong data-i18n="payment_history">Istorija plaćanja:</strong>
-            ${e.history.map(h => {
-              const hDate = new Date(h.date);
-              const displayDate = isNaN(hDate.getTime()) ? h.date : hDate.toLocaleString(currentLang, {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-              return `<div>${displayDate}: ${h.amount.toFixed(2)} ${currentCurrency}</div>`;
-            }).join('')}
+            ${e.history.map(h => '<div>' + formatAppDate(h.date, currentLang, true) + ': ' + h.amount.toFixed(2) + ' ' + currentCurrency + '</' + 'div>').join('')}
           </div>` : ''}
         <div style="display:flex; gap:10px; margin-top:10px;">
           <button class="btn-icon del" style="flex:1;" onclick="handleDeleteEntry('${e.id}')">×</button>

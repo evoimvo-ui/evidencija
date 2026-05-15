@@ -1,32 +1,87 @@
-// Simple encryption utility for sensitive data
-const ENCRYPTION_KEY = 'evidencija-secret-key';
+import { CONFIG } from './config.js';
 
-function encrypt(text) {
+// Utility for robust encryption using Web Crypto API
+const ENCRYPTION_KEY = CONFIG.ENCRYPTION_KEY;
+const SALT = 'evidencija-fixed-salt-2026'; // In production, this could be user-specific
+
+async function getEncryptionKey() {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(ENCRYPTION_KEY),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: enc.encode(SALT),
+      iterations: 100000,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function encrypt(text) {
   if (!text) return text;
   try {
-    // UTF-8 friendly btoa replacement
-    const utf8Text = unescape(encodeURIComponent(text));
-    const encrypted = btoa(utf8Text.split('').map((char, i) => 
-      String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
-    ).join(''));
-    return encrypted;
+    const key = await getEncryptionKey();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const enc = new TextEncoder();
+    const encrypted = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      key,
+      enc.encode(text)
+    );
+    
+    const combined = new Uint8Array(iv.length + encrypted.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encrypted), iv.length);
+    
+    return btoa(String.fromCharCode.apply(null, combined));
   } catch (e) {
     console.error("Encryption error:", e);
     return text;
   }
 }
 
-function decrypt(encoded) {
+async function decrypt(encoded) {
+  if (!encoded) return encoded;
+  try {
+    const combined = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
+    if (combined.length < 13) throw new Error("Invalid cipher text");
+    
+    const iv = combined.slice(0, 12);
+    const data = combined.slice(12);
+    
+    const key = await getEncryptionKey();
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv },
+      key,
+      data
+    );
+    
+    return new TextDecoder().decode(decrypted);
+  } catch (e) {
+    // Fallback to legacy XOR for existing data
+    return legacyDecrypt(encoded);
+  }
+}
+
+function legacyDecrypt(encoded) {
   if (!encoded) return encoded;
   try {
     const text = atob(encoded);
     const decrypted = text.split('').map((char, i) => 
       String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
     ).join('');
-    // UTF-8 friendly atob replacement
     return decodeURIComponent(escape(decrypted));
   } catch (e) {
-    console.warn("Decryption error (possibly not encrypted or wrong format):", e);
     return encoded;
   }
 }
@@ -67,9 +122,9 @@ export async function saveData(storeName, data) {
       const queue = transaction.objectStore('sync_queue');
       
       const processedData = { ...data };
-      if (processedData.debtor) processedData.debtor = encrypt(processedData.debtor);
-      if (processedData.telefon) processedData.telefon = encrypt(processedData.telefon);
-      if (processedData.klijent) processedData.klijent = encrypt(processedData.klijent);
+      if (processedData.debtor) processedData.debtor = await encrypt(processedData.debtor);
+      if (processedData.telefon) processedData.telefon = await encrypt(processedData.telefon);
+      if (processedData.klijent) processedData.klijent = await encrypt(processedData.klijent);
 
       store.put(processedData);
       queue.add({ action: 'save', store: storeName, data: processedData, timestamp: Date.now() });
@@ -95,14 +150,14 @@ export async function getAllData(storeName) {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
     const request = store.getAll();
-    request.onsuccess = () => {
-      const results = request.result.map(item => {
+    request.onsuccess = async () => {
+      const results = await Promise.all(request.result.map(async item => {
         const decrypted = { ...item };
-        if (decrypted.debtor) decrypted.debtor = decrypt(decrypted.debtor);
-        if (decrypted.telefon) decrypted.telefon = decrypt(decrypted.telefon);
-        if (decrypted.klijent) decrypted.klijent = decrypt(decrypted.klijent);
+        if (decrypted.debtor) decrypted.debtor = await decrypt(decrypted.debtor);
+        if (decrypted.telefon) decrypted.telefon = await decrypt(decrypted.telefon);
+        if (decrypted.klijent) decrypted.klijent = await decrypt(decrypted.klijent);
         return decrypted;
-      });
+      }));
       resolve(results);
     };
     request.onerror = () => reject(request.error);

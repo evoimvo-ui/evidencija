@@ -2,7 +2,8 @@ const CACHE = 'evidencija-v13'; // Verzija v13 za prisilno osvježavanje
 const FILES = [
   './', 
   './index.html', 
-  './manifest.json',
+  './manifest.json', 
+  './config.js',
   './firebase.js',
   './auth.js',
   './db.js',

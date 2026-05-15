@@ -7,10 +7,11 @@
  */
 
 import { getPaddlePriceId } from './pricing.js';
+import { CONFIG } from '../config.js';
 
 // TODO (Faza 2): Zamijeniti s pravim Paddle client-side token-om nakon KYC-a
-const PADDLE_CLIENT_TOKEN = null;
-const PADDLE_ENVIRONMENT = 'sandbox'; // Promijeniti u 'production' za live
+const PADDLE_CLIENT_TOKEN = CONFIG.PADDLE.clientToken;
+const PADDLE_ENVIRONMENT = CONFIG.PADDLE.environment;
 
 /**
  * Inicijalizira Paddle SDK.

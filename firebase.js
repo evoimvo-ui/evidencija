@@ -3,14 +3,9 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.0/firebase
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCUfEycMs0Ku46Pa9M9UQfrXGhjWy6aCtQ",
-  authDomain: "evidencija-app-abc64.firebaseapp.com",
-  projectId: "evidencija-app-abc64",
-  storageBucket: "evidencija-app-abc64.firebasestorage.app",
-  messagingSenderId: "1093805618917",
-  appId: "1:1093805618917:web:9d25edaeec85bbcd6b860c"
-};
+import { CONFIG } from './config.js';
+
+const firebaseConfig = CONFIG.FIREBASE;
 
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);

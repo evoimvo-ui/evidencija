@@ -168,6 +168,11 @@ export async function register(name, email, pass, role = 'solo') {
       // Billing tier
       country: country,
       tier: tier,
+      roleHistory: [{ 
+        from: 'none', 
+        to: role, 
+        date: new Date().toISOString() 
+      }]
     };
 
     await setDoc(doc(db, "users", res.user.uid), userData);

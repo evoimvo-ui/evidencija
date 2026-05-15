@@ -116,16 +116,17 @@ export async function initDB() {
 export async function saveData(storeName, data) {
   try {
     const db = await initDB();
+    
+    const processedData = { ...data };
+    if (processedData.debtor) processedData.debtor = await encrypt(processedData.debtor);
+    if (processedData.telefon) processedData.telefon = await encrypt(processedData.telefon);
+    if (processedData.klijent) processedData.klijent = await encrypt(processedData.klijent);
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([storeName, 'sync_queue'], 'readwrite');
       const store = transaction.objectStore(storeName);
       const queue = transaction.objectStore('sync_queue');
       
-      const processedData = { ...data };
-      if (processedData.debtor) processedData.debtor = await encrypt(processedData.debtor);
-      if (processedData.telefon) processedData.telefon = await encrypt(processedData.telefon);
-      if (processedData.klijent) processedData.klijent = await encrypt(processedData.klijent);
-
       store.put(processedData);
       queue.add({ action: 'save', store: storeName, data: processedData, timestamp: Date.now() });
       
@@ -218,6 +219,9 @@ export async function syncWithFirestore(user) {
         const docId = (item.id || (item.data && item.data.id))?.toString();
         if (!docId) {
           console.warn("[Sync] Item missing ID, skipping:", item);
+          // Makni neispravnu stavku iz reda čekanja da ne blokira ostale
+          const delTrans = db.transaction('sync_queue', 'readwrite');
+          delTrans.objectStore('sync_queue').delete(item.id);
           continue;
         }
         
@@ -236,14 +240,15 @@ export async function syncWithFirestore(user) {
         }
         
         // Remove from queue
-        const delTrans = db.transaction('sync_queue', 'readwrite');
         await new Promise((res, rej) => {
+          const delTrans = db.transaction('sync_queue', 'readwrite');
           const req = delTrans.objectStore('sync_queue').delete(item.id);
           req.onsuccess = res;
           req.onerror = rej;
         });
       } catch (e) {
         console.error(`[Sync] Failed item ${item.id}:`, e);
+        // Ako je greška do permisija ili nečeg trajnog, razmisliti o limitiranju pokušaja (TODO)
       }
     }
   } catch (e) {
@@ -259,6 +264,17 @@ export async function pullFromFirestore(user) {
   const stores = ['entries', 'appointments', 'services'];
   const db = await initDB();
 
+  // Provjeri sinkronizacijski red čekanja
+  const queue = await new Promise((resolve, reject) => {
+    const transaction = db.transaction('sync_queue', 'readonly');
+    const request = transaction.objectStore('sync_queue').getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+
+  // Skup ID-ova koji su u redu čekanja (lokalne promjene koje još nisu sinkronizirane)
+  const pendingIds = new Set(queue.map(item => (item.id || item.data?.id)?.toString()));
+
   for (const storeName of stores) {
     const q = user.role === 'owner' 
       ? query(collection(fdb, storeName), where("shopId", "==", user.shopId))
@@ -270,8 +286,14 @@ export async function pullFromFirestore(user) {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      // Ensure local ID matches Firestore ID
-      store.put({ ...data, id: doc.id });
+      const docId = doc.id;
+      
+      // SAMO ako dokument nije u redu čekanja za sinkronizaciju, smijemo ga pregaziti
+      if (!pendingIds.has(docId)) {
+        store.put({ ...data, id: docId });
+      } else {
+        console.log(`[Sync] Skipping pull for ${storeName}:${docId} because it has pending local changes.`);
+      }
     });
   }
 }

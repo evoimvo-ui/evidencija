@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v13'; // Verzija v13 za prisilno osvježavanje
+const CACHE = 'evidencija-v14'; // Verzija v14 - dodana AES enkripcija i config.js
 const FILES = [
   './', 
   './index.html', 

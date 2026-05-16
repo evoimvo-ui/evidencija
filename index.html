@@ -41,6 +41,11 @@
     --text3: #888;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { 
+    overflow-x: hidden; 
+    max-width: 100%; 
+    width: 100%; 
+  }
   body {
     font-family: 'Syne', sans-serif;
     background: var(--bg);
@@ -188,6 +193,8 @@
     background: var(--bg);
     z-index: 100;
     border-bottom: 1px solid var(--border);
+    max-width: 100%;
+    overflow-x: hidden;
   }
   .nav-btn {
     background: rgba(255, 255, 255, 0.05);
@@ -264,7 +271,12 @@
     grid-column: 1 / -1;
   }
 
-  .screen { display: none; padding: 16px 20px; }
+  .screen { 
+    display: none; 
+    padding: 16px 20px; 
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   .screen.active { display: block; }
   
   .section-label { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; margin-top: 20px; }

@@ -60,8 +60,8 @@
     background: #0f1117;
   }
   body.light-mode .header { background: #ffffff; }
-  .header-left { flex: 1; min-width: 0; }
-  .header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; line-height: 1.2; }
+  .header-left { flex: 1; min-width: 0; overflow: hidden; }
+  .header h1 { font-size: clamp(16px, 4vw, 22px); font-weight: 500; letter-spacing: -0.3px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .header h1 span { color: var(--accent); }
   .header .date-badge {
     font-family: 'DM Mono', monospace;
@@ -77,7 +77,7 @@
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     margin-left: auto;
     flex-shrink: 0;
   }
@@ -168,23 +168,24 @@
     justify-content: flex-start;
     gap: 10px;
     width: 100%;
+    min-height: 64px;
   }
   .nav-btn.active {
     background: rgba(98, 196, 99, 0.15);
     border-color: rgba(98, 196, 99, 0.35);
   }
   .nav-btn > div {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.85);
     line-height: 1.2;
   }
   .nav-btn span {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.07);
-    font-size: 18px;
+    font-size: 20px;
     position: relative;
     flex-shrink: 0;
     display: flex;
@@ -266,22 +267,22 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.05);
     border: 0.5px solid rgba(255, 255, 255, 0.12);
     border-radius: 20px;
     padding: 4px 4px 4px 12px;
   }
   #screen-unos .services-grid > div:has(.service-btn.selected) {
-    background: rgba(98, 196, 99, 0.12);
-    border-color: rgba(98, 196, 99, 0.35);
+    background: rgba(98, 196, 99, 0.2);
+    border: 1.5px solid #4ade80;
   }
   body.light-mode #screen-unos .services-grid > div {
     background: #f0f0ea;
     border: 0.5px solid #e0e0da;
   }
   body.light-mode #screen-unos .services-grid > div:has(.service-btn.selected) {
-    background: #f0faf0;
-    border-color: #86efac;
+    background: #dcfce7;
+    border: 1.5px solid #16a34a;
   }
   #screen-unos .service-btn {
     position: static;
@@ -291,7 +292,7 @@
     padding: 0 4px 0 0;
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.5);
     width: auto;
     text-align: left;
     cursor: pointer;
@@ -299,11 +300,15 @@
   #screen-unos .service-btn.selected {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.85);
+    color: #4ade80;
+    font-size: 13px;
+    font-weight: 600;
   }
-  body.light-mode #screen-unos .service-btn,
+  body.light-mode #screen-unos .service-btn {
+    color: #9a9a94;
+  }
   body.light-mode #screen-unos .service-btn.selected {
-    color: #4a4a44;
+    color: #16a34a;
   }
   #screen-unos .service-delete {
     position: static;
@@ -351,33 +356,45 @@
     padding: 12px;
     border-radius: 8px;
     font-family: 'Syne', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.04);
     border: 0.5px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.3);
   }
   #screen-unos .type-btn.active-pay {
-    background: rgba(98, 196, 99, 0.15);
-    border: 0.5px solid rgba(98, 196, 99, 0.4);
-    color: #86efac;
+    background: rgba(98, 196, 99, 0.25);
+    border: 2px solid #4ade80;
+    color: #4ade80;
+    font-weight: 700;
+    font-size: 15px;
   }
   #screen-unos .type-btn.active-dug {
-    background: rgba(255, 255, 255, 0.04);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.4);
+    background: rgba(239, 68, 68, 0.2);
+    border: 2px solid #f87171;
+    color: #f87171;
+    font-weight: 700;
+    font-size: 15px;
   }
-  body.light-mode #screen-unos .type-btn,
-  body.light-mode #screen-unos .type-btn.active-dug {
+  body.light-mode #screen-unos .type-btn {
     background: #f8f8f6;
     border: 0.5px solid #e2e2dc;
-    color: #9a9a94;
+    color: #b0b0aa;
   }
   body.light-mode #screen-unos .type-btn.active-pay {
-    background: #f0faf0;
-    border: 0.5px solid #86efac;
+    background: #dcfce7;
+    border: 2px solid #16a34a;
     color: #16a34a;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  body.light-mode #screen-unos .type-btn.active-dug {
+    background: #fef2f2;
+    border: 2px solid #ef4444;
+    color: #ef4444;
+    font-weight: 700;
+    font-size: 15px;
   }
   #screen-unos .input-row {
     background: rgba(255, 255, 255, 0.05);

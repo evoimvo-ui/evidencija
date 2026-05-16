@@ -60,7 +60,7 @@
     "create_shop_btn":  "СОЗДАТЬ МАГАЗИН",
     "year":  "ГОД",
     "currency":  "Валюта:",
-    "title":  "Учет Работы",
+    "title":  "<span style=\"color:#4f7ef7\">У</span>чет Работы",
     "debt_amount":  "Сумма долга",
     "reg_success":  "Регистрация прошла успешно!",
     "add":  "Добавить",

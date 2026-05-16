@@ -60,7 +60,7 @@
     "create_shop_btn":  "WINKEL AANMAKEN",
     "year":  "JAAR",
     "currency":  "Valuta:",
-    "title":  "Werkregistratie",
+    "title":  "<span style=\"color:#4f7ef7\">W</span>erkregistratie",
     "debt_amount":  "Schuldbedrag",
     "reg_success":  "Registratie succesvol!",
     "add":  "Toevoegen",

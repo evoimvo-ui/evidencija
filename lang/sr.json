@@ -61,7 +61,7 @@
     "create_shop_btn":  "KREIRAJ RADNJU",
     "year":  "GOD.",
     "currency":  "Valuta:",
-    "title":  "Evidencija Rada",
+    "title":  "<span style=\"color:#4f7ef7\">E</span>videncija Rada",
     "payment_processed":  "Uplata proknjižena!",
     "debt_amount":  "Iznos duga",
     "reg_success":  "Registracija uspešna!",

@@ -60,7 +60,7 @@
     "create_shop_btn":  "OPPRETT BUTIKK",
     "year":  "ÅR",
     "currency":  "Valuta:",
-    "title":  "Arbeidsoversikt",
+    "title":  "<span style=\"color:#4f7ef7\">A</span>rbeidsoversikt",
     "debt_amount":  "Gjeldsbeløp",
     "reg_success":  "Registrering fullført!",
     "add":  "Legg til",

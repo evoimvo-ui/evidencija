@@ -60,7 +60,7 @@
     "create_shop_btn":  "OPRET BUTIK",
     "year":  "ÅR",
     "currency":  "Valuta:",
-    "title":  "Arbejdshistorik",
+    "title":  "<span style=\"color:#4f7ef7\">A</span>rbejdshistorik",
     "debt_amount":  "Gældsbeløb",
     "reg_success":  "Registrering gennemført!",
     "add":  "Tilføj",

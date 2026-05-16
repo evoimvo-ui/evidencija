@@ -61,7 +61,7 @@
     "create_shop_btn":  "GESCHÄFT ERSTELLEN",
     "year":  "JAHR",
     "currency":  "Währung:",
-    "title":  "Arbeitsnachweis",
+    "title":  "<span style=\"color:#4f7ef7\">A</span>rbeitsnachweis",
     "payment_processed":  "Zahlung verarbeitet!",
     "debt_amount":  "Schuldenbetrag",
     "reg_success":  "Registrierung erfolgreich!",

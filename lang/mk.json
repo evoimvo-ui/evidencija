@@ -61,7 +61,7 @@
     "create_shop_btn":  "КРЕИРАЈ ПРОДАВНИЦА",
     "year":  "ГОД.",
     "currency":  "Валута:",
-    "title":  "Евиденција на Работа",
+    "title":  "<span style=\"color:#4f7ef7\">Е</span>виденција на Работа",
     "payment_processed":  "Уплатата е прокнижена!",
     "debt_amount":  "Износ на долг",
     "reg_success":  "Успешна регистрација!",

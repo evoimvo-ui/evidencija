@@ -61,7 +61,7 @@
     "create_shop_btn":  "LOO POOD",
     "year":  "AASTA",
     "currency":  "Valuuta:",
-    "title":  "Tööregistrid",
+    "title":  "<span style=\"color:#4f7ef7\">T</span>ööregistrid",
     "payment_processed":  "Makse töödeldud!",
     "debt_amount":  "Võla summa",
     "reg_success":  "Registreerimine õnnestus!",

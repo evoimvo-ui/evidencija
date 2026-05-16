@@ -61,7 +61,7 @@
     "create_shop_btn": "إنشاء عمل",
     "year": "سنة",
     "currency": "العملة:",
-    "title": "سجل العمل",
+    "title": "<span style=\"color:#4f7ef7\">س</span>جل العمل",
     "payment_processed": "تمت معالجة الدفع!",
     "debt_amount": "مبلغ الدين",
     "reg_success": "تم التسجيل بنجاح!",

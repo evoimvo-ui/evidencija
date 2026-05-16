@@ -60,7 +60,7 @@
     "create_shop_btn":  "SKAPA BUTIK",
     "year":  "ÅR",
     "currency":  "Valuta:",
-    "title":  "Arbetslogg",
+    "title":  "<span style=\"color:#4f7ef7\">A</span>rbetslogg",
     "debt_amount":  "Skuldbelopp",
     "reg_success":  "Registrering genomförd!",
     "add":  "Lägg till",

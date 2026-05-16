@@ -61,7 +61,7 @@
     "create_shop_btn":  "СЪЗДАЙ МАГАЗИН",
     "year":  "ГОД.",
     "currency":  "Валута:",
-    "title":  "Регистър на Работата",
+    "title":  "<span style=\"color:#4f7ef7\">Р</span>егистър на Работата",
     "payment_processed":  "Плащането е обработено!",
     "debt_amount":  "Сума на дълга",
     "reg_success":  "Регистрацията е успешна!",

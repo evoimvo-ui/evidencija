@@ -1,4 +1,4 @@
-﻿{
+{
     "owner_label":  "所有者",
     "debts":  "欠款",
     "client":  "客户",
@@ -61,7 +61,7 @@
     "create_shop_btn":  "创建店铺",
     "year":  "年",
     "currency":  "货币:",
-    "title":  "工作记录",
+    "title":  "<span style=\"color:#4f7ef7\">工</span>作记录",
     "payment_processed":  "Payment processed!",
     "debt_amount":  "欠款金额",
     "reg_success":  "注册成功！",

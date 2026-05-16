@@ -60,7 +60,7 @@
     "create_shop_btn":  "店舗を作成",
     "year":  "年",
     "currency":  "通貨:",
-    "title":  "業務記録",
+    "title":  "<span style=\"color:#4f7ef7\">業</span>務記録",
     "debt_amount":  "未払い金額",
     "reg_success":  "登録が完了しました！",
     "add":  "追加",

@@ -61,7 +61,7 @@
     "create_shop_btn":  "CREATE SHOP",
     "year":  "YEAR",
     "currency":  "Currency:",
-    "title":  "Work Records",
+    "title":  "<span style=\"color:#4f7ef7\">W</span>ork Records",
     "payment_processed":  "Payment processed!",
     "debt_amount":  "Debt amount",
     "reg_success":  "Registration successful!",

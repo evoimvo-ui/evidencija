@@ -60,7 +60,7 @@
     "create_shop_btn":  "MAĞAZA OLUŞTUR",
     "year":  "YIL",
     "currency":  "Para Birimi:",
-    "title":  "İş Kayıtları",
+    "title":  "<span style=\"color:#4f7ef7\">İ</span>ş Kayıtları",
     "debt_amount":  "Borç tutarı",
     "reg_success":  "Kayıt başarılı!",
     "add":  "Ekle",

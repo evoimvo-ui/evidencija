@@ -60,7 +60,7 @@
     "create_shop_btn":  "ÜZLET LÉTREHOZÁSA",
     "year":  "ÉV",
     "currency":  "Pénznem:",
-    "title":  "Munkanyilvántartás",
+    "title":  "<span style=\"color:#4f7ef7\">M</span>unkanyilvántartás",
     "debt_amount":  "Tartozás összege",
     "reg_success":  "Sikeres regisztráció!",
     "add":  "Hozzáadás",

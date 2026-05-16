@@ -60,7 +60,7 @@
     "create_shop_btn":  "LUO LIIKE",
     "year":  "VUOSI",
     "currency":  "Valuutta:",
-    "title":  "Työkirjanpito",
+    "title":  "<span style=\"color:#4f7ef7\">T</span>yökirjanpito",
     "debt_amount":  "Velan määrä",
     "reg_success":  "Rekisteröityminen onnistui!",
     "add":  "Lisää",

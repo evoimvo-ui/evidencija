@@ -61,7 +61,7 @@
     "create_shop_btn":  "USTVARI TRGOVINO",
     "year":  "LETO",
     "currency":  "Valuta:",
-    "title":  "Evidenca Dela",
+    "title":  "<span style=\"color:#4f7ef7\">E</span>videnca Dela",
     "payment_processed":  "Plačilo obdelano!",
     "debt_amount":  "Znesek dolga",
     "reg_success":  "Registracija uspešna!",

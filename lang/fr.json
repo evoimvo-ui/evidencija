@@ -61,7 +61,7 @@
     "create_shop_btn":  "CRÉER LA BOUTIQUE",
     "year":  "AN",
     "currency":  "Devise:",
-    "title":  "Registre de Travail",
+    "title":  "<span style=\"color:#4f7ef7\">R</span>egistre de Travail",
     "payment_processed":  "Paiement traité !",
     "debt_amount":  "Montant de la dette",
     "reg_success":  "Inscription réussie !",

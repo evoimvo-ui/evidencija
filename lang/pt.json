@@ -60,7 +60,7 @@
     "create_shop_btn":  "CRIAR LOJA",
     "year":  "ANO",
     "currency":  "Moeda:",
-    "title":  "Registros de Trabalho",
+    "title":  "<span style=\"color:#4f7ef7\">R</span>egistros de Trabalho",
     "debt_amount":  "Valor da dívida",
     "reg_success":  "Registro bem-sucedido!",
     "add":  "Adicionar",

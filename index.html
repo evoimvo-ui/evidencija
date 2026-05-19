@@ -43,7 +43,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { 
     overflow-x: hidden; 
-    max-width: 100%; 
+    max-width: 100vw; 
     width: 100%; 
   }
   body {
@@ -187,14 +187,16 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    padding: 12px 20px;
+    padding: 12px;
     position: sticky;
     top: 0;
     background: var(--bg);
     z-index: 100;
     border-bottom: 1px solid var(--border);
+    width: 100%;
+    box-sizing: border-box;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
   }
   .nav-btn {
     background: rgba(255, 255, 255, 0.05);
@@ -209,17 +211,22 @@
     justify-content: flex-start;
     gap: 10px;
     width: 100%;
+    box-sizing: border-box;
     min-height: 64px;
+    overflow: hidden;
   }
   .nav-btn.active {
     background: rgba(98, 196, 99, 0.15);
     border-color: rgba(98, 196, 99, 0.35);
   }
   .nav-btn > div {
-    font-size: 15px;
+    font-size: clamp(12px, 3.5vw, 15px);
     font-weight: 500;
     color: rgba(255, 255, 255, 0.85);
-    line-height: 1.2;
+    line-height: 1.3;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   .nav-btn span {
     width: 40px;
@@ -766,20 +773,24 @@
     color: #16a34a;
   }
   #screen-termini #calendarJump {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 8px !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
     font-family: 'DM Mono', monospace !important;
     font-variant-numeric: tabular-nums !important;
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: #ffffff !important;
     outline: none;
+    min-height: 36px;
+    min-width: 120px;
+    -webkit-appearance: none;
+    appearance: none;
   }
   body.light-mode #screen-termini #calendarJump {
-    background: #f8f8f6 !important;
-    border: 0.5px solid #e2e2dc !important;
-    color: #6a6a64 !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e2dc !important;
+    color: #1a1a18 !important;
   }
   #screen-termini #workerAppointmentFilter {
     margin-bottom: 15px !important;
@@ -2017,7 +2028,7 @@
   </div>
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
     <div class="section-label" data-i18n="calendar" style="margin:0;">Calendar</div>
-    <input type="date" id="calendarJump" onchange="jumpToDate(this.value)" style="background:var(--bg3); border:1px solid var(--border); color:var(--accent); font-family:'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size:12px; padding:4px 8px; border-radius:10px; outline:none;">
+    <input type="date" id="calendarJump" onchange="jumpToDate(this.value)">
   </div>
   <div class="calendar-strip" id="calendarStrip"></div>
   <div id="workerAppointmentFilter" style="margin-bottom: 15px; display: none; background: var(--bg2); padding: 15px; border-radius: 15px; border: 1px solid var(--border);">
@@ -2080,7 +2091,8 @@
     <div class="section-label" data-i18n="phone">Phone</div>
     <input class="input-plain" type="tel" id="appPhone" placeholder="+387...">
     <div class="section-label" data-i18n="time">Time</div>
-    <input class="input-plain" type="time" id="appTime">
+    <div id="appointmentWarning" style="display:none; margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: 12px;"></div>
+    <input class="input-plain" type="time" id="appTime" oninput="checkNearbyAppointments()">
     <div class="section-label" data-i18n="service">Service</div>
     <select id="appService" class="input-plain" style="width:100%;"></select>
     <div class="section-label">Notify Platform</div>
@@ -2229,7 +2241,6 @@ let deleteId = null;
 let isOffline = false;
 let workerFilter = null;
 let earningsChart = null;
-let dismissedReminders = JSON.parse(localStorage.getItem('dismissed_reminders') || '[]');
 
 // Global Error Logging
 window.onerror = function(msg, url, lineNo, columnNo, error) {
@@ -2248,13 +2259,6 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
 window.onunhandledrejection = function(event) {
   console.error("[Unhandled Rejection]", event.reason);
 };
-
-function cleanupDismissedReminders() {
-  const now = Date.now();
-  dismissedReminders = dismissedReminders.filter(r => (now - r.timestamp) < (48 * 60 * 60 * 1000));
-  localStorage.setItem('dismissed_reminders', JSON.stringify(dismissedReminders));
-}
-cleanupDismissedReminders();
 
 const DEFAULT_CURRENCIES = { 
   bs: 'KM', hr: 'EUR', sr: 'RSD', mk: 'DEN', sl: 'EUR', bg: 'BGN', ro: 'RON', hu: 'HUF', 
@@ -2748,6 +2752,15 @@ async function renderAppointments() {
   const l = document.getElementById('appointmentsList');
   if (!l) return;
   const rawApps = await getAllData('appointments');
+  
+  const seen = new Set(); 
+  const appsDeduplicated = rawApps.filter(apt => { 
+    const key = apt.id || (apt.datum + apt.vrijeme + apt.klijent); 
+    if (seen.has(key)) return false; 
+    seen.add(key); 
+    return true; 
+  }); 
+
   const filterDiv = document.getElementById('workerAppointmentFilter');
   const select = document.getElementById('workerAppSelect');
   if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'worker') && filterDiv && select) {
@@ -2766,7 +2779,7 @@ async function renderAppointments() {
     }
   }
   const appsMap = new Map();
-  rawApps.forEach(a => {
+  appsDeduplicated.forEach(a => {
     if (a.datum === selectedDate) {
       const canSee = (currentUser.role === 'owner' || currentUser.role === 'worker') ? (a.shopId === currentUser.shopId) : (a.userId === currentUser.uid);
       const selectedWorker = (select && select.options.length > 0) ? select.value : 'all';
@@ -2822,6 +2835,37 @@ async function handleDeleteApp(id) {
     renderAppointments();
   }
 }
+
+async function checkNearbyAppointments() { 
+  const timeInput = document.getElementById('appTime'); 
+  const dateValue = selectedDate; 
+  const warning = document.getElementById('appointmentWarning'); 
+  if (!timeInput || !timeInput.value || !warning) return; 
+
+  const [h, m] = timeInput.value.split(':').map(Number); 
+  const selectedTime = h * 60 + m; 
+
+  const rawApps = await getAllData('appointments');
+  const nearby = rawApps.filter(apt => { 
+    if (apt.datum !== dateValue) return false; 
+    if (!apt.vrijeme) return false; 
+    const [ah, am] = apt.vrijeme.split(':').map(Number); 
+    const aptTime = ah * 60 + am; 
+    return Math.abs(aptTime - selectedTime) <= 120; 
+  }); 
+
+  if (nearby.length === 0) { 
+    warning.style.display = 'none'; 
+    return; 
+  } 
+
+  warning.style.display = 'block'; 
+  warning.style.background = 'rgba(251,191,36,0.1)'; 
+  warning.style.border = '0.5px solid rgba(251,191,36,0.4)'; 
+  warning.style.color = '#fbbf24'; 
+  warning.innerHTML = '⚠️ ' + nearby.map(apt => `${apt.vrijeme} — ${apt.usluga || ''}`).join(', '); 
+}
+window.checkNearbyAppointments = checkNearbyAppointments;
 
 async function saveAppointment() {
   const c = document.getElementById('appClient').value.trim();
@@ -2996,7 +3040,13 @@ function showScreen(name) {
   if (target) target.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   if (name === 'unos') document.querySelector('.nav-btn:nth-child(1)')?.classList.add('active');
-  if (name === 'termini') { document.querySelector('.nav-btn:nth-child(2)')?.classList.add('active'); renderCalendar(); renderAppointments(); }
+  if (name === 'termini') { 
+    document.querySelector('.nav-btn:nth-child(2)')?.classList.add('active'); 
+    renderCalendar(); 
+    renderAppointments(); 
+    const cj = document.getElementById('calendarJump');
+    if (cj) cj.value = selectedDate;
+  }
   if (name === 'pregled') { document.querySelector('.nav-btn:nth-child(3)')?.classList.add('active'); renderPregled(); }
   if (name === 'izvjestaji') { document.querySelector('.nav-btn:nth-child(4)')?.classList.add('active'); renderIzvjestaji(); }
   if (name === 'owner') document.getElementById('navOwner')?.classList.add('active');
@@ -3007,6 +3057,10 @@ function renderCalendar() {
   const s = document.getElementById('calendarStrip');
   if (!s) return;
   s.innerHTML = '';
+  
+  const cj = document.getElementById('calendarJump');
+  if (cj) cj.value = selectedDate;
+
   const base = new Date(selectedDate);
   for (let i = -3; i < 10; i++) {
     const d = new Date(base);
@@ -3025,10 +3079,16 @@ async function checkUpcomingAppointments() {
   if (!currentUser) return;
   const rawApps = await getAllData('appointments');
   const appsMap = new Map();
-  rawApps.forEach(a => appsMap.set(a.id, a));
+  const seen = new Set();
+  rawApps.forEach(a => {
+    if (seen.has(a.id)) return;
+    seen.add(a.id);
+    appsMap.set(a.id, a);
+  });
   const allApps = Array.from(appsMap.values());
   const now = new Date();
   let pendingReminders = [];
+  const dismissed = getDismissed();
   allApps.forEach(a => {
     if (!a.datum || !a.vrijeme) return;
     const appDate = new Date(a.datum + 'T' + a.vrijeme + ':00');
@@ -3039,8 +3099,8 @@ async function checkUpcomingAppointments() {
     if (isDue24h && (!a.remindersSent || !a.remindersSent.includes('24h'))) type = '24h';
     else if (isDue1h && (!a.remindersSent || !a.remindersSent.includes('1h'))) type = '1h';
     if (type) {
-      const isDismissed = dismissedReminders.some(r => r.id === a.id && r.type === type);
-      if (!isDismissed) pendingReminders.push({ ...a, type });
+      if (dismissed.has(`${a.id}_${type}`)) return;
+      pendingReminders.push({ ...a, type });
     }
   });
   const dot = document.getElementById('reminderDot');
@@ -3071,9 +3131,17 @@ async function checkUpcomingAppointments() {
   }
 }
 
+function getDismissed() { 
+  return new Set(JSON.parse(localStorage.getItem('dismissedReminders') || '[]')); 
+} 
+function saveDismissed(set) { 
+  localStorage.setItem('dismissedReminders', JSON.stringify([...set])); 
+}
+
 function dismissReminder(id, type) {
-  dismissedReminders.push({ id, type, timestamp: Date.now() });
-  localStorage.setItem('dismissed_reminders', JSON.stringify(dismissedReminders));
+  const dismissed = getDismissed();
+  dismissed.add(`${id}_${type}`);
+  saveDismissed(dismissed);
   closeReminderModal();
   checkUpcomingAppointments();
 }
@@ -3126,6 +3194,8 @@ window.openAppointmentModal = async () => {
   const s = await getAllData('services');
   if (s.length === 0) return showToast('Prvo dodajte usluge!', true);
   document.getElementById('appService').innerHTML = s.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
+  const warning = document.getElementById('appointmentWarning');
+  if (warning) warning.style.display = 'none';
   document.getElementById('appointmentModal').classList.add('open');
 };
 window.closeAppointmentModal = () => document.getElementById('appointmentModal').classList.remove('open');
@@ -3189,8 +3259,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (navigator.onLine) await pullFromFirestore(currentUser);
 
-    refreshAppData();
-    checkUpcomingAppointments();
+    await refreshAppData();
+    setTimeout(() => checkUpcomingAppointments(), 1500);
     setInterval(checkUpcomingAppointments, 60000);
   }, () => {
     currentUser = null;

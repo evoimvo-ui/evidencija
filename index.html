@@ -14,7 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   :root {
     --bg: #0f0f0f;
     --bg2: #1a1a1a;
@@ -40,14 +40,44 @@
     --text2: #555;
     --text3: #888;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  
+  *, *::before, *::after { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    -webkit-tap-highlight-color: transparent; 
+    font-family: inherit; 
+  }
+  
   html, body { 
     overflow-x: hidden; 
     max-width: 100vw; 
     width: 100%; 
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  h1, h2, h3, h4, h5, h6, 
+  button, input, select, textarea, 
+  .modal-overlay, .modal-overlay *,
+  .screen-title, .modal h3,
+  .date-badge, .day-num, .appointment-time, .stat-value, .input-row input, .input-suffix, .history-item, .section-label {
+    font-family: inherit !important;
+  }
+  
+  /* Numeric data should still use tabular-nums for alignment, even with Inter */
+  .date-badge, 
+  .day-num, 
+  .appointment-time, 
+  .stat-value, 
+  .input-row input, 
+  .input-suffix,
+  .history-item,
+  .section-label,
+  #saveClientDetails {
+    font-variant-numeric: tabular-nums;
+  }
+
   body {
-    font-family: 'Syne', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -56,6 +86,7 @@
     padding-bottom: 80px;
     overscroll-behavior: none;
   }
+  
   .header {
     padding: 16px;
     display: flex;
@@ -79,7 +110,6 @@
     width: 100%;
   }
   .header .date-badge {
-    font-family: 'DM Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-size: 12px;
     color: #9a9a94;
@@ -121,6 +151,27 @@
     color: #9a9a94;
   }
   .lang-container { position: relative; margin-top: 0; flex-shrink: 0; }
+  .auth-lang-btn {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+  }
+  body.light-mode .auth-lang-btn {
+    background: #f0f0ea;
+    border-color: #e0e0da;
+    color: #6a6a64;
+  }
   .header .lang-btn {
     background: var(--bg3);
     border: 1px solid var(--border);
@@ -176,12 +227,23 @@
     color: #9a9a94;
   }
   .lang-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-  .lang-dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; z-index: 1000; min-width: 130px; margin-top: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow-y: auto; max-height: 300px; }
+  #langDropdown {
+    position: fixed;
+    z-index: 2000;
+    display: none;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    min-width: 130px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    overflow-y: auto;
+    max-height: 300px;
+  }
   .lang-opt { padding: 10px 15px; font-size: 12px; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); }
   .lang-opt:last-child { border: none; }
   .lang-opt:hover { background: var(--bg3); }
 
-  .date-badge { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text2); background: var(--bg3); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border); }
+  .date-badge { font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text2); background: var(--bg3); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border); }
   
   .nav {
     display: grid;
@@ -203,7 +265,6 @@
     border: 0.5px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 16px;
-    font-family: 'Syne', sans-serif;
     cursor: pointer;
     display: flex;
     flex-direction: row;
@@ -286,28 +347,53 @@
   }
   .screen.active { display: block; }
   
-  .section-label { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; margin-top: 20px; }
+  .section-label { font-variant-numeric: tabular-nums; font-size: 10px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; margin-top: 20px; }
   
   .services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .service-btn { position: relative; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; padding: 12px 10px; border-radius: var(--radius); cursor: pointer; text-align: left; width: 100%; }
+  .service-btn { position: relative; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 600; padding: 12px 10px; border-radius: var(--radius); cursor: pointer; text-align: left; width: 100%; }
   .service-btn.selected { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
   .service-btn.add-new { border-style: dashed; color: var(--text3); font-size: 20px; text-align: center; }
   .service-delete { position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; background: var(--red); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; border: 2px solid var(--bg); z-index: 10; }
 
   .type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .type-btn { padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .type-btn { padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 13px; font-weight: 700; cursor: pointer; }
   .type-btn.active-pay { background: var(--accent); color: #0f0f0f; border-color: var(--accent); }
   .type-btn.active-dug { background: var(--red); color: #fff; border-color: var(--red); }
 
   .input-row { display: flex; align-items: center; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .input-row input { flex: 1; background: transparent; border: none; color: var(--text); font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 20px; padding: 14px 16px; outline: none; width: 100%; }
-  .input-suffix { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--text2); padding-right: 14px; }
+  .input-row input { flex: 1; background: transparent; border: none; color: var(--text); font-variant-numeric: tabular-nums; font-size: 20px; padding: 14px 16px; outline: none; width: 100%; }
+  .input-suffix { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--text2); padding-right: 14px; }
   
-  .input-plain { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px; padding: 14px 16px; outline: none; }
+  .input-plain { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 15px; padding: 14px 16px; outline: none; }
 
-  .submit-btn { width: 100%; padding: 16px; border-radius: var(--radius); border: none; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 24px; }
-  .submit-btn.pay { background: var(--accent); color: #0f0f0f; }
+  .submit-btn { width: 100%; padding: 16px; border-radius: var(--radius); border: none; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 24px; }
+  .submit-btn.pay { background: #4ade80; color: #0f1117; }
+  body.light-mode .submit-btn.pay { background: #16a34a; color: #ffffff; }
   .submit-btn.dug { background: var(--red); color: #fff; }
+
+  /* Select Client button style to match image */
+  .select-client-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+  body.light-mode .select-client-btn {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+    color: #1a1a18;
+  }
+  .select-client-btn i { color: #7c3aed; font-size: 14px; }
 
   /* New Entry form — visual redesign */
   #screen-unos .services-grid {
@@ -408,7 +494,6 @@
   #screen-unos .type-btn {
     padding: 12px;
     border-radius: 8px;
-    font-family: 'Syne', sans-serif;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -460,7 +545,6 @@
     background: transparent;
     border: none;
     color: var(--text);
-    font-family: 'DM Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-size: 20px;
     font-weight: 500;
@@ -469,7 +553,6 @@
     width: 100%;
   }
   #screen-unos .input-suffix {
-    font-family: 'DM Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.3);
@@ -490,7 +573,6 @@
     border: none;
     border-radius: 10px;
     padding: 13px;
-    font-family: 'Syne', sans-serif;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -591,7 +673,6 @@
     color: #9a9a94;
   }
   #screen-pregled #pregledContent .stat-card .stat-value {
-    font-family: 'DM Mono', monospace;
     font-size: 28px;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
@@ -639,7 +720,6 @@
     color: #9a9a94 !important;
   }
   #screen-pregled #pregledContent .list-item .list-header .stat-value {
-    font-family: 'DM Mono', monospace;
     font-size: 16px !important;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
@@ -750,7 +830,6 @@
     line-height: 1.2;
   }
   #screen-termini .day-card .day-num {
-    font-family: 'DM Mono', monospace;
     font-variant-numeric: tabular-nums;
     font-size: 18px;
     font-weight: 500;
@@ -778,7 +857,6 @@
     border-radius: 10px !important;
     padding: 8px 12px !important;
     font-size: 13px !important;
-    font-family: 'DM Mono', monospace !important;
     font-variant-numeric: tabular-nums !important;
     color: #ffffff !important;
     outline: none;
@@ -913,7 +991,6 @@
   #screen-izvjestaji .report-grid .stat-value,
   #screen-izvjestaji #reportSelected,
   #screen-izvjestaji #reportToday {
-    font-family: 'DM Mono', monospace;
     font-size: 22px;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
@@ -948,7 +1025,6 @@
     font-weight: 500;
     color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    font-family: 'Syne', sans-serif;
   }
   body.light-mode #screen-izvjestaji button.submit-btn[onclick*="exportData"] {
     background: #f0f0ea;
@@ -966,7 +1042,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    font-family: 'Syne', sans-serif;
   }
   body.light-mode #screen-izvjestaji button.submit-btn.pay[onclick*="print"] {
     background: #16a34a;
@@ -997,7 +1072,6 @@
     color: #9a9a94;
   }
   #screen-owner #shopNameDisplay {
-    font-family: 'Syne', sans-serif;
     font-size: 20px;
     font-weight: 500;
     font-variant-numeric: normal;
@@ -1108,7 +1182,6 @@
     padding: 10px 14px;
     font-size: 14px;
     color: rgba(255, 255, 255, 0.85);
-    font-family: 'Syne', sans-serif;
     box-sizing: border-box;
   }
   body.light-mode #appointmentModal .modal .input-plain,
@@ -1128,7 +1201,6 @@
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
-    font-family: 'Syne', sans-serif;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.04);
     border: 0.5px solid rgba(255, 255, 255, 0.08);
@@ -1164,7 +1236,6 @@
     font-weight: 500;
     color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
-    font-family: 'Syne', sans-serif;
     width: 100%;
   }
   body.light-mode #appointmentModal .modal .modal-btns .lang-btn {
@@ -1183,7 +1254,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    font-family: 'Syne', sans-serif;
   }
   body.light-mode #appointmentModal .modal .modal-btns .submit-btn.pay {
     background: #16a34a;
@@ -1232,7 +1302,6 @@
     padding: 10px 14px;
     font-size: 14px;
     color: rgba(255, 255, 255, 0.85);
-    font-family: 'Syne', sans-serif;
     box-sizing: border-box;
   }
   body.light-mode #modalOverlay #newServiceInput {
@@ -1255,7 +1324,6 @@
     font-weight: 500;
     color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
-    font-family: 'Syne', sans-serif;
     width: 100%;
   }
   body.light-mode #modalOverlay .modal .modal-btns .lang-btn {
@@ -1274,7 +1342,6 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    font-family: 'Syne', sans-serif;
   }
   body.light-mode #modalOverlay .modal .modal-btns .submit-btn.pay {
     background: #16a34a;
@@ -1289,7 +1356,6 @@
     background: #f8f8f6 !important;
   }
   #authInitial h1 {
-    font-family: 'Syne', sans-serif;
     font-size: 38px !important;
     font-weight: 500 !important;
     letter-spacing: -0.5px;
@@ -1326,7 +1392,6 @@
     padding: 14px;
     font-size: 14px;
     font-weight: 500;
-    font-family: 'Syne', sans-serif;
     cursor: pointer;
   }
   body.light-mode #authInitial > .submit-btn.pay[onclick*="register"] {
@@ -1343,7 +1408,6 @@
     font-size: 14px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.7) !important;
-    font-family: 'Syne', sans-serif;
     cursor: pointer;
   }
   body.light-mode #authInitial > .submit-btn[onclick*="login"] {
@@ -1437,10 +1501,10 @@
   .day-card.active { background: var(--accent); border-color: var(--accent); }
   .day-card.active span { color: #0f0f0f; }
   .day-name { font-size: 10px; text-transform: uppercase; color: var(--text3); font-weight: 700; }
-  .day-num { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 600; color: var(--text); }
+  .day-num { font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 600; color: var(--text); }
 
   .appointment-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .appointment-time { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 600; color: var(--accent); }
+  .appointment-time { font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 600; color: var(--accent); }
   .appointment-info { flex: 1; margin-left: 15px; }
   .appointment-client { font-size: 14px; font-weight: 700; }
   .appointment-service { font-size: 11px; color: var(--text2); }
@@ -1452,7 +1516,7 @@
 
   .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; }
   .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; font-weight: 700; }
-  .stat-value { font-size: 28px; font-weight: 800; font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; color: var(--accent); margin: 5px 0; }
+  .stat-value { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent); margin: 5px 0; }
   .stat-sub { font-size: 12px; color: var(--text3); }
   
   .filter-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
@@ -1463,12 +1527,14 @@
   .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .detail-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-size: 11px; color: var(--text2); padding: 4px 0; border-top: 1px solid var(--border); }
   .paid-badge { background: #25D366; color: #000; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
-  .history-item { font-size: 10px; color: var(--text3); padding: 2px 0; font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+  .history-item { font-size: 10px; color: var(--text3); padding: 2px 0; font-variant-numeric: tabular-nums; }
 
   .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--accent); color: #0f0f0f; padding: 12px 24px; border-radius: 30px; opacity: 0; transition: all 0.3s; z-index: 10000; pointer-events: none; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: #000000cc; z-index: 200; align-items: flex-end; justify-content: center; }
+  #clientSelectionModal.modal-overlay { z-index: 1100; }
+  #clientModal.modal-overlay { z-index: 1200; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 480px; }
   .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
@@ -1593,7 +1659,6 @@
     border: none;
     border-radius: 12px;
     padding: 14px;
-    font-family: 'Syne', sans-serif;
     font-size: 15px;
     font-weight: 800;
     cursor: pointer;
@@ -1611,7 +1676,6 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 13px;
-    font-family: 'Syne', sans-serif;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
@@ -1687,7 +1751,7 @@
     letter-spacing: 0.05em;
   }
   .plan-card h3 { font-size: 1rem; font-weight: 800; color: var(--text); margin: 0 0 0.2rem; }
-  .plan-price { font-size: 1.5rem; font-weight: 800; font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; color: var(--accent); margin: 0.2rem 0 0.1rem; }
+  .plan-price { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent); margin: 0.2rem 0 0.1rem; }
   .plan-note { font-size: 0.7rem; color: var(--text3); margin-bottom: 0.6rem; }
   .plan-features { list-style: none; padding: 0; margin: 0 0 0.75rem; font-size: 0.75rem; color: var(--text2); text-align: left; }
   .plan-features li::before { content: "✓ "; color: var(--accent); font-weight: 800; }
@@ -1715,7 +1779,13 @@
 <body onclick="hideLangMenu()">
 
 <!-- AUTH SCREEN -->
-<div id="authScreen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:999; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+  <div id="authScreen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:999; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+    <div style="position: fixed; top: 16px; left: 16px; z-index: 1001;">
+      <button class="auth-lang-btn" onclick="event.stopPropagation(); toggleLangMenu(this)">
+        <i class="ti ti-language" aria-hidden="true"></i>
+      </button>
+    </div>
+  
   <div id="authInitial" style="width:100%; max-width:340px; display:flex; flex-direction:column; align-items:center;">
     <h1 style="font-size:32px; font-weight:800; margin-bottom:4px;"><span style="color:#4f7ef7 !important">W</span>ork Records</h1>
     <p style="font-size:14px; color:var(--text2); margin-bottom:48px;" data-i18n="tagline">evidencija rada</p>
@@ -1876,42 +1946,9 @@
   <div class="header-row-2">
     <div class="date-badge" id="todayDate"></div>
     
-    <div class="lang-container" onclick="event.stopPropagation()">
-      <button class="lang-btn" id="langMenuBtn" onclick="toggleLangMenu()">
-        <i class="ti ti-language" aria-hidden="true"></i>
-      </button>
-      <div class="lang-dropdown" id="langDropdown">
-        <div class="lang-opt" onclick="setLanguage('en')">English</div>
-        <div class="lang-opt" onclick="setLanguage('bs')">Bosanski</div>
-        <div class="lang-opt" onclick="setLanguage('hr')">Hrvatski</div>
-        <div class="lang-opt" onclick="setLanguage('sr')">Srpski</div>
-        <div class="lang-opt" onclick="setLanguage('de')">Deutsch</div>
-        <div class="lang-opt" onclick="setLanguage('fr')">Français</div>
-        <div class="lang-opt" onclick="setLanguage('it')">Italiano</div>
-        <div class="lang-opt" onclick="setLanguage('es')">Español</div>
-        <div class="lang-opt" onclick="setLanguage('bg')">Български</div>
-        <div class="lang-opt" onclick="setLanguage('da')">Dansk</div>
-        <div class="lang-opt" onclick="setLanguage('el')">Ελληνικά</div>
-        <div class="lang-opt" onclick="setLanguage('fi')">Suomi</div>
-        <div class="lang-opt" onclick="setLanguage('hu')">Magyar</div>
-        <div class="lang-opt" onclick="setLanguage('ja')">日本語</div>
-        <div class="lang-opt" onclick="setLanguage('mk')">Македонски</div>
-        <div class="lang-opt" onclick="setLanguage('nl')">Nederlands</div>
-        <div class="lang-opt" onclick="setLanguage('no')">Norsk</div>
-        <div class="lang-opt" onclick="setLanguage('pl')">Polski</div>
-        <div class="lang-opt" onclick="setLanguage('pt')">Português</div>
-        <div class="lang-opt" onclick="setLanguage('ro')">Română</div>
-        <div class="lang-opt" onclick="setLanguage('ru')">Русский</div>
-        <div class="lang-opt" onclick="setLanguage('sl')">Slovenščina</div>
-        <div class="lang-opt" onclick="setLanguage('sv')">Svenska</div>
-        <div class="lang-opt" onclick="setLanguage('tr')">Türkçe</div>
-        <div class="lang-opt" onclick="setLanguage('fa')">فارسی</div>
-        <div class="lang-opt" onclick="setLanguage('ur')">اردو</div>
-        <div class="lang-opt" onclick="setLanguage('et')">Eesti</div>
-        <div class="lang-opt" onclick="setLanguage('ar')">العربية</div>
-        <div class="lang-opt" onclick="setLanguage('zh')">中文</div>
-      </div>
-    </div>
+    <button class="lang-btn" id="langMenuBtn" onclick="event.stopPropagation(); toggleLangMenu(this)">
+      <i class="ti ti-language" aria-hidden="true"></i>
+    </button>
     
     <button class="lang-btn" id="themeToggleBtn" onclick="toggleTheme()">☀️</button>
     
@@ -1932,6 +1969,7 @@
   <button class="nav-btn active" onclick="showScreen('unos')"><span>✏️</span><div data-i18n="new_entry">New Entry</div></button>
   <button class="nav-btn" onclick="showScreen('termini')"><span>📅<div id="reminderDot" class="badge-dot"></div></span><div data-i18n="appointments">Appointments</div></button>
   <button class="nav-btn" onclick="showScreen('pregled')"><span>📊</span><div data-i18n="overview">Overview</div></button>
+  <button class="nav-btn" onclick="showScreen('klijenti')"><span>👥</span><div data-i18n="clients">Klijenti</div></button>
   <button class="nav-btn" onclick="showScreen('izvjestaji')"><span>📈</span><div data-i18n="reports">Reports</div></button>
   <button class="nav-btn full-width" id="navOwner" style="display:none;" onclick="showScreen('owner')"><span>🏢</span><div data-i18n="shop">Shop</div></button>
 </nav>
@@ -1997,11 +2035,33 @@
   </div>
 </div>
 
+<div class="screen" id="screen-klijenti">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('unos')">←</button>
+    <div class="screen-title" data-i18n="clients">Klijenti</div>
+  </div>
+  
+  <div style="margin-bottom: 15px;">
+    <input type="text" id="clientSearch" class="input-plain" placeholder="Pretraži klijente..." data-i18n-placeholder="search_clients" oninput="renderClients()">
+  </div>
+
+  <div id="clientsList" style="margin-bottom: 20px;"></div>
+  
+  <button class="submit-btn pay" onclick="openClientModal()" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <i class="ti ti-plus" style="color: #7c3aed; font-size: 20px; -webkit-text-stroke: 1px #7c3aed;"></i>
+    <span data-i18n="add_client">DODAJ KLIJENTA</span>
+  </button>
+</div>
+
 <div class="screen active" id="screen-unos">
   <div class="screen-header">
     <div class="screen-title" data-i18n="new_entry">Novi unos</div>
   </div>
   <div class="section-label" data-i18n="select_service">Select service</div>
+  <button class="select-client-btn" onclick="openClientSelectionModal('entry')">
+    <i class="ti ti-user"></i> <span data-i18n="select_client">Izaberi klijenta</span>
+  </button>
+  <div id="selectedClientDisplay" style="margin-top: -8px; margin-bottom: 12px; font-size: 14px; color: var(--accent); font-weight: 600; display: none; text-align: center;"></div>
   <div class="services-grid" id="servicesGrid"></div>
   <div class="section-label" style="margin-top:16px;" data-i18n="entry_type">Entry type</div>
   <div class="type-toggle">
@@ -2083,22 +2143,72 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <h3 data-i18n="add_client">Dodaj klijenta</h3>
+    <div class="section-label" data-i18n="name">Ime</div>
+    <input class="input-plain" type="text" id="clientName" placeholder="..." data-i18n-placeholder="placeholder_dots">
+    <div class="section-label" data-i18n="surname">Prezime</div>
+    <input class="input-plain" type="text" id="clientSurname" placeholder="..." data-i18n-placeholder="placeholder_dots">
+    <div class="section-label" data-i18n="phone">Telefon</div>
+    <input class="input-plain" type="tel" id="clientPhone" placeholder="+387..." data-i18n-placeholder="phone_placeholder">
+    <div class="section-label" data-i18n="email">Email</div>
+    <input class="input-plain" type="email" id="clientEmail" placeholder="email@primjer.com" data-i18n-placeholder="email_placeholder">
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeClientModal()" data-i18n="cancel">Odustani</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="saveClient()" data-i18n="save">Spremi</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="clientDetailsModal">
+  <div class="modal">
+    <h3 id="detailsClientName">-</h3>
+    <div class="section-label" data-i18n="category">Kategorija</div>
+    <select id="clientCategory" class="input-plain" style="width:100%;" onchange="updateClientCategory()">
+      <option value="none" data-i18n="none">Nema</option>
+      <option value="VIP" data-i18n="vip">VIP</option>
+      <option value="Stalni" data-i18n="regular">Stalni</option>
+      <option value="Problematični" data-i18n="problematic">Problematični</option>
+    </select>
+    <div class="section-label" data-i18n="history">Istorija usluga</div>
+    <div id="clientHistoryList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;"></div>
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeClientDetailsModal()" data-i18n="close">Zatvori</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="clientSelectionModal">
+  <div class="modal">
+    <h3 data-i18n="select_client">Izaberi klijenta</h3>
+    <input type="text" id="selectionClientSearch" class="input-plain" placeholder="Pretraži..." data-i18n-placeholder="search_placeholder" oninput="renderSelectionClients()">
+    <div id="selectionClientsList" style="max-height: 300px; overflow-y: auto; margin-top: 15px;"></div>
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeClientSelectionModal()" data-i18n="cancel">Odustani</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="appointmentModal">
   <div class="modal">
     <h3 data-i18n="book_appointment">Book Appointment</h3>
+    <button class="select-client-btn" onclick="openClientSelectionModal('appointment')" style="margin-top: 15px;">
+      <i class="ti ti-user"></i> <span data-i18n="select_existing_client">Odaberi postojećeg klijenta</span>
+    </button>
     <div class="section-label" data-i18n="client">Client</div>
-    <input class="input-plain" type="text" id="appClient" placeholder="...">
+    <input class="input-plain" type="text" id="appClient" placeholder="..." data-i18n-placeholder="placeholder_dots">
     <div class="section-label" data-i18n="phone">Phone</div>
-    <input class="input-plain" type="tel" id="appPhone" placeholder="+387...">
+    <input class="input-plain" type="tel" id="appPhone" placeholder="+387..." data-i18n-placeholder="phone_placeholder">
     <div class="section-label" data-i18n="time">Time</div>
     <div id="appointmentWarning" style="display:none; margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: 12px;"></div>
     <input class="input-plain" type="time" id="appTime" oninput="checkNearbyAppointments()">
     <div class="section-label" data-i18n="service">Service</div>
     <select id="appService" class="input-plain" style="width:100%;"></select>
-    <div class="section-label">Notify Platform</div>
+    <div class="section-label" data-i18n="notify_platform">Notify Platform</div>
     <div class="type-toggle">
-      <button class="type-btn active-pay" id="btnWA" onclick="setPlatform('WA')">WhatsApp</button>
-      <button class="type-btn" id="btnViber" onclick="setPlatform('Viber')">Viber</button>
+      <button class="type-btn active-pay" id="btnWA" onclick="setPlatform('WA')" data-i18n="whatsapp">WhatsApp</button>
+      <button class="type-btn" id="btnViber" onclick="setPlatform('Viber')" data-i18n="viber">Viber</button>
     </div>
     <div class="modal-btns">
       <button class="lang-btn" onclick="closeAppointmentModal()" data-i18n="cancel">Cancel</button>
@@ -2165,6 +2275,17 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="saveClientPromptModal">
+  <div class="modal">
+    <h3 data-i18n="save_client_q">Želite li spremiti ovog klijenta u bazu klijenata?</h3>
+    <div id="saveClientDetails" style="margin: 15px 0; font-size: 14px; color: var(--text2); text-align: center;"></div>
+    <div class="modal-btns">
+      <button class="lang-btn" onclick="closeSaveClientPrompt()" data-i18n="no">Ne</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="confirmSaveClientFromAppointment()" data-i18n="yes">Da</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 </div> <!-- kraj appContent -->
@@ -2214,9 +2335,17 @@ function formatAppDate(dateStr, lang, includeTime = false) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
+  
+  // Map specific languages to proper locales for toLocaleDateString
+  let locale = lang;
+  if (lang === 'bs') locale = 'bs-BA';
+  else if (lang === 'hr') locale = 'hr-HR';
+  else if (lang === 'sr') locale = 'sr-RS';
+
   const bsLangs = ['bs', 'hr', 'sr'];
   const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
   if (includeTime) { options.hour = '2-digit'; options.minute = '2-digit'; }
+  
   if (bsLangs.includes(lang)) {
     const dd = String(d.getDate()).padStart(2, '0');
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -2228,7 +2357,7 @@ function formatAppDate(dateStr, lang, includeTime = false) {
     }
     return `${dd}.${mm}.${yyyy}.`;
   }
-  return d.toLocaleString(lang, options);
+  return d.toLocaleString(locale, options);
 }
 
 let translations = {};
@@ -2241,6 +2370,10 @@ let deleteId = null;
 let isOffline = false;
 let workerFilter = null;
 let earningsChart = null;
+let selectedClientId = null;
+let selectedClientForEntry = null;
+let clientSelectionContext = 'entry'; // 'entry' ili 'appointment'
+let pendingNewClientFromAppointment = null;
 
 // Global Error Logging
 window.onerror = function(msg, url, lineNo, columnNo, error) {
@@ -2315,6 +2448,9 @@ function applyTranslations() {
   }
   document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = currentCurrency);
   document.getElementById('todayDate').textContent = formatAppDate(new Date().toISOString().split('T')[0], currentLang);
+  
+  // Re-render calendar to update day names
+  renderCalendar();
 }
 
 function openCurrencyModal() {
@@ -2354,9 +2490,35 @@ async function setLanguage(lang) {
   hideLangMenu();
 }
 
-function toggleLangMenu() {
+window.addEventListener('click', () => {
+  hideLangMenu();
+});
+
+function toggleLangMenu(btn) {
   const d = document.getElementById('langDropdown');
-  if (d) d.style.display = d.style.display === 'block' ? 'none' : 'block';
+  if (!d) return;
+  
+  const isVisible = d.style.display === 'block';
+  
+  if (!isVisible && btn) {
+    // Pozicioniranje izbornika prema dugmetu koje ga je aktiviralo
+    const rect = btn.getBoundingClientRect();
+    
+    d.style.top = (rect.bottom + 8) + 'px';
+    
+    // Ako je dugme na desnoj strani ekrana, poravnaj izbornik uz desnu ivicu dugmeta
+    if (rect.left > window.innerWidth / 2) {
+      d.style.left = 'auto';
+      d.style.right = (window.innerWidth - rect.right) + 'px';
+    } else {
+      d.style.right = 'auto';
+      d.style.left = rect.left + 'px';
+    }
+    
+    d.style.display = 'block';
+  } else {
+    d.style.display = 'none';
+  }
 }
 
 function hideLangMenu() {
@@ -2454,6 +2616,7 @@ async function refreshAppData() {
   renderServices();
   renderPregled();
   renderAppointments();
+  renderClients();
   
   // Ažuriraj trial banner ako postoji
   if (typeof blok1UpdateTrialBanner === 'function') {
@@ -2568,6 +2731,15 @@ async function submitEntry() {
     entry.status = 'unpaid';
     entry.history = [];
   }
+  
+  if (selectedClientForEntry) {
+    entry.clientId = selectedClientForEntry.id;
+    entry.debtor = `${selectedClientForEntry.name} ${selectedClientForEntry.surname}`;
+  } else if (entry.debtor) {
+    // Ako imamo ime ali klijent nije izabran iz baze, ponudi spremanje (opciono, za sada samo loguj)
+    console.log("Entry for new client:", entry.debtor);
+  }
+
   await saveData('entries', entry);
   await syncWithFirestore(currentUser);
   showToast(translations['saved'] || 'Sačuvano!');
@@ -2577,6 +2749,12 @@ async function submitEntry() {
 
 function resetForm() {
   selectedService = null;
+  selectedClientForEntry = null;
+  const display = document.getElementById('selectedClientDisplay');
+  if (display) {
+    display.textContent = '';
+    display.style.display = 'none';
+  }
   document.getElementById('cijenaInput').value = '';
   document.getElementById('duznikInput').value = '';
   document.getElementById('dugIznosInput').value = '';
@@ -2629,9 +2807,7 @@ async function renderPregled() {
   const content = document.getElementById('pregledContent');
   if (!content) return;
   const rawEntries = await getAllData('entries');
-  const entries = [];
-  const seenIds = new Set();
-  rawEntries.forEach(e => { if (!seenIds.has(e.id)) { entries.push(e); seenIds.add(e.id); } });
+  const entries = getDeduplicatedEntries(rawEntries);
 
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
@@ -2889,12 +3065,24 @@ async function saveAppointment() {
     renderAppointments();
     checkUpcomingAppointments();
     showToast(translations['saved'] || "Sačuvano!");
+    
+    // Provjera da li klijent već postoji u bazi
+    const clients = await getAllData('clients');
+    const existingClient = clients.find(cl => (cl.name + ' ' + (cl.surname || '')).trim().toLowerCase() === c.toLowerCase() || (cl.phone && cl.phone === p));
+    
+    if (!existingClient) {
+      // Ponudi spremanje novog klijenta
+      pendingNewClientFromAppointment = { fullName: c, phone: p };
+      document.getElementById('saveClientDetails').textContent = `${c} (${p})`;
+      document.getElementById('saveClientPromptModal').classList.add('open');
+    }
+
     document.getElementById('appClient').value = '';
     document.getElementById('appTime').value = '';
     document.getElementById('appPhone').value = '';
   } catch (e) {
-    console.error("[App] Save appointment error:", e);
-    showToast(translations['error'] || "Greška pri spašavanju!", true);
+    console.error("Error saving appointment:", e);
+    showToast(translations['error'] || "Greška pri spremanju!", true);
   } finally {
     if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = translations['save'] || 'Spremi'; }
   }
@@ -2936,9 +3124,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal
 
 async function renderIzvjestaji(mode = 'selected') {
   const rawEntries = await getAllData('entries');
-  const entries = [];
-  const seenIds = new Set();
-  rawEntries.forEach(e => { if (!seenIds.has(e.id)) { entries.push(e); seenIds.add(e.id); } });
+  const entries = getDeduplicatedEntries(rawEntries);
 
   const monthInput = document.getElementById('reportMonthSelect');
   let selectedMonth = monthInput.value;
@@ -3048,7 +3234,8 @@ function showScreen(name) {
     if (cj) cj.value = selectedDate;
   }
   if (name === 'pregled') { document.querySelector('.nav-btn:nth-child(3)')?.classList.add('active'); renderPregled(); }
-  if (name === 'izvjestaji') { document.querySelector('.nav-btn:nth-child(4)')?.classList.add('active'); renderIzvjestaji(); }
+  if (name === 'klijenti') { document.querySelector('.nav-btn:nth-child(4)')?.classList.add('active'); renderClients(); }
+  if (name === 'izvjestaji') { document.querySelector('.nav-btn:nth-child(5)')?.classList.add('active'); renderIzvjestaji(); }
   if (name === 'owner') document.getElementById('navOwner')?.classList.add('active');
   window.scrollTo(0, 0);
 }
@@ -3062,6 +3249,11 @@ function renderCalendar() {
   if (cj) cj.value = selectedDate;
 
   const base = new Date(selectedDate);
+  
+  // Ručni nazivi dana za stabilan prikaz na BS/HR/SR
+  const dayNamesBS = ['NED', 'PON', 'UTO', 'SRI', 'ČET', 'PET', 'SUB'];
+  const bsLangs = ['bs', 'hr', 'sr'];
+
   for (let i = -3; i < 10; i++) {
     const d = new Date(base);
     d.setDate(base.getDate() + i);
@@ -3069,7 +3261,15 @@ function renderCalendar() {
     const card = document.createElement('div');
     card.className = 'day-card' + (iso === selectedDate ? ' active' : '');
     card.onclick = () => { selectedDate = iso; renderCalendar(); renderAppointments(); };
-    card.innerHTML = `<span class="day-name">${d.toLocaleDateString(currentLang, {weekday:'short'})}</span><span class="day-num">${d.getDate()}</span>`;
+    
+    let dayName = '';
+    if (bsLangs.includes(currentLang)) {
+      dayName = dayNamesBS[d.getDay()];
+    } else {
+      dayName = d.toLocaleDateString(currentLang, {weekday:'short'}).toUpperCase();
+    }
+    
+    card.innerHTML = `<span class="day-name">${dayName}</span><span class="day-num">${d.getDate()}</span>`;
     s.appendChild(card);
     if (iso === selectedDate) setTimeout(() => card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }), 50);
   }
@@ -3167,6 +3367,322 @@ window.toggleLangMenu = toggleLangMenu;
 window.hideLangMenu = hideLangMenu;
 window.setLanguage = setLanguage;
 window.closeReminderModal = closeReminderModal;
+
+// ── Pomoćne funkcije za deduplikaciju ──
+function getDeduplicatedEntries(rawEntries) {
+  const entriesMap = new Map();
+  rawEntries.forEach(e => {
+    const serviceName = e.services && e.services[0] ? e.services[0].name : '';
+    const semanticKey = `${e.date}|${e.time || ''}|${e.debtor || ''}|${serviceName}|${e.total || 0}`;
+    
+    if (!entriesMap.has(semanticKey)) {
+      entriesMap.set(semanticKey, e);
+    } else {
+      const existing = entriesMap.get(semanticKey);
+      const ePaid = e.status === 'paid';
+      const exPaid = existing.status === 'paid';
+      const eHist = (e.history || []).length;
+      const exHist = (existing.history || []).length;
+
+      if ((ePaid && !exPaid) || (eHist > exHist)) {
+        entriesMap.set(semanticKey, e);
+      }
+    }
+  });
+  return Array.from(entriesMap.values());
+}
+
+// ── Klijenti Funkcionalnost ──
+async function renderClients() {
+  const list = document.getElementById('clientsList');
+  if (!list) return;
+  const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+  const rawClients = await getAllData('clients');
+  
+  // Deduplikacija i filtriranje
+  const seen = new Set();
+  const clients = rawClients.filter(c => {
+    if (seen.has(c.id)) return false;
+    seen.add(c.id);
+    const fullName = `${c.name} ${c.surname}`.toLowerCase();
+    return fullName.includes(searchTerm) || (c.phone && c.phone.includes(searchTerm));
+  }).sort((a, b) => a.name.localeCompare(b.name));
+
+  list.innerHTML = clients.length === 0 
+    ? `<div class="empty-state" data-i18n="no_clients">${translations['no_clients'] || 'Nema klijenata'}</div>`
+    : clients.map(c => `
+      <div class="appointment-item" onclick="openClientDetails('${c.id}')" style="padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); background: var(--bg2); cursor: pointer;">
+        <div class="appointment-info">
+          <strong style="font-size: 16px; color: var(--text);">${c.name} ${c.surname}</strong><br>
+          <small style="color: var(--text2); font-size: 13px;">${c.phone || ''}</small>
+          ${c.category && c.category !== 'none' ? `<br><span class="badge" style="background: ${c.category === 'VIP' ? '#fbbf24' : (c.category === 'Problematični' ? 'var(--red)' : '#16a34a')}; font-size:10px; font-weight: 700; padding:4px 10px; border-radius:12px; color:${c.category === 'VIP' ? '#000' : '#fff'}; display: inline-block; margin-top: 6px;">${translations['tag_' + c.category.toLowerCase()] || c.category}</span>` : ''}
+        </div>
+        <div class="btn-icon" style="background: var(--bg3); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text2);">➔</div>
+      </div>
+    `).join('');
+}
+
+function openClientModal() {
+  document.getElementById('clientName').value = '';
+  document.getElementById('clientSurname').value = '';
+  document.getElementById('clientPhone').value = '';
+  document.getElementById('clientEmail').value = '';
+  document.getElementById('clientModal').classList.add('open');
+}
+
+window.closeClientModal = () => document.getElementById('clientModal').classList.remove('open');
+
+async function saveClient() {
+  const name = document.getElementById('clientName').value.trim();
+  const surname = document.getElementById('clientSurname').value.trim();
+  const phone = document.getElementById('clientPhone').value.trim();
+  const email = document.getElementById('clientEmail').value.trim();
+
+  if (!name) return showToast(translations['error_name'] || "Unesite ime!", true);
+
+  const clientData = {
+    id: Date.now().toString(),
+    name,
+    surname,
+    phone,
+    email,
+    category: 'none',
+    createdAt: new Date().toISOString()
+  };
+
+  try {
+    await saveData('clients', clientData);
+    await syncWithFirestore(currentUser);
+    showToast(translations['client_saved'] || "Klijent spremljen!");
+    closeClientModal();
+    renderClients();
+  } catch (e) {
+    console.error("Error saving client:", e);
+    showToast(translations['error'] || "Greška pri spremanju!", true);
+  }
+}
+
+async function openClientDetails(id) {
+  selectedClientId = id;
+  const clients = await getAllData('clients');
+  const client = clients.find(c => c.id === id);
+  if (!client) return;
+
+  document.getElementById('detailsClientName').textContent = `${client.name} ${client.surname}`;
+  document.getElementById('clientCategory').value = client.category || 'none';
+  
+  // Učitaj istoriju
+  const rawEntries = await getAllData('entries');
+  const clientFullName = `${client.name} ${client.surname}`;
+  const history = getDeduplicatedEntries(rawEntries)
+                       .filter(e => e.debtor === clientFullName || e.clientId === id)
+                       .sort((a, b) => new Date(b.date + ' ' + (b.time || '00:00')) - new Date(a.date + ' ' + (a.time || '00:00')));
+  
+  // Izračunaj sume
+  let totalValue = 0;
+  let totalPaid = 0;
+  let totalDebt = 0;
+
+  history.forEach(e => {
+    const entryTotal = parseFloat(e.total) || 0;
+    totalValue += entryTotal;
+
+    let paidForThisEntry = 0;
+    if (e.type === 'pay') {
+      paidForThisEntry = entryTotal;
+    } else if (e.history) {
+      paidForThisEntry = e.history.reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
+    }
+    totalPaid += paidForThisEntry;
+  });
+  
+  totalDebt = Math.max(0, totalValue - totalPaid);
+
+  const historyList = document.getElementById('clientHistoryList');
+  
+  let html = `
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px; background:var(--bg3); padding:12px; border-radius:12px; border:1px solid var(--border);">
+      <div style="text-align:center;">
+        <div style="font-size:8px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;" data-i18n="total_value">${translations['total_value'] || 'Total Value'}</div>
+        <div style="font-size:14px; font-weight:800; color:var(--text); letter-spacing:-0.5px;">${totalValue.toFixed(2)}</div>
+      </div>
+      <div style="text-align:center; border-left:1px solid var(--border); border-right:1px solid var(--border);">
+        <div style="font-size:8px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;" data-i18n="total_charged">${translations['total_charged'] || 'Total Charged'}</div>
+        <div style="font-size:14px; font-weight:800; color:#4ade80; letter-spacing:-0.5px;">${totalPaid.toFixed(2)}</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:8px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;" data-i18n="total_debt">${translations['total_debt'] || 'Total Debt'}</div>
+        <div style="font-size:14px; font-weight:800; color:var(--red); letter-spacing:-0.5px;">${totalDebt.toFixed(2)}</div>
+      </div>
+    </div>
+  `;
+
+  if (history.length === 0) {
+    html += `<div style="font-size:12px; color:var(--text2); text-align:center; padding:10px;" data-i18n="no_history">${translations['no_history'] || 'No history available'}</div>`;
+  } else {
+    html += history.map(e => {
+      const isDebt = e.type === 'dug' && e.status !== 'paid';
+      const paid = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
+      const remaining = (parseFloat(e.total) || 0) - paid;
+      
+      return `
+        <div style="padding:12px 0; border-bottom:1px solid var(--border); background:${isDebt ? 'rgba(255, 92, 92, 0.03)' : 'transparent'};">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:13px; font-weight:700; color:var(--text);">${e.date} <span style="font-size:11px; font-weight:400; color:var(--text3); margin-left:8px;">${e.time || ''}</span></div>
+              <div style="font-size:12px; color:var(--text2); margin-top:4px; font-weight:500;">${e.services?.[0]?.name || translations['service'] || 'Service'}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:14px; font-weight:800; color:${isDebt ? 'var(--red)' : 'var(--text)'};">${parseFloat(e.total).toFixed(2)} <span style="font-size:10px;">${currentCurrency}</span></div>
+              ${isDebt ? `<div style="font-size:9px; color:var(--red); font-weight:700; margin-top:4px; letter-spacing:1px;">${translations['debt'] || 'DEBT'}: ${remaining.toFixed(2)} ${currentCurrency}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  historyList.innerHTML = html;
+  document.getElementById('clientDetailsModal').classList.add('open');
+}
+
+window.closeClientDetailsModal = () => document.getElementById('clientDetailsModal').classList.remove('open');
+
+async function updateClientCategory() {
+  if (!selectedClientId) return;
+  const category = document.getElementById('clientCategory').value;
+  const clients = await getAllData('clients');
+  const client = clients.find(c => c.id === selectedClientId);
+  if (client) {
+    client.category = category;
+    await saveData('clients', client);
+    await syncWithFirestore(currentUser);
+    renderClients();
+  }
+}
+
+async function openClientSelectionModal(context = 'entry') {
+  clientSelectionContext = context;
+  document.getElementById('selectionClientSearch').value = '';
+  await renderSelectionClients();
+  document.getElementById('clientSelectionModal').classList.add('open');
+}
+
+window.closeClientSelectionModal = () => document.getElementById('clientSelectionModal').classList.remove('open');
+
+async function renderSelectionClients() {
+  const list = document.getElementById('selectionClientsList');
+  const searchTerm = document.getElementById('selectionClientSearch').value.toLowerCase();
+  const rawClients = await getAllData('clients');
+  
+  const seen = new Set();
+  const clients = rawClients.filter(c => {
+    if (seen.has(c.id)) return false;
+    seen.add(c.id);
+    const fullName = `${c.name} ${c.surname}`.toLowerCase();
+    return fullName.includes(searchTerm);
+  }).sort((a, b) => a.name.localeCompare(b.name));
+
+  list.innerHTML = clients.map(c => `
+    <div class="appointment-item" onclick="handleClientSelection('${c.id}', '${c.name}', '${c.surname}', '${c.phone || ''}')" style="padding: 14px 16px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--bg3); cursor: pointer;">
+      <strong style="font-size: 14px; color: var(--text);">${c.name} ${c.surname}</strong>
+      ${c.phone ? `<div style="font-size: 11px; color: var(--text2); margin-top: 2px;">${c.phone}</div>` : ''}
+    </div>
+  `).join('') + `
+    <div class="appointment-item" style="border: 1px dashed #7c3aed; color: #7c3aed; justify-content: center; padding: 14px; border-radius: 12px; margin-top: 12px; cursor: pointer; background: rgba(124, 58, 237, 0.05);" onclick="closeClientSelectionModal(); openClientModal();">
+      <strong style="font-size: 13px;" data-i18n="add_new_client">${translations['add_new_client'] || '+ DODAJ NOVOG KLIJENTA'}</strong>
+    </div>
+  `;
+}
+
+function handleClientSelection(id, name, surname, phone) {
+  if (clientSelectionContext === 'entry') {
+    selectClientForEntry(id, name, surname);
+  } else {
+    selectClientForAppointment(id, name, surname, phone);
+  }
+}
+
+function selectClientForEntry(id, name, surname) {
+  selectedClientForEntry = { id, name, surname };
+  const display = document.getElementById('selectedClientDisplay');
+  if (display) {
+    display.textContent = `👤 ${name} ${surname}`;
+    display.style.display = 'block';
+  }
+  
+  const duznikInput = document.getElementById('duznikInput');
+  if (duznikInput) duznikInput.value = `${name} ${surname}`;
+  
+  closeClientSelectionModal();
+}
+
+function selectClientForAppointment(id, name, surname, phone) {
+  const appClientInput = document.getElementById('appClient');
+  const appPhoneInput = document.getElementById('appPhone');
+  
+  if (appClientInput) appClientInput.value = `${name} ${surname}`;
+  if (appPhoneInput) appPhoneInput.value = phone;
+  
+  closeClientSelectionModal();
+}
+
+function closeSaveClientPrompt() {
+  document.getElementById('saveClientPromptModal').classList.remove('open');
+  pendingNewClientFromAppointment = null;
+}
+
+async function confirmSaveClientFromAppointment() {
+  if (!pendingNewClientFromAppointment) return;
+  
+  const parts = pendingNewClientFromAppointment.fullName.split(' ');
+  const name = parts[0];
+  const surname = parts.slice(1).join(' ');
+  
+  const clientData = {
+    id: Date.now().toString(),
+    name,
+    surname,
+    phone: pendingNewClientFromAppointment.phone,
+    category: 'none',
+    createdAt: new Date().toISOString()
+  };
+
+  try {
+    await saveData('clients', clientData);
+    await syncWithFirestore(currentUser);
+    showToast(translations['client_saved'] || "Klijent spremljen!");
+    renderClients();
+  } catch (e) {
+    console.error("Error saving client from appointment:", e);
+  } finally {
+    closeSaveClientPrompt();
+  }
+}
+
+// ── Pomoćne funkcije za stilizaciju ──
+function applyCommonStyles() {
+  // Osiguraj da svi modali imaju ispravan stil naslova
+  document.querySelectorAll('.modal h3').forEach(h3 => {
+    h3.style.fontWeight = "800";
+    h3.style.letterSpacing = "-0.5px";
+  });
+}
+// Pozovi pri učitavanju
+applyCommonStyles();
+
+window.renderClients = renderClients;
+window.saveClient = saveClient;
+window.openClientDetails = openClientDetails;
+window.updateClientCategory = updateClientCategory;
+window.openClientModal = openClientModal;
+window.openClientSelectionModal = openClientSelectionModal;
+window.renderSelectionClients = renderSelectionClients;
+window.handleClientSelection = handleClientSelection;
+window.selectClientForEntry = selectClientForEntry;
+window.selectClientForAppointment = selectClientForAppointment;
+window.closeSaveClientPrompt = closeSaveClientPrompt;
+window.confirmSaveClientFromAppointment = confirmSaveClientFromAppointment;
 
 window.toggleTheme = () => {
   const isLight = document.body.classList.toggle('light-mode');
@@ -3379,6 +3895,38 @@ window.checkAppAccess = function(user, userData) {
   blok1UpdateTrialBanner(userData);
 };
 </script>
+
+<div class="lang-dropdown" id="langDropdown" onclick="event.stopPropagation()">
+  <div class="lang-opt" onclick="setLanguage('en')">English</div>
+  <div class="lang-opt" onclick="setLanguage('bs')">Bosanski</div>
+  <div class="lang-opt" onclick="setLanguage('hr')">Hrvatski</div>
+  <div class="lang-opt" onclick="setLanguage('sr')">Srpski</div>
+  <div class="lang-opt" onclick="setLanguage('de')">Deutsch</div>
+  <div class="lang-opt" onclick="setLanguage('fr')">Français</div>
+  <div class="lang-opt" onclick="setLanguage('it')">Italiano</div>
+  <div class="lang-opt" onclick="setLanguage('es')">Español</div>
+  <div class="lang-opt" onclick="setLanguage('bg')">Български</div>
+  <div class="lang-opt" onclick="setLanguage('da')">Dansk</div>
+  <div class="lang-opt" onclick="setLanguage('el')">Ελληνικά</div>
+  <div class="lang-opt" onclick="setLanguage('fi')">Suomi</div>
+  <div class="lang-opt" onclick="setLanguage('hu')">Magyar</div>
+  <div class="lang-opt" onclick="setLanguage('ja')">日本語</div>
+  <div class="lang-opt" onclick="setLanguage('mk')">Македонски</div>
+  <div class="lang-opt" onclick="setLanguage('nl')">Nederlands</div>
+  <div class="lang-opt" onclick="setLanguage('no')">Norsk</div>
+  <div class="lang-opt" onclick="setLanguage('pl')">Polski</div>
+  <div class="lang-opt" onclick="setLanguage('pt')">Português</div>
+  <div class="lang-opt" onclick="setLanguage('ro')">Română</div>
+  <div class="lang-opt" onclick="setLanguage('ru')">Русский</div>
+  <div class="lang-opt" onclick="setLanguage('sl')">Slovenščina</div>
+  <div class="lang-opt" onclick="setLanguage('sv')">Svenska</div>
+  <div class="lang-opt" onclick="setLanguage('tr')">Türkçe</div>
+  <div class="lang-opt" onclick="setLanguage('fa')">فارسی</div>
+  <div class="lang-opt" onclick="setLanguage('ur')">اردو</div>
+  <div class="lang-opt" onclick="setLanguage('et')">Eesti</div>
+  <div class="lang-opt" onclick="setLanguage('ar')">العربية</div>
+  <div class="lang-opt" onclick="setLanguage('zh')">中文</div>
+</div>
 
 </body>
 </html>

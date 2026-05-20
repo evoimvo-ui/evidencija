@@ -106,6 +106,9 @@ export async function initDB() {
       if (!db.objectStoreNames.contains('services')) {
         db.createObjectStore('services', { keyPath: 'id' });
       }
+      if (!db.objectStoreNames.contains('clients')) {
+        db.createObjectStore('clients', { keyPath: 'id' });
+      }
       if (!db.objectStoreNames.contains('sync_queue')) {
         db.createObjectStore('sync_queue', { keyPath: 'id', autoIncrement: true });
       }
@@ -121,6 +124,9 @@ export async function saveData(storeName, data) {
     if (processedData.debtor) processedData.debtor = await encrypt(processedData.debtor);
     if (processedData.telefon) processedData.telefon = await encrypt(processedData.telefon);
     if (processedData.klijent) processedData.klijent = await encrypt(processedData.klijent);
+    if (processedData.name) processedData.name = await encrypt(processedData.name);
+    if (processedData.surname) processedData.surname = await encrypt(processedData.surname);
+    if (processedData.email) processedData.email = await encrypt(processedData.email);
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([storeName, 'sync_queue'], 'readwrite');
@@ -157,6 +163,9 @@ export async function getAllData(storeName) {
         if (decrypted.debtor) decrypted.debtor = await decrypt(decrypted.debtor);
         if (decrypted.telefon) decrypted.telefon = await decrypt(decrypted.telefon);
         if (decrypted.klijent) decrypted.klijent = await decrypt(decrypted.klijent);
+        if (decrypted.name) decrypted.name = await decrypt(decrypted.name);
+        if (decrypted.surname) decrypted.surname = await decrypt(decrypted.surname);
+        if (decrypted.email) decrypted.email = await decrypt(decrypted.email);
         return decrypted;
       }));
       resolve(results);
@@ -261,7 +270,7 @@ export async function syncWithFirestore(user) {
 export async function pullFromFirestore(user) {
   if (!user || !navigator.onLine) return;
 
-  const stores = ['entries', 'appointments', 'services'];
+  const stores = ['entries', 'appointments', 'services', 'clients'];
   const db = await initDB();
 
   // Provjeri sinkronizacijski red čekanja

@@ -2647,11 +2647,13 @@ async function refreshAppData() {
     roleEl.textContent = translations[roleKey] || currentUser.role;
   }
 
-  // Provjera Premium statusa (active ili trialing)
-  const isPremium = currentUser.subscriptionStatus === 'active' || 
+  // Provjera Premium statusa (active + premium plan, ili lifetime/trial)
+  const isPremium = (currentUser.subscriptionStatus === 'active' && currentUser.subscriptionPlan === 'premium') || 
                     currentUser.subscriptionStatus === 'lifetime' || 
-                    currentUser.subscriptionStatus === 'trialing' || 
                     (currentUser.subscriptionStatus === 'trial' && !window._isTrialExpired(currentUser));
+
+  // Provjera da li korisnik ima bilo kakav plaćeni plan (Basic ili Premium)
+  const hasPaidPlan = currentUser.subscriptionStatus === 'active' || currentUser.subscriptionStatus === 'lifetime';
 
   const navOwner = document.getElementById('navOwner');
   if (isPremium && (currentUser.role === 'owner' || currentUser.role === 'solo')) {
@@ -4000,10 +4002,9 @@ const BLOK1_PRICES = {
 function blok1UpdateTrialBanner(userData) {
   const banner = document.getElementById('trialBanner');
   if (!banner) return;
-  const isPremium = userData?.subscriptionStatus === 'active' || 
-                    userData?.subscriptionStatus === 'lifetime' || 
-                    userData?.subscriptionStatus === 'trialing';
-  if (isPremium) { banner.style.display = 'none'; return; }
+  const isPaid = userData?.subscriptionStatus === 'active' || 
+                 userData?.subscriptionStatus === 'lifetime';
+  if (isPaid) { banner.style.display = 'none'; return; }
   
   const days = window._trialDaysLeft(userData);
   if (days <= 0) { banner.style.display = 'none'; return; }
@@ -4068,16 +4069,16 @@ window.onHideUpgradeScreen = function() {
   document.getElementById('upgradeScreen').classList.remove('active');
 };
 
-// Automatsko zatvaranje upgrade ekrana ako korisnik postane Premium
+// Automatsko zatvaranje upgrade ekrana ako korisnik postane Premium ili Basic
 function checkAndAutoCloseUpgrade(userData) {
-  const isPremium = userData?.subscriptionStatus === 'active' || 
-                    userData?.subscriptionStatus === 'lifetime' || 
-                    userData?.subscriptionStatus === 'trialing';
-  if (isPremium) {
+  const isPaid = userData?.subscriptionStatus === 'active' || 
+                 userData?.subscriptionStatus === 'lifetime';
+  if (isPaid) {
     const upgradeScreen = document.getElementById('upgradeScreen');
     if (upgradeScreen && upgradeScreen.classList.contains('active')) {
       window.onHideUpgradeScreen();
-      showToast(translations['premium_activated'] || "Premium status aktiviran!");
+      const planName = userData.subscriptionPlan === 'premium' ? 'Premium' : 'Basic';
+      showToast(`${planName} status aktiviran!`);
     }
   }
 }
@@ -4098,11 +4099,16 @@ window.checkAndShowTos = function(user, userData) {
 };
 
 window.checkAppAccess = function(user, userData) {
-  const isPremium = userData?.subscriptionStatus === 'active' || 
-                    userData?.subscriptionStatus === 'lifetime' || 
-                    userData?.subscriptionStatus === 'trialing';
+  const isPremium = (userData?.subscriptionStatus === 'active' && userData?.subscriptionPlan === 'premium') || 
+                    userData?.subscriptionStatus === 'lifetime';
+  
+  const isBasic = (userData?.subscriptionStatus === 'active' && userData?.subscriptionPlan === 'basic');
+  
+  const isTrialActive = userData?.subscriptionStatus === 'trial' && !window._isTrialExpired(userData);
 
-  if (!isPremium && window._isTrialExpired(userData)) {
+  const hasAccess = isPremium || isBasic || isTrialActive;
+
+  if (!hasAccess) {
     // Sakrij app, prikaži expired screen
     const appContent = document.getElementById('appContent');
     if (appContent) appContent.style.display = 'none';

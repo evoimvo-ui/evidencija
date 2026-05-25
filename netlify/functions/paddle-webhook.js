@@ -72,8 +72,9 @@ exports.handler = async (event) => {
     // Paddle v2 format: data.customer_id
     const customerId = data.customer_id;
     const subscriptionId = data.subscription_id || null;
+    const planFromCustomData = data.custom_data ? data.custom_data.plan : null;
 
-    console.log(`[Paddle Webhook] Event: ${eventType}, Customer: ${customerId}`);
+    console.log(`[Paddle Webhook] Event: ${eventType}, Customer: ${customerId}, Plan: ${planFromCustomData}`);
 
     // 2. MAPIRANJE EVENTA NA STATUS
     let newStatus = null;
@@ -99,32 +100,33 @@ exports.handler = async (event) => {
     const usersRef = db.collection('users');
     const snapshot = await usersRef.where('paddleCustomerId', '==', customerId).limit(1).get();
 
+    const updateData = {
+      subscriptionStatus: newStatus,
+      subscriptionId: subscriptionId,
+      paddleCustomerId: customerId,
+      subscriptionUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    // Ako imamo plan u custom_data, spremamo ga
+    if (planFromCustomData) {
+      updateData.subscriptionPlan = planFromCustomData;
+    }
+
     if (snapshot.empty) {
-      // Ako nismo našli po customerId, možda je ovo prvi event i trebamo naći po custom_data/passthrough
-      // U Paddle v2, custom_data se nalazi u data.custom_data
+      // Ako nismo našli po customerId, možda je ovo prvi event i trebamo naći po custom_data/userId
       const userIdFromCustomData = data.custom_data ? data.custom_data.userId : null;
       
       if (userIdFromCustomData) {
         console.log(`[Paddle Webhook] Korisnik nađen preko custom_data: ${userIdFromCustomData}`);
-        await usersRef.doc(userIdFromCustomData).update({
-          subscriptionStatus: newStatus,
-          subscriptionId: subscriptionId,
-          paddleCustomerId: customerId,
-          subscriptionUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
+        await usersRef.doc(userIdFromCustomData).update(updateData);
       } else {
         console.warn(`[Paddle Webhook] Korisnik sa customerId ${customerId} nije pronađen u bazi.`);
         return { statusCode: 200, body: 'User not found' };
       }
     } else {
       const userDoc = snapshot.docs[0];
-      await userDoc.ref.update({
-        subscriptionStatus: newStatus,
-        subscriptionId: subscriptionId,
-        paddleCustomerId: customerId,
-        subscriptionUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      console.log(`[Paddle Webhook] Status ažuriran za korisnika ${userDoc.id}: ${newStatus}`);
+      await userDoc.ref.update(updateData);
+      console.log(`[Paddle Webhook] Status ažuriran za korisnika ${userDoc.id}: ${newStatus} (${planFromCustomData || 'n/a'})`);
     }
 
     return {

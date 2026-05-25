@@ -24,24 +24,40 @@ const db = admin.firestore();
  * Verifikacija Paddle v2 potpisa
  */
 function verifySignature(signatureHeader, rawBody, secret) {
-  if (!signatureHeader || !rawBody || !secret) return false;
+  if (!signatureHeader || !rawBody || !secret) {
+    console.error('[Verify] Missing required params');
+    return false;
+  }
 
   const parts = signatureHeader.split(';');
   const tsPart = parts.find(p => p.startsWith('ts='));
-  const hPart = parts.find(p => p.startsWith('h='));
+  const v1Part = parts.find(p => p.startsWith('v1='));
 
-  if (!tsPart || !hPart) return false;
+  if (!tsPart || !v1Part) {
+    console.error('[Verify] Missing ts or v1');
+    return false;
+  }
 
   const timestamp = tsPart.split('=')[1];
-  const receivedHash = hPart.split('=')[1];
+  const receivedSignature = v1Part.split('=')[1];
 
-  const signedPayload = `${timestamp}:${rawBody}`;
-  const expectedHash = crypto
+  const payload = `${timestamp}:${rawBody}`;
+  const expectedSignature = crypto
     .createHmac('sha256', secret)
-    .update(signedPayload)
+    .update(payload)
     .digest('hex');
 
-  return expectedHash === receivedHash;
+  console.log('[Verify] Expected:', expectedSignature);
+  console.log('[Verify] Received:', receivedSignature);
+
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature),
+      Buffer.from(receivedSignature)
+    );
+  } catch (e) {
+    return false;
+  }
 }
 
 exports.handler = async (event) => {
@@ -51,7 +67,7 @@ exports.handler = async (event) => {
 
   const signature = event.headers['paddle-signature'];
   const rawBody = event.body;
-  const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET || process.env.PADDLE_PUBLIC_KEY; // Podržavamo oba naziva env varijable
+  const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
 
   // 1. VERIFIKACIJA POTPISA
   if (!verifySignature(signature, rawBody, webhookSecret)) {
@@ -64,9 +80,9 @@ exports.handler = async (event) => {
     const eventType = body.event_type;
     const data = body.data;
     
-    // Paddle v2 format: data.customer_id, data.id (za subscription)
+    // Paddle v2 format: data.customer_id
     const customerId = data.customer_id;
-    const subscriptionId = data.id;
+    const subscriptionId = data.subscription_id || null;
 
     console.log(`[Paddle Webhook] Event: ${eventType}, Customer: ${customerId}`);
 

@@ -23,61 +23,45 @@ const db = admin.firestore();
 /**
  * Verifikacija Paddle v2 potpisa
  */
-function verifySignature(signatureHeader, rawBody, secret) {
-  if (!signatureHeader || !rawBody || !secret) {
-    if (!secret) console.error('[Verify] PADDLE_WEBHOOK_SECRET is missing in environment variables!');
-    if (!signatureHeader) console.error('[Verify] paddle-signature header is missing!');
-    return false;
-  }
-
-  const parts = signatureHeader.split(';');
-  const tsPart = parts.find(p => p.startsWith('ts='));
-  const v1Part = parts.find(p => p.startsWith('v1='));
-
-  if (!tsPart || !v1Part) {
-    console.error('[Verify] Missing ts or v1 in header');
-    return false;
-  }
-
-  const timestamp = tsPart.split('=')[1];
-  const receivedSignature = v1Part.split('=')[1];
-
-  const payload = `${timestamp}:${rawBody}`;
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-
-  // crypto.timingSafeEqual zahtijeva identičnu dužinu Buffera
-  const expectedBuffer = Buffer.from(expectedSignature);
-  const receivedBuffer = Buffer.from(receivedSignature);
-
-  if (expectedBuffer.length !== receivedBuffer.length) {
-    console.error('[Verify] Signature length mismatch. Check if your PADDLE_WEBHOOK_SECRET is correct.');
-    return false;
-  }
-
-  return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
-}
-
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const signature = event.headers['paddle-signature'];
-  
-  // BITNO: Ako je body base64 encoded (Netlify), moramo ga dekodirati
-  const rawBody = event.isBase64Encoded 
-    ? Buffer.from(event.body, 'base64').toString('utf8') 
-    : event.body;
-
+  const sigHeader = event.headers['paddle-signature'];
+  const rawBody = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8').toString('utf8');
   const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
 
+  if (!sigHeader || !webhookSecret) {
+    console.error('[Verify] Missing signature header or webhook secret');
+    return { statusCode: 401, body: 'Missing required parameters' };
+  }
+
   // 1. VERIFIKACIJA POTPISA
-  if (!verifySignature(signature, rawBody, webhookSecret)) {
-    console.error('[Paddle Webhook] Verifikacija potpisa neuspješna.');
-    return { statusCode: 401, body: 'Unauthorized: Invalid Signature' };
+  try {
+    const parts = Object.fromEntries(sigHeader.split(';').map(p => p.split('=')));
+    const timestamp = parts['ts'];
+    const h1 = parts['h1'];
+
+    if (!timestamp || !h1) {
+      console.error('[Verify] Missing ts or h1 in header');
+      return { statusCode: 401, body: 'Invalid signature format' };
+    }
+
+    const signedPayload = `${timestamp}:${rawBody}`;
+    const hmac = crypto.createHmac('sha256', webhookSecret);
+    hmac.update(signedPayload);
+    const computedSignature = hmac.digest('hex');
+
+    if (computedSignature !== h1) {
+      console.error('[Verify] Signature mismatch');
+      console.log('[Verify] Computed:', computedSignature);
+      console.log('[Verify] Received:', h1);
+      return { statusCode: 401, body: 'Invalid signature' };
+    }
+  } catch (err) {
+    console.error('[Verify] Error during verification:', err.message);
+    return { statusCode: 401, body: 'Error during verification' };
   }
 
   try {

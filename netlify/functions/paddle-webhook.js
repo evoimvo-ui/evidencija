@@ -25,7 +25,8 @@ const db = admin.firestore();
  */
 function verifySignature(signatureHeader, rawBody, secret) {
   if (!signatureHeader || !rawBody || !secret) {
-    console.error('[Verify] Missing required params');
+    if (!secret) console.error('[Verify] PADDLE_WEBHOOK_SECRET is missing in environment variables!');
+    if (!signatureHeader) console.error('[Verify] paddle-signature header is missing!');
     return false;
   }
 
@@ -34,7 +35,7 @@ function verifySignature(signatureHeader, rawBody, secret) {
   const v1Part = parts.find(p => p.startsWith('v1='));
 
   if (!tsPart || !v1Part) {
-    console.error('[Verify] Missing ts or v1');
+    console.error('[Verify] Missing ts or v1 in header');
     return false;
   }
 
@@ -47,17 +48,16 @@ function verifySignature(signatureHeader, rawBody, secret) {
     .update(payload)
     .digest('hex');
 
-  console.log('[Verify] Expected:', expectedSignature);
-  console.log('[Verify] Received:', receivedSignature);
+  // crypto.timingSafeEqual zahtijeva identičnu dužinu Buffera
+  const expectedBuffer = Buffer.from(expectedSignature);
+  const receivedBuffer = Buffer.from(receivedSignature);
 
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature),
-      Buffer.from(receivedSignature)
-    );
-  } catch (e) {
+  if (expectedBuffer.length !== receivedBuffer.length) {
+    console.error('[Verify] Signature length mismatch. Check if your PADDLE_WEBHOOK_SECRET is correct.');
     return false;
   }
+
+  return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
 }
 
 exports.handler = async (event) => {
@@ -66,7 +66,12 @@ exports.handler = async (event) => {
   }
 
   const signature = event.headers['paddle-signature'];
-  const rawBody = event.body;
+  
+  // BITNO: Ako je body base64 encoded (Netlify), moramo ga dekodirati
+  const rawBody = event.isBase64Encoded 
+    ? Buffer.from(event.body, 'base64').toString('utf8') 
+    : event.body;
+
   const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
 
   // 1. VERIFIKACIJA POTPISA

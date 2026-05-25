@@ -78,6 +78,7 @@
     "error_no_phone": "Няма предоставен телефонен номер!",
     "cancel": "Отказ",
     "new_service": "Нова услуга",
+    "edit_service": "Edit service",
     "login_title": "Вход",
     "confirm_delete_msg": "Сигурни ли сте, че искаτε да изтриετε това?",
     "confirm": "Потвърди",
@@ -97,6 +98,9 @@
     "print_report": "ПЕЧАТ НА ОТЧЕТ",
     "remove": "Премахни",
     "debtor_name": "Иμε на длъжника",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Вσιчки услуги",
     "none": "Няма",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Приоритетна поддръжка",
     "coming_soon": "Очаквайте скоро",
     "secure_payment_note": "💳 Сигурно плащане чрез Paddle — без дългосрочни ангажименти.<br>Абонаментите очаквайте скоро. Благодарим за търпението!",
-    "close_btn": "Затвори"
+    "close_btn": "Затвори",
+    "tos_intro": "Моля, прочетете нашите условия, преди да продължите. Използвайки това приложение, вие потвърждавате, че сте прочели и приели следните документи:",
+    "tos_link_terms": "Общи условия",
+    "tos_link_privacy": "Политика за поверителност",
+    "tos_note": "Тези документи уреждат използването на всички приложения на платформата ei-apps.com, включително Work Records.",
+    "tos_checkbox": "Прочетох и приемам Общите условия и Политиката за поверителност",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

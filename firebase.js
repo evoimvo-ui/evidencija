@@ -17,7 +17,7 @@ export async function requestNotificationPermission() {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      const token = await getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY_HERE' });
+      const token = await getToken(messaging, { vapidKey: 'BPJaCez1UnehEOO9pQNT5SlLBDY0ojnVIj51uAr2hZKjtMKE3u-6sonFVjd5-u7vHoliajeXyXcJE2SlGJPNEjU' });
       return token;
     }
   } catch (e) {

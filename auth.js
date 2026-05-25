@@ -228,9 +228,21 @@ export async function login(email, pass) {
   }
 }
 
+import { 
+  saveData, 
+  getAllData, 
+  deleteData, 
+  syncWithFirestore, 
+  pullFromFirestore,
+  clearLocalData
+} from './db.js';
+
 export async function logout() {
-  await signOut(auth);
-  location.reload();
+  const cleared = await clearLocalData();
+  if (cleared) {
+    await signOut(auth);
+    location.reload(); 
+  }
 }
 
 export async function createShop(userId, shopName) {

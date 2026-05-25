@@ -78,6 +78,7 @@
     "error_no_phone": "Aucun numéro de téléphone fourni !",
     "cancel": "Annuler",
     "new_service": "Nouveau service",
+    "edit_service": "Edit service",
     "login_title": "Connexion",
     "confirm_delete_msg": "Voulez-vous vraiment supprimer ceci ?",
     "confirm": "Confirmer",
@@ -97,6 +98,9 @@
     "print_report": "IMPRIMER LE RAPPORT",
     "remove": "Supprimer",
     "debtor_name": "Nom du débiteur",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Tous les services",
     "none": "Aucun",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Support prioritaire",
     "coming_soon": "Bientôt disponible",
     "secure_payment_note": "💳 Paiement sécurisé via Paddle — pas d'engagements à long terme.<br>Abonnements bientôt disponibles. Merci de votre patience !",
-    "close_btn": "Fermer"
+    "close_btn": "Fermer",
+    "tos_intro": "Veuillez lire nos conditions avant de continuer. En utilisant cette application, vous confirmez avoir lu et accepté les documents suivants :",
+    "tos_link_terms": "Conditions d'utilisation",
+    "tos_link_privacy": "Politique de confidentialité",
+    "tos_note": "Ces documents régissent l'utilisation de toutes les applications sur la plateforme ei-apps.com, y compris Work Records.",
+    "tos_checkbox": "J'ai lu et j'accepte les conditions d'utilisation et la politique de confidentialité",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

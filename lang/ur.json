@@ -78,6 +78,7 @@
     "error_no_phone": "فون نمبر فراہم نہیں کیا گیا!",
     "cancel": "منسوخ کریں",
     "new_service": "نئی سروس",
+    "edit_service": "Edit service",
     "login_title": "لاگ ان",
     "confirm_delete_msg": "کیا آپ واقعی اسے حذف کرنا چاہتے ہیں؟",
     "confirm": "تصدیق کریں",
@@ -97,6 +98,9 @@
     "print_report": "رپورٹ پرنٹ کریں",
     "remove": "Remove",
     "debtor_name": "قرض دار کا نام",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "تمام خدمات",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "ترجیحی مدد",
     "coming_soon": "جلد آ رہا ہے",
     "secure_payment_note": "💳 Paddle کے ذریعے محفوظ ادائیگی — کوئی طویل مدتی وعدہ نہیں۔<br>سبسکرپشنز جلد آ رہی ہیں۔ آپ کے صبر کا شکریہ!",
-    "close_btn": "بند کریں"
+    "close_btn": "بند کریں",
+    "tos_intro": "براہ کرم جاری رکھنے سے پہلے ہماری شرائط پڑھیں۔ اس ایپلی کیشن کو استعمال کر کے آپ تصدیق کرتے ہیں کہ آپ نے درج ذیل دستاویزات کو پڑھ اور قبول کر لیا ہے:",
+    "tos_link_terms": "سروس کی شرائط",
+    "tos_link_privacy": "رازداری کی پالیسی",
+    "tos_note": "یہ دستاویزات ei-apps.com پلیٹ فارم پر موجود تمام ایپلی کیشنز کے استعمال پر لاگو ہوتی ہیں، بشمول Work Records۔",
+    "tos_checkbox": "میں نے سروس کی شرائط اور رازداری کی پالیسی پڑھ لی ہے اور قبول کرتا ہوں",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

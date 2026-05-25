@@ -78,6 +78,7 @@
     "error_no_phone": "未提供电话号码！",
     "cancel": "取消",
     "new_service": "新服务",
+    "edit_service": "Edit service",
     "login_title": "登录",
     "confirm_delete_msg": "您确定要删除吗？",
     "confirm": "确认",
@@ -97,6 +98,9 @@
     "print_report": "打印报告",
     "remove": "移除",
     "debtor_name": "债务人姓名",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "所有服务",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "优先支持",
     "coming_soon": "即将推出",
     "secure_payment_note": "💳 通过 Paddle 安全支付 — 无长期承诺。<br>订阅功能即将推出。感谢您的耐心等待！",
-    "close_btn": "关闭"
+    "close_btn": "关闭",
+    "tos_intro": "在继续之前，请阅读我们的条款。使用此应用程序即表示您确认已阅读并接受以下文件：",
+    "tos_link_terms": "服务条款",
+    "tos_link_privacy": "隐私政策",
+    "tos_note": "这些文件适用于 ei-apps.com 平台上的所有应用程序，包括 Work Records。",
+    "tos_checkbox": "我已阅读并接受服务条款和隐私政策",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

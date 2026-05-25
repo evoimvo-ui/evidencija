@@ -37,7 +37,12 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+    caches.match(e.request).then(r => {
+      if (r) return r;
+      
+      const requestToFetch = new Request(e.request, { redirect: 'follow' });
+
+      return fetch(requestToFetch).then(res => {
       // Ne keširamo dinamičke pozive ka Firebase bazi (firestore.googleapis.com)
       // jer to rješava sama Firebase biblioteka
       if (e.request.url.includes('firestore.googleapis.com')) return res;
@@ -45,6 +50,7 @@ self.addEventListener('fetch', e => {
       const clone = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, clone));
       return res;
-    }))
+    }); // Zatvara fetch.then()
+  }) // Zatvara caches.match.then()
   );
 });

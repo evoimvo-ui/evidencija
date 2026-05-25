@@ -78,6 +78,7 @@
     "error_no_phone": "Telefon numarası belirtilmedi!",
     "cancel": "İptal",
     "new_service": "Yeni hizmet",
+    "edit_service": "Edit service",
     "login_title": "Giriş",
     "confirm_delete_msg": "Bunu silmek istediğinizden emin misiniz?",
     "confirm": "Onayla",
@@ -97,6 +98,9 @@
     "print_report": "RAPORU YAZDIR",
     "remove": "Kaldır",
     "debtor_name": "Borçlu adı",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Tüm hizmetler",
     "none": "Yok",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Öncelikli destek",
     "coming_soon": "Çok yakında",
     "secure_payment_note": "💳 Paddle üzerinden güvenli ödeme — uzun vadeli taahhüt yok.<br>Abonelikler yakında gelecek. Sabrınız için teşekkürler!",
-    "close_btn": "Kapat"
+    "close_btn": "Kapat",
+    "tos_intro": "Devam etmeden önce lütfen şartlarımızı okuyun. Bu uygulamayı kullanarak aşağıdaki belgeleri okuduğunuzu ve kabul ettiğinizi onaylamış olursunuz:",
+    "tos_link_terms": "Kullanım Şartları",
+    "tos_link_privacy": "Gizlilik Politikası",
+    "tos_note": "Bu belgeler, Work Records dahil olmak üzere ei-apps.com platformundaki tüm uygulamaların kullanımını yönetir.",
+    "tos_checkbox": "Kullanım Şartlarını ve Gizlilik Politikasını okudum ve kabul ediyorum",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

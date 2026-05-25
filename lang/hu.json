@@ -78,6 +78,7 @@
     "error_no_phone": "Nincs megadva telefonszám!",
     "cancel": "Mégse",
     "new_service": "Új szolgáltatás",
+    "edit_service": "Edit service",
     "login_title": "Bejelentkezés",
     "confirm_delete_msg": "Biztosan törölni szeretné?",
     "confirm": "Megerősítés",
@@ -97,6 +98,9 @@
     "print_report": "JELENTÉS NYOMTATÁSA",
     "remove": "Eltávolítás",
     "debtor_name": "Adós neve",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Minden szolgáltatás",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Elsőbbségi támogatás",
     "coming_soon": "Hamaroasan elérhető",
     "secure_payment_note": "💳 Biztonságos fizetés a Paddle-ön keresztül — nincsenek hosszú távú kötelezettségek.<br>Az előfizetések hamarosan elérhetőek lesznek. Köszönjük türelmét!",
-    "close_btn": "Bezárás"
+    "close_btn": "Bezárás",
+    "tos_intro": "Kérjük, folytatás előtt olvassa el feltételeinket. Az alkalmazás használatával megerősíti, hogy elolvasta és elfogadta az alábbi dokumentumokat:",
+    "tos_link_terms": "Felhasználási feltételek",
+    "tos_link_privacy": "Adatvédelmi irányelvek",
+    "tos_note": "Ezek a dokumentumok szabályozzák az ei-apps.com platformon található összes alkalmazás használatát, beleértve a Work Records-ot is.",
+    "tos_checkbox": "Elolvastam és elfogadom a felhasználási feltételeket és az adatvédelmi irányelveket",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

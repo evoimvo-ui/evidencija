@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
 <link rel="icon" href="/icon-512.png" type="image/png">
 <meta name="theme-color" content="#0f0f0f">
 <title>Work Records</title>
@@ -12,6 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Work Records">
 <link rel="apple-touch-icon" href="icon-512.png">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -1831,37 +1833,27 @@
     <h2>📋 Uvjeti korištenja</h2>
     <p>Pročitajte i prihvatite uvjete prije nastavka.</p>
     <div class="tos-body">
-      <strong>Uvjeti korištenja — Evidencija rada</strong><br><br>
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <strong style="font-size: 1.1rem;">Terms of Service — Work Records</strong>
+      </div>
+      <p data-i18n="tos_intro">Please read our terms before continuing. By using this application you confirm that you have read and accepted the following documents:</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; margin: 20px 0;">
+        <a href="https://www.ei-apps.com/tos" target="_blank" style="display: flex; align-items: center; padding: 12px; background: var(--bg3); border-radius: 8px; color: var(--text); text-decoration: none; border: 1px solid var(--border);">
+          <span style="margin-right: 10px;">📄</span> <span data-i18n="tos_link_terms">Terms of Service</span>
+        </a>
+        <a href="https://www.ei-apps.com/privacy-policy" target="_blank" style="display: flex; align-items: center; padding: 12px; background: var(--bg3); border-radius: 8px; color: var(--text); text-decoration: none; border: 1px solid var(--border);">
+          <span style="margin-right: 10px;">🔒</span> <span data-i18n="tos_link_privacy">Privacy Policy</span>
+        </a>
+      </div>
 
-      <strong>1. Prihvatanje uvjeta</strong><br>
-      Korištenjem ove aplikacije potvrđujete da ste pročitali i razumjeli ove Uvjete
-      korištenja te da ih prihvatate u potpunosti.<br><br>
-
-      <strong>2. Korisnički račun</strong><br>
-      Odgovorni ste za sigurnost svog korisničkog računa i lozinke. Molimo vas da
-      odmah prijavite svaku neovlaštenu upotrebu vašeg računa.<br><br>
-
-      <strong>3. Podaci i privatnost</strong><br>
-      Vaši podaci se pohranjuju sigurno putem Firebase infrastrukture. Nećemo
-      prodavati vaše podatke trećim stranama.<br><br>
-
-      <strong>4. Pretplatni planovi</strong><br>
-      Aplikacija nudi besplatni probni period od 30 dana. Nakon isteka, potrebna je
-      aktivna pretplata za nastavak korištenja. Plaćanje se vrši putem Paddle
-      payment processora.<br><br>
-
-      <strong>5. Ograničenje odgovornosti</strong><br>
-      Aplikacija se pruža "kakva jest". Ne odgovaramo za gubitak podataka ili štetu
-      nastalu korištenjem aplikacije.<br><br>
-
-      <strong>6. Izmjene uvjeta</strong><br>
-      Zadržavamo pravo izmjene ovih uvjeta uz prethodnu obavijest u aplikaciji.<br><br>
-
-      <em>Verzija 1.0 — Placeholder. Bit će ažurirano pri registraciji obrta.</em>
+      <p style="font-size: 0.9rem; color: var(--text2); font-style: italic;" data-i18n="tos_note">
+        These documents govern the use of all applications on the ei-apps.com platform, including Work Records.
+      </p>
     </div>
     <label class="tos-checkbox-row">
       <input type="checkbox" id="tosCheckbox" onchange="onTosCheckboxChange()">
-      Pročitao/la sam i prihvatam Uvjete korištenja
+      <span data-i18n="tos_checkbox">I have read and accept the Terms of Service and Privacy Policy</span>
     </label>
     <button id="tosAcceptBtn" class="blok1-btn-primary" disabled onclick="onTosAccept()">
       Prihvatam i nastavljam →
@@ -1905,7 +1897,7 @@
           <li data-i18n="feature_basic_stats">Osnovna statistika</li>
           <li data-i18n="feature_export">Export podataka</li>
         </ul>
-        <span class="plan-soon" data-i18n="coming_soon">Uskoro dostupno</span>
+        <button class="blok1-btn-primary" onclick="window.openCheckout(window._currentUserData, 'basic')" data-i18n="subscribe_now">Subscribe</button>
       </div>
       <div class="plan-card featured">
         <div class="plan-badge" data-i18n="popular_badge">POPULARNO</div>
@@ -1918,13 +1910,12 @@
           <li data-i18n="feature_advanced_stats">Napredna statistika</li>
           <li data-i18n="feature_priority_support">Prioritetna podrška</li>
         </ul>
-        <span class="plan-soon" data-i18n="coming_soon">Uskoro dostupno</span>
+        <button class="blok1-btn-primary" onclick="window.openCheckout(window._currentUserData, 'premium')" data-i18n="subscribe_now">Subscribe</button>
       </div>
     </div>
 
-    <p class="upgrade-note" data-i18n="secure_payment_note">
-      💳 Sigurno plaćanje putem Paddle — bez dugoročnih obveza.<br>
-      Pretplate uskoro dostupne. Hvala na strpljenju!
+    <p class="upgrade-note">
+      💳 <span data-i18n="secure_payment_note">Sigurno plaćanje putem Paddle — bez dugoročnih obveza.</span>
     </p>
     <button class="blok1-btn-secondary" id="upgradeCloseBtn" onclick="onHideUpgradeScreen()" data-i18n="close_btn">
       Zatvori
@@ -1971,7 +1962,7 @@
   <button class="nav-btn" onclick="showScreen('pregled')"><span>📊</span><div data-i18n="overview">Overview</div></button>
   <button class="nav-btn" onclick="showScreen('klijenti')"><span>👥</span><div data-i18n="clients">Klijenti</div></button>
   <button class="nav-btn" onclick="showScreen('izvjestaji')"><span>📈</span><div data-i18n="reports">Reports</div></button>
-  <button class="nav-btn full-width" id="navOwner" style="display:none;" onclick="showScreen('owner')"><span>🏢</span><div data-i18n="shop">Shop</div></button>
+  <button class="nav-btn" id="navOwner" style="display:none;" onclick="showScreen('owner')"><span>🏢</span><div data-i18n="shop">Shop</div></button>
 </nav>
 
 <div class="screen" id="screen-izvjestaji">
@@ -2136,9 +2127,14 @@
   <div class="modal">
     <h3 data-i18n="new_service">New service</h3>
     <input class="input-plain" type="text" id="newServiceInput" placeholder="...">
+    <input type="hidden" id="editServiceId">
+    <div style="display:flex; align-items:center;">
+      <input class="input-plain" type="number" id="newServiceDurationInput" placeholder="60" value="60" data-i18n-placeholder="service_duration_minutes_placeholder" data-i18n-label="service_duration_minutes" style="flex-grow:1; margin-right:5px;">
+      <span style="color:var(--text2); font-size:14px;">min</span>
+    </div>
     <div class="modal-btns">
       <button class="lang-btn" onclick="closeModal()" data-i18n="cancel">Cancel</button>
-      <button class="submit-btn pay" style="margin-top:0;" onclick="saveNewService()" data-i18n="add">Add</button>
+      <button class="submit-btn pay" style="margin-top:0;" onclick="saveService()" data-i18n="add">Add</button>
     </div>
   </div>
 </div>
@@ -2167,9 +2163,9 @@
     <div class="section-label" data-i18n="category">Kategorija</div>
     <select id="clientCategory" class="input-plain" style="width:100%;" onchange="updateClientCategory()">
       <option value="none" data-i18n="none">Nema</option>
-      <option value="VIP" data-i18n="vip">VIP</option>
-      <option value="Stalni" data-i18n="regular">Stalni</option>
-      <option value="Problematični" data-i18n="problematic">Problematični</option>
+      <option value="vip" data-i18n="vip">VIP</option>
+      <option value="regular" data-i18n="regular">Stalni</option>
+      <option value="problematic" data-i18n="problematic">Problematični</option>
     </select>
     <div class="section-label" data-i18n="history">Istorija usluga</div>
     <div id="clientHistoryList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;"></div>
@@ -2204,7 +2200,7 @@
     <div id="appointmentWarning" style="display:none; margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: 12px;"></div>
     <input class="input-plain" type="time" id="appTime" oninput="checkNearbyAppointments()">
     <div class="section-label" data-i18n="service">Service</div>
-    <select id="appService" class="input-plain" style="width:100%;"></select>
+    <select id="appService" class="input-plain" style="width:100%;" onchange="checkNearbyAppointments()"></select>
     <div class="section-label" data-i18n="notify_platform">Notify Platform</div>
     <div class="type-toggle">
       <button class="type-btn active-pay" id="btnWA" onclick="setPlatform('WA')" data-i18n="whatsapp">WhatsApp</button>
@@ -2307,6 +2303,7 @@ import {
   acceptTos
 } from './auth.js';
 import { getPriceLabel } from './billing/pricing.js';
+import { initPaddle, openCheckout } from './billing/checkout.js';
 import { 
   saveData, 
   getAllData, 
@@ -2315,7 +2312,7 @@ import {
   pullFromFirestore 
 } from './db.js';
 import { db as fdb } from './firebase.js';
-import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 // ── BLOK 1: Expose helpers na window za non-module skriptu ──
 window._isTrialExpired = isTrialExpired;
@@ -2323,6 +2320,12 @@ window._trialDaysLeft  = trialDaysLeft;
 window._hasTosAccepted = hasTosAccepted;
 window._acceptTos      = acceptTos;
 window._getPriceLabel  = getPriceLabel;
+window.openCheckout    = openCheckout;
+window.saveService = saveService;
+window.openServiceModal = openServiceModal;
+window.closeModal = closeModal;
+window.showScreen = showScreen;
+window.refreshAppData = refreshAppData;
 
 // Globalne varijable
 let currentUser = null;
@@ -2376,7 +2379,7 @@ let clientSelectionContext = 'entry'; // 'entry' ili 'appointment'
 let pendingNewClientFromAppointment = null;
 
 // Global Error Logging
-window.onerror = function(msg, url, lineNo, columnNo, error) {
+window.onerror = async function(msg, url, lineNo, columnNo, error) {
   const errorObj = {
     message: msg, url: url, line: lineNo, column: columnNo,
     stack: error ? error.stack : 'N/A',
@@ -2386,12 +2389,59 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     timestamp: new Date().toISOString()
   };
   console.error("[Global Error]", errorObj);
+  await logErrorToFirestore(errorObj);
   return false;
 };
 
-window.onunhandledrejection = function(event) {
-  console.error("[Unhandled Rejection]", event.reason);
+window.onunhandledrejection = async function(event) {
+  const errorObj = {
+    message: event.reason ? event.reason.message || event.reason.toString() : 'Unhandled Rejection',
+    url: 'N/A', line: 'N/A', column: 'N/A',
+    stack: event.reason ? event.reason.stack || 'N/A' : 'N/A',
+    userId: currentUser ? currentUser.uid : 'N/A',
+    shopId: currentUser ? currentUser.shopId : 'N/A',
+    userAgent: navigator.userAgent,
+    timestamp: new Date().toISOString()
+  };
+  console.error("[Unhandled Rejection]", errorObj);
+  await logErrorToFirestore(errorObj);
 };
+
+// Funkcija za slanje logova u Firestore s osnovnim filtriranjem osjetljivih podataka
+async function logErrorToFirestore(errorData) {
+  try {
+    // Kloniraj objekt kako bi se izbjegle modifikacije originala
+    const logData = { ...errorData };
+
+    // Osnovno filtriranje: Ukloni potencijalno osjetljive podatke
+    // Regex za email adrese, brojeve telefona, ili druge patterns
+    const sensitivePatterns = [
+      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, // Email
+      /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, // Telefonski brojevi (američki format, proširiti po potrebi)
+      /\b(?:password|lozinka|secret|tajna)[=:]['"]?([^'"\s]+)['"]?/gi, // Riječi 'password' itd.
+    ];
+
+    for (const key in logData) {
+      if (typeof logData[key] === 'string') {
+        let sanitizedValue = logData[key];
+        for (const pattern of sensitivePatterns) {
+          sanitizedValue = sanitizedValue.replace(pattern, '[REDACTED]');
+        }
+        logData[key] = sanitizedValue;
+      }
+    }
+
+    // Dodaj serverTimestamp ako već nije prisutan (za dosljednost)
+    if (!logData.firestoreTimestamp) {
+      logData.firestoreTimestamp = serverTimestamp();
+    }
+
+    await addDoc(collection(fdb, "logs"), logData);
+    console.log("[Firestore Log] Greška uspješno poslana u Firestore.");
+  } catch (e) {
+    console.error("[Firestore Log] Greška pri slanju loga u Firestore:", e);
+  }
+}
 
 const DEFAULT_CURRENCIES = { 
   bs: 'KM', hr: 'EUR', sr: 'RSD', mk: 'DEN', sl: 'EUR', bg: 'BGN', ro: 'RON', hu: 'HUF', 
@@ -2654,6 +2704,34 @@ async function loadInvites() {
   applyTranslations();
 }
 
+function openServiceModal(service = null) {
+  const modalOverlay = document.getElementById('modalOverlay');
+  const newServiceInput = document.getElementById('newServiceInput');
+  const newServiceDurationInput = document.getElementById('newServiceDurationInput');
+  const editServiceId = document.getElementById('editServiceId');
+  const modalTitle = modalOverlay.querySelector('h3'); 
+  const saveButton = modalOverlay.querySelector('.submit-btn.pay');
+
+  if (service) {
+    // Editing existing service
+    modalTitle.textContent = translations['edit_service'] || 'Edit Service'; // Will add 'edit_service' to lang files
+    newServiceInput.value = service.name || '';
+    newServiceDurationInput.value = service.trajanje_minuta || 60;
+    editServiceId.value = service.id;
+    saveButton.textContent = translations['save'] || 'Save';
+  } else {
+    // Creating new service
+    modalTitle.textContent = translations['new_service'] || 'New Service';
+    newServiceInput.value = '';
+    newServiceDurationInput.value = 60; // Default value
+    editServiceId.value = '';
+    saveButton.textContent = translations['add'] || 'Add';
+  }
+
+  modalOverlay.classList.add('open');
+  applyTranslations(); // Apply translations after setting textContent for title
+}
+
 async function loadWorkers() {
   const q = query(collection(fdb, "users"), where("shopId", "==", currentUser.shopId));
   const snap = await getDocs(q);
@@ -2764,33 +2842,65 @@ function resetForm() {
 async function renderServices() {
   const grid = document.getElementById('servicesGrid');
   if (!grid) return;
-  const services = await getAllData('services');
+  const rawServices = await getAllData('services', currentUser);
+  
+  // Deduplicate by name
+  const services = [];
+  const seenNames = new Set();
+  rawServices.forEach(s => {
+    if (!seenNames.has(s.name)) {
+      services.push(s);
+      seenNames.add(s.name);
+    }
+  });
+
   grid.innerHTML = '';
   services.forEach(s => {
     const container = document.createElement('div');
     container.style.position = 'relative';
     const btn = document.createElement('button');
     btn.className = 'service-btn' + (s.name === selectedService ? ' selected' : '');
-    btn.textContent = s.name;
-    btn.onclick = () => { selectedService = s.name; renderServices(); };
+    btn.textContent = s.name + ((s.trajanje_minuta && s.trajanje_minuta > 0) ? ` ${s.trajanje_minuta}min` : '');
+    btn.onclick = () => { 
+      selectedService = s.name; 
+      renderServices(); 
+      // If an existing service is clicked, we also want to populate the duration in the service input
+      const durationInput = document.getElementById('newServiceDurationInput');
+      if (durationInput) durationInput.value = s.trajanje_minuta || 60;
+    };
     const del = document.createElement('div');
     del.className = 'service-delete';
     del.textContent = '×';
     del.onclick = (e) => { e.stopPropagation(); deleteS(s.id); };
-    container.appendChild(btn); container.appendChild(del); grid.appendChild(container);
+    container.appendChild(btn);
+    const edit = document.createElement('div');
+    edit.className = 'service-edit';
+    edit.textContent = '⚙️'; // Emoji for settings/edit
+    edit.onclick = (e) => { e.stopPropagation(); openServiceModal(s); };
+    container.appendChild(edit); container.appendChild(del); grid.appendChild(container);
   });
   const addBtn = document.createElement('button');
   addBtn.className = 'service-btn add-new';
   addBtn.textContent = '+';
-  addBtn.onclick = () => document.getElementById('modalOverlay').classList.add('open');
+  addBtn.onclick = () => openServiceModal();
   grid.appendChild(addBtn);
   applyTranslations();
 }
 
-async function saveNewService() {
-  const v = document.getElementById('newServiceInput').value.trim();
-  if (v) {
-    await saveData('services', { id: Date.now().toString(), name: v, userId: currentUser.uid, shopId: currentUser.shopId || null });
+async function saveService() {
+  const name = document.getElementById('newServiceInput').value.trim();
+  const duration = parseInt(document.getElementById('newServiceDurationInput').value, 10);
+  const id = document.getElementById('editServiceId').value;
+
+  if (name) {
+    const serviceData = {
+      id: id || Date.now().toString(), // Use existing ID or generate new one
+      name: name,
+      trajanje_minuta: isNaN(duration) ? 60 : duration,
+      userId: currentUser.uid,
+      shopId: currentUser.shopId || null
+    };
+    await saveData('services', serviceData);
     await syncWithFirestore(currentUser);
   }
   closeModal();
@@ -2806,7 +2916,7 @@ async function deleteS(id) {
 async function renderPregled() {
   const content = document.getElementById('pregledContent');
   if (!content) return;
-  const rawEntries = await getAllData('entries');
+  const rawEntries = await getAllData('entries', currentUser);
   const entries = getDeduplicatedEntries(rawEntries);
 
   const now = new Date();
@@ -2863,13 +2973,15 @@ async function renderPregled() {
     ${[...filtered].reverse().map(e => {
       const paidAmount = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
       const isPaid = e.status === 'paid';
-      const serviceName = e.services && e.services[0] ? e.services[0].name : (e.type === 'pay' ? (translations['service'] || 'Usluga') : (translations['debt'] || 'Dug'));
+      const isCorrupted = e._corrupted;
+      const serviceName = isCorrupted ? `<span style="color:var(--red); font-style:italic;">[${translations['corrupted_data'] || 'Nečitljivi podaci'}]</span>` : (e.services && e.services[0] ? e.services[0].name : (e.type === 'pay' ? (translations['service'] || 'Usluga') : (translations['debt'] || 'Dug')));
+      const debtorName = isCorrupted ? '' : (e.debtor || 'N/A');
       return `
-      <div class="list-item">
+      <div class="list-item" style="border-left: 4px solid ${isCorrupted ? 'var(--red)' : (isPaid ? '#25D366' : 'var(--accent)')};">
         <div class="list-header">
           <div style="flex: 1;">
             <strong style="font-size: 15px;">${serviceName}</strong>
-            ${e.type === 'dug' ? `<div style="font-size:12px; color:var(--accent)"><span data-i18n="client">Klijent</span>: ${e.debtor || 'N/A'}</div>` : ''}
+            ${e.type === 'dug' || isCorrupted ? `<div style="font-size:12px; color:var(--accent)"><span data-i18n="client">Klijent</span>: ${debtorName}</div>` : ''}
             <div style="font-size:10px; color:var(--text2)">${formatAppDate(e.date, currentLang)} ${e.time || ''}</div>
           </div>
           <div style="text-align:right; display: flex; align-items: center; gap: 10px;">
@@ -2897,7 +3009,7 @@ async function renderPregled() {
 }
 
 async function payDebt(id) {
-  const entries = await getAllData('entries');
+  const entries = await getAllData('entries', currentUser);
   const e = entries.find(x => x.id === id);
   if (!e) return;
   const paidSoFar = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
@@ -2927,7 +3039,7 @@ async function handleDeleteEntry(id) {
 async function renderAppointments() {
   const l = document.getElementById('appointmentsList');
   if (!l) return;
-  const rawApps = await getAllData('appointments');
+  const rawApps = await getAllData('appointments', currentUser);
   
   const seen = new Set(); 
   const appsDeduplicated = rawApps.filter(apt => { 
@@ -2966,19 +3078,23 @@ async function renderAppointments() {
   const apps = Array.from(appsMap.values()).sort((a, b) => a.vrijeme.localeCompare(b.vrijeme));
   l.innerHTML = apps.length === 0 
     ? `<div class="empty-state" data-i18n="no_appointments">${translations['no_appointments'] || 'Nema termina'}</div>` 
-    : apps.map(a => `
-      <div class="appointment-item">
+    : apps.map(a => {
+      const isCorrupted = a._corrupted;
+      const clientName = isCorrupted ? `<span style="color:var(--red); font-style:italic;">[${translations['corrupted_data'] || 'Nečitljivi podaci'}]</span>` : a.klijent;
+      return `
+      <div class="appointment-item" style="border-left: 4px solid ${isCorrupted ? 'var(--red)' : 'var(--accent)'};">
         <div class="appointment-time">${a.vrijeme}</div>
         <div class="appointment-info">
-          <strong>${a.klijent}</strong><br>
-          <small>${a.usluga}</small>
+          <strong>${clientName}</strong><br>
+          <small>${isCorrupted ? '' : a.usluga}</small>
           ${currentUser.role === 'owner' ? `<br><small style="color:var(--accent)">${translations['worker_label'] || 'Radnik'}: ${a.userName || 'N/A'}</small>` : ''}
         </div>
         <div style="display:flex; gap:5px;">
-          <button class="btn-icon" onclick="sendAppointmentReminder('${a.id}')">💬</button>
+          ${!isCorrupted ? `<button class="btn-icon" onclick="sendAppointmentReminder('${a.id}')">💬</button>` : ''}
           <button class="btn-icon del" onclick="handleDeleteApp('${a.id}')">×</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   applyTranslations();
 }
 
@@ -2993,7 +3109,7 @@ function filterWorkerOptions(val) {
 window.filterWorkerOptions = filterWorkerOptions;
 
 async function sendAppointmentReminder(id) {
-  const apps = await getAllData('appointments');
+  const apps = await getAllData('appointments', currentUser);
   const a = apps.find(x => x.id === id);
   if (!a || !a.telefon) return showToast(translations['error_no_phone'] || "Nema broja telefona!", true);
   let msg = translations['appointment_reminder'] || "Pozdrav ${c}, podsjetnik za vas termin: ${s} u ${t}. Vidimo se!";
@@ -3014,36 +3130,59 @@ async function handleDeleteApp(id) {
 
 async function checkNearbyAppointments() { 
   const timeInput = document.getElementById('appTime'); 
+  const serviceSelect = document.getElementById('appService');
   const dateValue = selectedDate; 
   const warning = document.getElementById('appointmentWarning'); 
-  if (!timeInput || !timeInput.value || !warning) return; 
+  if (!timeInput || !timeInput.value || !warning || !serviceSelect) return; 
 
   const [h, m] = timeInput.value.split(':').map(Number); 
   const selectedTime = h * 60 + m; 
 
-  const rawApps = await getAllData('appointments');
+  const rawServices = await getAllData('services', currentUser);
+  const selectedServiceName = serviceSelect.value;
+  const selectedServiceObj = rawServices.find(s => s.name === selectedServiceName);
+  const selectedDuration = (selectedServiceObj && selectedServiceObj.trajanje_minuta > 0) ? selectedServiceObj.trajanje_minuta : 120;
+
+  const rawApps = await getAllData('appointments', currentUser);
   const nearby = rawApps.filter(apt => { 
     if (apt.datum !== dateValue) return false; 
     if (!apt.vrijeme) return false; 
+    
     const [ah, am] = apt.vrijeme.split(':').map(Number); 
-    const aptTime = ah * 60 + am; 
-    return Math.abs(aptTime - selectedTime) <= 120; 
+    const aptStart = ah * 60 + am; 
+    
+    // Find duration for the existing appointment's service
+    const aptServiceObj = rawServices.find(s => s.name === apt.usluga);
+    const aptDuration = (aptServiceObj && aptServiceObj.trajanje_minuta > 0) ? aptServiceObj.trajanje_minuta : 120;
+    
+    // Standard interval overlap logic:
+    // start1 < end2 AND end1 > start2
+    return selectedTime < (aptStart + aptDuration) && (selectedTime + selectedDuration) > aptStart;
   }); 
 
   if (nearby.length === 0) { 
     warning.style.display = 'none'; 
-    return; 
+    return true; 
   } 
 
   warning.style.display = 'block'; 
-  warning.style.background = 'rgba(251,191,36,0.1)'; 
-  warning.style.border = '0.5px solid rgba(251,191,36,0.4)'; 
-  warning.style.color = '#fbbf24'; 
-  warning.innerHTML = '⚠️ ' + nearby.map(apt => `${apt.vrijeme} — ${apt.usluga || ''}`).join(', '); 
+  warning.style.background = 'rgba(239, 68, 68, 0.1)'; 
+  warning.style.border = '0.5px solid rgba(239, 68, 68, 0.4)'; 
+  warning.style.color = '#ef4444'; 
+  
+  const conflict = nearby[0];
+  const conflictServiceObj = rawServices.find(s => s.name === conflict.usluga);
+  const conflictDuration = (conflictServiceObj && conflictServiceObj.trajanje_minuta > 0) ? conflictServiceObj.trajanje_minuta : 120;
+  
+  warning.innerHTML = `Termin nije moguć — preklapa se s terminom u ${conflict.vrijeme} koji traje ${conflictDuration} min`;
+  return false;
 }
 window.checkNearbyAppointments = checkNearbyAppointments;
 
 async function saveAppointment() {
+  const isAvailable = await checkNearbyAppointments();
+  if (!isAvailable) return;
+
   const c = document.getElementById('appClient').value.trim();
   const t = document.getElementById('appTime').value;
   const s = document.getElementById('appService').value;
@@ -3067,7 +3206,7 @@ async function saveAppointment() {
     showToast(translations['saved'] || "Sačuvano!");
     
     // Provjera da li klijent već postoji u bazi
-    const clients = await getAllData('clients');
+    const clients = await getAllData('clients', currentUser);
     const existingClient = clients.find(cl => (cl.name + ' ' + (cl.surname || '')).trim().toLowerCase() === c.toLowerCase() || (cl.phone && cl.phone === p));
     
     if (!existingClient) {
@@ -3090,7 +3229,7 @@ async function saveAppointment() {
 
 async function markReminderSent(id, type) {
   try {
-    const apps = await getAllData('appointments');
+    const apps = await getAllData('appointments', currentUser);
     const a = apps.find(x => x.id === id);
     if (!a) return;
     if (!a.remindersSent) a.remindersSent = [];
@@ -3123,7 +3262,7 @@ window.onpopstate = () => { const openModal = document.querySelector('.modal-ove
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
 async function renderIzvjestaji(mode = 'selected') {
-  const rawEntries = await getAllData('entries');
+  const rawEntries = await getAllData('entries', currentUser);
   const entries = getDeduplicatedEntries(rawEntries);
 
   const monthInput = document.getElementById('reportMonthSelect');
@@ -3201,7 +3340,7 @@ async function renderIzvjestaji(mode = 'selected') {
 }
 
 async function exportData() {
-  const rawEntries = await getAllData('entries');
+  const rawEntries = await getAllData('entries', currentUser);
   const entries = [];
   const seenIds = new Set();
   rawEntries.forEach(e => { if (!seenIds.has(e.id)) { entries.push(e); seenIds.add(e.id); } });
@@ -3277,7 +3416,7 @@ function renderCalendar() {
 
 async function checkUpcomingAppointments() {
   if (!currentUser) return;
-  const rawApps = await getAllData('appointments');
+  const rawApps = await getAllData('appointments', currentUser);
   const appsMap = new Map();
   const seen = new Set();
   rawApps.forEach(a => {
@@ -3355,7 +3494,7 @@ window.logout = handleLogout;
 window.handleCreateShop = handleCreateShop;
 window.handleInviteWorker = handleInviteWorker;
 window.submitEntry = submitEntry;
-window.saveNewService = saveNewService;
+window.saveService = saveService;
 window.payDebt = payDebt;
 window.handleDeleteEntry = handleDeleteEntry;
 window.sendAppointmentReminder = sendAppointmentReminder;
@@ -3392,12 +3531,21 @@ function getDeduplicatedEntries(rawEntries) {
   return Array.from(entriesMap.values());
 }
 
+function getCategoryKey(cat) {
+  if (!cat) return 'none';
+  const c = cat.toLowerCase();
+  if (c === 'regular' || c === 'stalni') return 'regular';
+  if (c === 'problematic' || c === 'problematični') return 'problematic';
+  if (c === 'vip') return 'vip';
+  return c;
+}
+
 // ── Klijenti Funkcionalnost ──
 async function renderClients() {
   const list = document.getElementById('clientsList');
   if (!list) return;
   const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
-  const rawClients = await getAllData('clients');
+  const rawClients = await getAllData('clients', currentUser);
   
   // Deduplikacija i filtriranje
   const seen = new Set();
@@ -3410,16 +3558,22 @@ async function renderClients() {
 
   list.innerHTML = clients.length === 0 
     ? `<div class="empty-state" data-i18n="no_clients">${translations['no_clients'] || 'Nema klijenata'}</div>`
-    : clients.map(c => `
-      <div class="appointment-item" onclick="openClientDetails('${c.id}')" style="padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); background: var(--bg2); cursor: pointer;">
-        <div class="appointment-info">
-          <strong style="font-size: 16px; color: var(--text);">${c.name} ${c.surname}</strong><br>
-          <small style="color: var(--text2); font-size: 13px;">${c.phone || ''}</small>
-          ${c.category && c.category !== 'none' ? `<br><span class="badge" style="background: ${c.category === 'VIP' ? '#fbbf24' : (c.category === 'Problematični' ? 'var(--red)' : '#16a34a')}; font-size:10px; font-weight: 700; padding:4px 10px; border-radius:12px; color:${c.category === 'VIP' ? '#000' : '#fff'}; display: inline-block; margin-top: 6px;">${translations['tag_' + c.category.toLowerCase()] || c.category}</span>` : ''}
+    : clients.map(c => {
+        const isCorrupted = c._corrupted;
+        const displayName = isCorrupted ? `<span style="color:var(--red); font-style:italic;">[${translations['corrupted_data'] || 'Nečitljivi podaci'}]</span>` : `${c.name} ${c.surname}`;
+        const catKey = getCategoryKey(c.category);
+        const badgeColor = catKey === 'vip' ? '#fbbf24' : (catKey === 'problematic' ? 'var(--red)' : '#16a34a');
+        const badgeTextColor = catKey === 'vip' ? '#000' : '#fff';
+        return `
+      <div class="appointment-item" onclick="openClientDetails('${c.id}')" style="padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid ${isCorrupted ? 'var(--red)' : 'var(--border)'}; background: var(--bg2); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+        <div class="appointment-info" style="flex: 1;">
+          <strong style="font-size: 16px; color: var(--text);">${displayName}</strong><br>
+          <small style="color: var(--text2); font-size: 13px;">${isCorrupted ? '' : (c.phone || '')}</small>
+          ${!isCorrupted && catKey !== 'none' ? `<br><span class="badge" style="background: ${badgeColor}; font-size:10px; font-weight: 700; padding:4px 10px; border-radius:12px; color:${badgeTextColor}; display: inline-block; margin-top: 6px;">${translations[catKey] || catKey}</span>` : ''}
         </div>
-        <div class="btn-icon" style="background: var(--bg3); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text2);">➔</div>
+        <button class="btn-icon del" onclick="event.stopPropagation(); handleDeleteClient('${c.id}')" style="margin-left: 10px;">×</button>
       </div>
-    `).join('');
+    `;}).join('');
 }
 
 function openClientModal() {
@@ -3447,6 +3601,8 @@ async function saveClient() {
     phone,
     email,
     category: 'none',
+    userId: currentUser.uid,
+    shopId: currentUser.shopId || null,
     createdAt: new Date().toISOString()
   };
 
@@ -3464,15 +3620,15 @@ async function saveClient() {
 
 async function openClientDetails(id) {
   selectedClientId = id;
-  const clients = await getAllData('clients');
+  const clients = await getAllData('clients', currentUser);
   const client = clients.find(c => c.id === id);
   if (!client) return;
 
   document.getElementById('detailsClientName').textContent = `${client.name} ${client.surname}`;
-  document.getElementById('clientCategory').value = client.category || 'none';
+  document.getElementById('clientCategory').value = getCategoryKey(client.category);
   
   // Učitaj istoriju
-  const rawEntries = await getAllData('entries');
+  const rawEntries = await getAllData('entries', currentUser);
   const clientFullName = `${client.name} ${client.surname}`;
   const history = getDeduplicatedEntries(rawEntries)
                        .filter(e => e.debtor === clientFullName || e.clientId === id)
@@ -3551,7 +3707,7 @@ window.closeClientDetailsModal = () => document.getElementById('clientDetailsMod
 async function updateClientCategory() {
   if (!selectedClientId) return;
   const category = document.getElementById('clientCategory').value;
-  const clients = await getAllData('clients');
+  const clients = await getAllData('clients', currentUser);
   const client = clients.find(c => c.id === selectedClientId);
   if (client) {
     client.category = category;
@@ -3573,7 +3729,7 @@ window.closeClientSelectionModal = () => document.getElementById('clientSelectio
 async function renderSelectionClients() {
   const list = document.getElementById('selectionClientsList');
   const searchTerm = document.getElementById('selectionClientSearch').value.toLowerCase();
-  const rawClients = await getAllData('clients');
+  const rawClients = await getAllData('clients', currentUser);
   
   const seen = new Set();
   const clients = rawClients.filter(c => {
@@ -3645,6 +3801,8 @@ async function confirmSaveClientFromAppointment() {
     surname,
     phone: pendingNewClientFromAppointment.phone,
     category: 'none',
+    userId: currentUser.uid,
+    shopId: currentUser.shopId || null,
     createdAt: new Date().toISOString()
   };
 
@@ -3657,6 +3815,15 @@ async function confirmSaveClientFromAppointment() {
     console.error("Error saving client from appointment:", e);
   } finally {
     closeSaveClientPrompt();
+  }
+}
+
+async function handleDeleteClient(id) {
+  if (confirm(translations['confirm_delete_client'] || "Obrisati ovog klijenta i svu njegovu istoriju?")) {
+    await deleteData('clients', id);
+    await syncWithFirestore(currentUser);
+    showToast(translations['client_deleted'] || "Klijent obrisan!");
+    renderClients();
   }
 }
 
@@ -3681,6 +3848,7 @@ window.renderSelectionClients = renderSelectionClients;
 window.handleClientSelection = handleClientSelection;
 window.selectClientForEntry = selectClientForEntry;
 window.selectClientForAppointment = selectClientForAppointment;
+window.handleDeleteClient = handleDeleteClient;
 window.closeSaveClientPrompt = closeSaveClientPrompt;
 window.confirmSaveClientFromAppointment = confirmSaveClientFromAppointment;
 
@@ -3707,9 +3875,23 @@ window.openInviteModal = () => document.getElementById('inviteModal').classList.
 window.openCurrencyModal = openCurrencyModal;
 window.setCurrency = setCurrency;
 window.openAppointmentModal = async () => {
-  const s = await getAllData('services');
-  if (s.length === 0) return showToast('Prvo dodajte usluge!', true);
-  document.getElementById('appService').innerHTML = s.map(x => `<option value="${x.name}">${x.name}</option>`).join('');
+  const rawServices = await getAllData('services', currentUser);
+  if (rawServices.length === 0) return showToast('Prvo dodajte usluge!', true);
+
+  // Deduplicate by name
+  const services = [];
+  const seenNames = new Set();
+  rawServices.forEach(s => {
+    if (!seenNames.has(s.name)) {
+      services.push(s);
+      seenNames.add(s.name);
+    }
+  });
+
+  document.getElementById('appService').innerHTML = services.map(x => {
+    const durationText = (x.trajanje_minuta && x.trajanje_minuta > 0) ? ` • ${x.trajanje_minuta} min` : '';
+    return `<option value="${x.name}">${x.name}${durationText}</option>`;
+  }).join('');
   const warning = document.getElementById('appointmentWarning');
   if (warning) warning.style.display = 'none';
   document.getElementById('appointmentModal').classList.add('open');
@@ -3745,8 +3927,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await initI18n();
+  initPaddle();
 
   initAuth(async (user, userData) => {
+    console.log("Auth callback: User logged in.");
     currentUser = { ...user, ...userData };
 
     // ── BLOK 1: Expose user state za non-module skriptu, pa provjeri ToS/Trial ──
@@ -3778,7 +3962,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await refreshAppData();
     setTimeout(() => checkUpcomingAppointments(), 1500);
     setInterval(checkUpcomingAppointments, 60000);
-  }, () => {
+  }, 
+  () => {
+    console.log("Auth callback: User logged out.");
     currentUser = null;
     showAuthScreen();
     setAuthMode('initial');

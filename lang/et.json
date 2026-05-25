@@ -78,6 +78,7 @@
     "error_no_phone": "Telefoninumbrit pole esitatud!",
     "cancel": "Tühista",
     "new_service": "Uus teenus",
+    "edit_service": "Edit service",
     "login_title": "Sisselogimine",
     "confirm_delete_msg": "Kas olete kindel, et soovite selle kustutada?",
     "confirm": "Kinnita",
@@ -97,6 +98,9 @@
     "print_report": "PRINDI ARUANNE",
     "remove": "Eemalda",
     "debtor_name": "Võlglase nimi",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Kõik teenused",
     "none": "Puudub",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Prioriteetne tugi",
     "coming_soon": "Tulekul",
     "secure_payment_note": "💳 Turvaline makse Paddle'i kaudu — ilma pikaajaliste kohustusteta.<br>Tellimused on peagi saadaval. Täname kannatlikkuse eest!",
-    "close_btn": "Sulge"
+    "close_btn": "Sulge",
+    "tos_intro": "Palun lugege meie tingimusi enne jätkamist. Selle rakenduse kasutamisega kinnitate, et olete lugenud ja nõustunud järgmiste dokumentidega:",
+    "tos_link_terms": "Kasutustingimused",
+    "tos_link_privacy": "Privaatsuspoliitika",
+    "tos_note": "Need dokumendid reguleerivad kõigi rakenduste kasutamist ei-apps.com platvormil, sealhulgas Work Records.",
+    "tos_checkbox": "Olen lugenud ja nõustun kasutustingimuste ja privaatsuspoliitikaga",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

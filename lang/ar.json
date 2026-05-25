@@ -78,6 +78,7 @@
     "error_no_phone": "لا يوجد رقم هاتف!",
     "cancel": "إلغاء",
     "new_service": "خدمة جديدة",
+    "edit_service": "Edit service",
     "login_title": "تسجيل الدخول",
     "confirm_delete_msg": "هل أنت متأكد أنك تريد الحذف؟",
     "confirm": "تأكيد",
@@ -97,6 +98,9 @@
     "print_report": "طباعة التقرير",
     "remove": "إزالة",
     "debtor_name": "اسم المدين",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "جميع الخدمات",
     "none": "لا يوجد",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "دعم ذو أولوية",
     "coming_soon": "قريباً",
     "secure_payment_note": "💳 دفع آمن عبر Paddle — بدون التزامات طويلة الأمد.<br>الاشتراكات ستتوفر قريباً. شكراً لصبركم!",
-    "close_btn": "إغلاق"
+    "close_btn": "إغلاق",
+    "tos_intro": "يرجى قراءة شروطنا قبل المتابعة. باستخدام هذا التطبيق ، فإنك تؤكد أنك قرأت وقبلت المستندات التالية:",
+    "tos_link_terms": "شروط الخدمة",
+    "tos_link_privacy": "سياسة الخصوصية",
+    "tos_note": "تحكم هذه المستندات استخدام جميع التطبيقات على منصة ei-apps.com ، بما في ذلك Work Records.",
+    "tos_checkbox": "لقد قرأت وأوافق على شروط الخدمة وسياسة الخصوصية",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

@@ -78,6 +78,7 @@
     "error_no_phone": "شماره تلفنی ارائه نشده است!",
     "cancel": "لغو",
     "new_service": "خدمات جدید",
+    "edit_service": "Edit service",
     "login_title": "ورود",
     "confirm_delete_msg": "آیا مطمئن هستید که می‌خواهید این را حذف کنید؟",
     "confirm": "تأیید",
@@ -97,6 +98,9 @@
     "print_report": "چاپ گزارش",
     "remove": "حذف",
     "debtor_name": "نام بدهکار",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "تمام خدمات",
     "none": "هیچ",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "پشتیبانی اولویت‌دار",
     "coming_soon": "به‌زودی",
     "secure_payment_note": "💳 پرداخت امن از طریق Paddle — بدون تعهدات طولانی مدت.<br>اشتراک‌ها به‌زودی در دسترس خواهند بود. از شکیبایی شما سپاسگزاریم!",
-    "close_btn": "بستن"
+    "close_btn": "بستن",
+    "tos_intro": "لطفاً قبل از ادامه شرایط ما را مطالعه کنید. با استفاده از این برنامه تأیید می کنید که اسناد زیر را خوانده و پذیرفته اید:",
+    "tos_link_terms": "شرایط خدمات",
+    "tos_link_privacy": "سیاست حفظ حریم خصوصی",
+    "tos_note": "این اسناد بر استفاده از تمامی برنامه های موجود در پلتفرم ei-apps.com، از جمله Work Records، نظارت دارند.",
+    "tos_checkbox": "من شرایط خدمات و سیاست حفظ حریم خصوصی را خوانده ام و می پذیرم",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

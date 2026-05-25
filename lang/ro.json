@@ -78,6 +78,7 @@
     "error_no_phone": "Nu a fost furnizat niciun număr de telefon!",
     "cancel": "Anulează",
     "new_service": "Serviciu nou",
+    "edit_service": "Edit service",
     "login_title": "Autentificare",
     "confirm_delete_msg": "Sigur doriți să ștergeți acest lucru?",
     "confirm": "Confirmă",
@@ -97,6 +98,9 @@
     "print_report": "IMPRIMĂ RAPORTUL",
     "remove": "Elimină",
     "debtor_name": "Numele debitorului",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Toate serviciile",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Suport prioritar",
     "coming_soon": "În curând",
     "secure_payment_note": "💳 Plată securizată prin Paddle — fără angajamente pe termen lung.<br>Abonamente în curând. Vă mulțumim pentru răbdare!",
-    "close_btn": "Închide"
+    "close_btn": "Închide",
+    "tos_intro": "Vă rugăm să citiți termenii noștri înainte de a continua. Prin utilizarea acestei aplicații, confirmați că ați citit și acceptat următoarele documente:",
+    "tos_link_terms": "Termeni de utilizare",
+    "tos_link_privacy": "Politica de confidențialitate",
+    "tos_note": "Aceste documente guvernează utilizarea tuturor aplicațiilor de pe platforma ei-apps.com, inclusiv Work Records.",
+    "tos_checkbox": "Am citit și accept Termenii de utilizare și Politica de confidențialitate",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

@@ -50,7 +50,7 @@ service cloud.firestore {
     
     // Logovi (Logs) - samo pisanje
     match /logs/{logId} {
-      allow create: if true; 
+      allow create: if isSignedIn(); 
       allow read, update, delete: if false;
     }
   }

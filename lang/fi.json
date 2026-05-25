@@ -78,6 +78,7 @@
     "error_no_phone": "Puhelinnumeroa ei ole annettu!",
     "cancel": "Peruuta",
     "new_service": "Uusi palvelu",
+    "edit_service": "Edit service",
     "login_title": "Kirjautuminen",
     "confirm_delete_msg": "Haluatko varmasti poistaa tämän?",
     "confirm": "Vahvista",
@@ -97,6 +98,9 @@
     "print_report": "TULOSTA RAPORTTI",
     "remove": "Poista",
     "debtor_name": "Velallinen",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Kaikki palvelut",
     "none": "Ei mitään",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Prioriteettituki",
     "coming_soon": "Tulossa pian",
     "secure_payment_note": "💳 Turvallinen maksu Paddlen kautta — ei pitkäaikaisia sitoumuksia.<br>Tilaukset tulossa pian. Kiitos kärsivällisyydestäsi!",
-    "close_btn": "Sulje"
+    "close_btn": "Sulje",
+    "tos_intro": "Lue ehtomme ennen jatkamista. Käyttämällä tätä sovellusta vahvistat, että olet lukenut ja hyväksynyt seuraavat asiakirjat:",
+    "tos_link_terms": "Käyttöehdot",
+    "tos_link_privacy": "Tietosuojakäytäntö",
+    "tos_note": "Nämä asiakirjat säätelevät kaikkien sovellusten käyttöä ei-apps.com-alustalla, mukaan lukien Work Records.",
+    "tos_checkbox": "Olen lukenut ja hyväksyn käyttöehdot ja tietosuojakäytännön",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

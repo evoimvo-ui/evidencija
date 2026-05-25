@@ -78,6 +78,7 @@
     "error_no_phone": "Δεν δόθηκε αριθμός τηλεφώνου!",
     "cancel": "Ακύρωση",
     "new_service": "Νέα υπηρεσία",
+    "edit_service": "Edit service",
     "login_title": "Σύνδεση",
     "confirm_delete_msg": "Είστε σίγουροι ότι θέλετε να το διαγράψετε αυτό;",
     "confirm": "Επιβεβαίωση",
@@ -97,6 +98,9 @@
     "print_report": "ΕΚΤΥΠΩΣΗ ΑΝΑΦΟΡΑΣ",
     "remove": "Αφαίρεση",
     "debtor_name": "Όνομα οφειλέτη",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Όλες οι υπηρεσίες",
     "none": "Κανένα",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Υποστήριξη προτεραιότητας",
     "coming_soon": "Σύντομα διαθέσιμο",
     "secure_payment_note": "💳 Ασφαλής πληρωμή μέσω Paddle — χωρίς μακροχρόνιες δεσμεύσεις.<br>Συνδρομές σύντομα διαθέσιμες. Ευχαριστούμε για την υπομονή σας!",
-    "close_btn": "Κλείσιμο"
+    "close_btn": "Κλείσιμο",
+    "tos_intro": "Παρακαλούμε διαβάστε τους όρους μας πριν συνεχίσετε. Χρησιμοποιώντας αυτήν την εφαρμογή επιβεβαιώνετε ότι έχετε διαβάσει και αποδεχτεί τα ακόλουθα έγγραφα:",
+    "tos_link_terms": "Όροι Χρήσης",
+    "tos_link_privacy": "Πολιτική Απορρήτου",
+    "tos_note": "Αυτά τα έγγραφα διέπουν τη χρήση όλων των εφαρμογών στην πλατφόρμα ei-apps.com, συμπεριλαμβανομένου του Work Records.",
+    "tos_checkbox": "Έχω διαβάσει και αποδέχομαι τους Όρους Χρήσης και την Πολιτική Απορρήτου",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

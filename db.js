@@ -2,29 +2,44 @@ import { CONFIG } from './config.js';
 
 // Utility for robust encryption using Web Crypto API
 const ENCRYPTION_KEY = CONFIG.ENCRYPTION_KEY;
-const SALT = 'evidencija-fixed-salt-2026'; // In production, this could be user-specific
+const OLD_ENCRYPTION_KEY = CONFIG.OLD_ENCRYPTION_KEY;
+const SALT = 'evidencija-fixed-salt-2026'; 
+const OLD_SALT = 'evidencija-fixed-salt-2024'; // Potencijalna stara so
 
-async function getEncryptionKey() {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(ENCRYPTION_KEY),
-    { name: "PBKDF2" },
-    false,
-    ["deriveKey"]
-  );
-  return crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt: enc.encode(SALT),
-      iterations: 100000,
-      hash: "SHA-256"
-    },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
+let _keyCache = {};
+
+async function getEncryptionKey(keyText = ENCRYPTION_KEY, saltText = SALT) {
+  if (!keyText) return null;
+  const cacheKey = `${keyText}:${saltText}`;
+  if (_keyCache[cacheKey]) {
+    return _keyCache[cacheKey];
+  }
+
+  const derivationPromise = (async () => {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(keyText),
+      { name: "PBKDF2" },
+      false,
+      ["deriveKey"]
+    );
+    return crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: enc.encode(saltText),
+        iterations: 100000,
+        hash: "SHA-256"
+      },
+      keyMaterial,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["encrypt", "decrypt"]
+    );
+  })();
+
+  _keyCache[cacheKey] = derivationPromise;
+  return derivationPromise;
 }
 
 async function encrypt(text) {
@@ -43,23 +58,35 @@ async function encrypt(text) {
     combined.set(iv);
     combined.set(new Uint8Array(encrypted), iv.length);
     
-    return btoa(String.fromCharCode.apply(null, combined));
+    // Koristi Blob za pretvorbu u Base64, što je robustnije za binarne podatke
+    // ili koristite ArrayBuffer to string pa btoa (ali to je sličan problem)
+    // Najjednostavnije je direktno konvertirati Uint8Array u Base64 string.
+    const binaryString = String.fromCharCode.apply(null, combined);
+    return btoa(binaryString);
   } catch (e) {
     console.error("Encryption error:", e);
-    return text;
+    throw e; // Propagiraj grešku dalje
   }
 }
 
-async function decrypt(encoded) {
+async function decrypt(encoded, keyText = ENCRYPTION_KEY, saltText = SALT) {
   if (!encoded) return encoded;
   try {
-    const combined = Uint8Array.from(atob(encoded), c => c.charCodeAt(0));
-    if (combined.length < 13) throw new Error("Invalid cipher text");
+    // Dekodiraj Base64 string u binarni string
+    const binaryString = atob(encoded);
+    // Pretvori binarni string u Uint8Array
+    const combined = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      combined[i] = binaryString.charCodeAt(i);
+    }
+
+    if (combined.length < 13) throw new Error("Invalid cipher text or IV missing");
     
     const iv = combined.slice(0, 12);
     const data = combined.slice(12);
     
-    const key = await getEncryptionKey();
+    const key = await getEncryptionKey(keyText, saltText);
+    if (!key) throw new Error("Encryption key missing");
     const decrypted = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: iv },
       key,
@@ -68,17 +95,21 @@ async function decrypt(encoded) {
     
     return new TextDecoder().decode(decrypted);
   } catch (e) {
-    // Fallback to legacy XOR for existing data
-    return legacyDecrypt(encoded);
+    // Ne logiramo OperationError ovdje jer ćemo ga možda hendlati fallbackom
+    if (e.name !== 'OperationError') {
+      console.error("Decryption error:", e);
+    }
+    throw e; // Propagiraj grešku dalje
   }
 }
 
-function legacyDecrypt(encoded) {
+// Funkcija za legacy dešifriranje (XOR metoda)
+function legacyDecrypt(encoded, keyText = OLD_ENCRYPTION_KEY) {
   if (!encoded) return encoded;
   try {
     const text = atob(encoded);
     const decrypted = text.split('').map((char, i) => 
-      String.fromCharCode(char.charCodeAt(0) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length))
+      String.fromCharCode(char.charCodeAt(0) ^ keyText.charCodeAt(i % keyText.length))
     ).join('');
     return decodeURIComponent(escape(decrypted));
   } catch (e) {
@@ -121,6 +152,10 @@ export async function saveData(storeName, data) {
     const db = await initDB();
     
     const processedData = { ...data };
+    // Add default for trajanje_minuta if storeName is 'services' and field is missing
+    if (storeName === 'services' && processedData.trajanje_minuta === undefined) {
+      processedData.trajanje_minuta = 60;
+    }
     if (processedData.debtor) processedData.debtor = await encrypt(processedData.debtor);
     if (processedData.telefon) processedData.telefon = await encrypt(processedData.telefon);
     if (processedData.klijent) processedData.klijent = await encrypt(processedData.klijent);
@@ -151,21 +186,86 @@ export async function saveData(storeName, data) {
   }
 }
 
-export async function getAllData(storeName) {
+export async function getAllData(storeName, user = null) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
     const request = store.getAll();
     request.onsuccess = async () => {
-      const results = await Promise.all(request.result.map(async item => {
+      let filteredResult = request.result;
+      
+      // Filtriraj podatke prema korisniku ako je proslijeđen user objekt
+      if (user) {
+        filteredResult = request.result.filter(item => {
+          // Vlasnik vidi sve što pripada njegovoj radnji (shopId)
+          if (user.role === 'owner' && user.shopId) {
+            return item.shopId === user.shopId;
+          }
+          // Radnik vidi samo svoje unose (userId) ili unose svoje radnje ako je tako konfigurisano
+          // Za sada, radnici vide samo svoje (osim ako su vlasnici radnje)
+          // Izuzetak su 'services' koje su često zajedničke za shop
+          if (storeName === 'services' && user.shopId) {
+            return item.shopId === user.shopId || item.userId === user.uid;
+          }
+          return item.userId === user.uid;
+        });
+      }
+
+      const results = await Promise.all(filteredResult.map(async item => {
+        let needsMigration = false;
         const decrypted = { ...item };
-        if (decrypted.debtor) decrypted.debtor = await decrypt(decrypted.debtor);
-        if (decrypted.telefon) decrypted.telefon = await decrypt(decrypted.telefon);
-        if (decrypted.klijent) decrypted.klijent = await decrypt(decrypted.klijent);
-        if (decrypted.name) decrypted.name = await decrypt(decrypted.name);
-        if (decrypted.surname) decrypted.surname = await decrypt(decrypted.surname);
-        if (decrypted.email) decrypted.email = await decrypt(decrypted.email);
+        
+        const fieldsToDecrypt = ['debtor', 'telefon', 'klijent', 'name', 'surname', 'email'];
+        
+        for (const field of fieldsToDecrypt) {
+          if (decrypted[field]) {
+            let fieldDecrypted = false;
+            
+            // Lista pokušaja: [ključ, so]
+            const attempts = [
+              [ENCRYPTION_KEY, SALT],
+              [OLD_ENCRYPTION_KEY, SALT],
+              [ENCRYPTION_KEY, OLD_SALT],
+              [OLD_ENCRYPTION_KEY, OLD_SALT]
+            ];
+
+            for (const [k, s] of attempts) {
+              if (!k) continue;
+              try {
+                decrypted[field] = await decrypt(decrypted[field], k, s);
+                fieldDecrypted = true;
+                if (k !== ENCRYPTION_KEY || s !== SALT) needsMigration = true;
+                break;
+              } catch (e) {
+                // Nastavi na sljedeći pokušaj
+              }
+            }
+
+            if (!fieldDecrypted) {
+              // Zadnji pokušaj: Legacy XOR
+              const legacy = legacyDecrypt(decrypted[field], OLD_ENCRYPTION_KEY);
+              if (legacy !== decrypted[field]) {
+                decrypted[field] = legacy;
+                needsMigration = true;
+              } else {
+                decrypted._corrupted = true;
+              }
+            }
+          }
+        }
+
+        if (needsMigration) {
+          console.log(`[Migration] Automatska migracija zapisa ${item.id} u ${storeName}...`);
+          // Spremamo nazad (saveData će re-enkriptirati trenutnim ključem i dodati u sync_queue)
+          // Koristimo setTimeout da ne blokiramo trenutnu transakciju
+          setTimeout(() => {
+            saveData(storeName, decrypted).catch(err => 
+              console.error(`[Migration] Greška pri spremanju migriranog zapisa ${item.id}:`, err)
+            );
+          }, 0);
+        }
+
         return decrypted;
       }));
       resolve(results);
@@ -186,6 +286,41 @@ export async function deleteData(storeName, id) {
     
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+/**
+ * Čisti sve lokalne podatke osim reda čekanja za sinkronizaciju (opcionalno).
+ * Koristi se pri odjavi korisnika.
+ */
+export async function clearLocalData(force = false) {
+  const db = await initDB();
+  const stores = ['entries', 'appointments', 'services', 'clients'];
+  
+  // Ako nije force, provjeri ima li nesinkroniziranih podataka
+  if (!force) {
+    const queueCount = await new Promise((resolve) => {
+      const trans = db.transaction('sync_queue', 'readonly');
+      const req = trans.objectStore('sync_queue').count();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(0);
+    });
+    
+    if (queueCount > 0) {
+      const confirmClear = confirm(`Imate ${queueCount} nesinkronizovanih promjena. Ako se odjavite, ovi podaci će biti izgubljeni. Želite li nastaviti?`);
+      if (!confirmClear) return false;
+    }
+  }
+
+  const transaction = db.transaction([...stores, 'sync_queue'], 'readwrite');
+  stores.forEach(s => transaction.objectStore(s).clear());
+  transaction.objectStore('sync_queue').clear();
+  
+  return new Promise((resolve) => {
+    transaction.oncomplete = () => {
+      console.log("[DB] Lokalna baza očišćena.");
+      resolve(true);
+    };
   });
 }
 

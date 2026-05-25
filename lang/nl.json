@@ -78,6 +78,7 @@
     "error_no_phone": "Geen telefoonnummer opgegeven!",
     "cancel": "Annuleren",
     "new_service": "Nieuwe dienst",
+    "edit_service": "Edit service",
     "login_title": "Inloggen",
     "confirm_delete_msg": "Weet u zeker dat u dit wilt verwijderen?",
     "confirm": "Bevestigen",
@@ -97,6 +98,9 @@
     "print_report": "RAPPORT AFDRUKKEN",
     "remove": "Verwijderen",
     "debtor_name": "Naam schuldenaar",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Alle diensten",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Prioriteitsondersteuning",
     "coming_soon": "Binnenkort beschikbaar",
     "secure_payment_note": "💳 Veilig betalen via Paddle — geen langetermijnverplichtingen.<br>Abonnementen binnenkort beschikbaar. Bedankt voor uw geduld!",
-    "close_btn": "Sluiten"
+    "close_btn": "Sluiten",
+    "tos_intro": "Lees onze voorwaarden voordat u doorgaat. Door deze applicatie te gebruiken, bevestigt u dat u de volgende documenten hebt gelezen und geaccepteerd:",
+    "tos_link_terms": "Servicevoorwaarden",
+    "tos_link_privacy": "Privacybeleid",
+    "tos_note": "Deze documenten regelen het gebruik van alle applicaties op het ei-apps.com-platform, inclusief Work Records.",
+    "tos_checkbox": "Ik heb de servicevoorwaarden en het privacybeleid gelezen en ga ermee akkoord",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

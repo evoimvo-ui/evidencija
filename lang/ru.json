@@ -78,6 +78,7 @@
     "error_no_phone": "Номер телефона не указан!",
     "cancel": "Отмена",
     "new_service": "Новая услуга",
+    "edit_service": "Edit service",
     "login_title": "Вход",
     "confirm_delete_msg": "Вы уверены, что хотите удалить это?",
     "confirm": "Подтвердить",
@@ -97,6 +98,9 @@
     "print_report": "ПЕЧАТЬ ОТЧЕТА",
     "remove": "Удалить",
     "debtor_name": "Имя должника",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Все услуги",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Приоритетная поддержка",
     "coming_soon": "Скоро будет",
     "secure_payment_note": "💳 Безопасная оплата через Paddle — без долгосрочных обязательств.<br>Подписки скоро появятся. Спасибо за терпение!",
-    "close_btn": "Закрыть"
+    "close_btn": "Закрыть",
+    "tos_intro": "Пожалуйста, ознакомьтесь с нашими условиями перед продолжением. Используя это приложение, вы подтверждаете, что прочитали и приняли следующие документы:",
+    "tos_link_terms": "Условия использования",
+    "tos_link_privacy": "Политика конфиденциальности",
+    "tos_note": "Эти документы регулируют использование всех приложений на платформе ei-apps.com, включая Work Records.",
+    "tos_checkbox": "Я прочитал(а) и принимаю Условия использования и Политику конфиденциальности",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

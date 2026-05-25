@@ -13,13 +13,13 @@ export const TIERS = {
         price: 2.49,
         priceLabel: '€2.49',
         period: 'mj',
-        paddlePriceId: null, // TODO: zamijeniti nakon Paddle KYC-a
+        paddlePriceId: 'pri_01ksg6w7ffr8syaaewns4xghdp',
       },
       premium: {
         price: 9.99,
         priceLabel: '€9.99',
         period: 'mj',
-        paddlePriceId: null, // TODO
+        paddlePriceId: 'pri_01ksg73dctd8dzbz0bcqy4my9s',
       }
     }
   },

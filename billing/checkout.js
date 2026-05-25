@@ -15,7 +15,7 @@ const PADDLE_ENVIRONMENT = CONFIG.PADDLE.environment;
 
 /**
  * Inicijalizira Paddle SDK.
- * Poziva se jednom pri učitavanju app-a (samo ako je Paddle spreman).
+ * Poziva se jednom pri učitavanju app-a.
  */
 export function initPaddle() {
   if (!PADDLE_CLIENT_TOKEN) {
@@ -23,13 +23,21 @@ export function initPaddle() {
     return false;
   }
 
-  // TODO (Faza 2): Uncomment nakon što Paddle bude spreman
-  // Paddle.Initialize({
-  //   token: PADDLE_CLIENT_TOKEN,
-  //   environment: PADDLE_ENVIRONMENT,
-  //   eventCallback: handlePaddleEvent,
-  // });
+  if (typeof Paddle === 'undefined') {
+    console.warn('[Checkout] Paddle SDK nije učitan.');
+    return false;
+  }
 
+  // Ispravan redoslijed za Paddle Billing v2 sandbox
+  if (PADDLE_ENVIRONMENT === 'sandbox') {
+    Paddle.Environment.set("sandbox");
+  }
+
+  Paddle.Initialize({
+    token: PADDLE_CLIENT_TOKEN
+  });
+
+  console.log(`[Checkout] Paddle inicijaliziran u ${PADDLE_ENVIRONMENT} modu.`);
   return true;
 }
 
@@ -40,28 +48,58 @@ export function initPaddle() {
  * @param {'basic'|'premium'} plan
  */
 export async function openCheckout(userData, plan) {
+  // Debug log podataka prije otvaranja
+  console.log('[Checkout] Pokušaj otvaranja checkouta:', {
+    plan: plan,
+    userId: userData?.uid || userData?.id,
+    email: userData?.email,
+    tier: userData?.tier || 'A'
+  });
+
   const priceId = getPaddlePriceId(userData, plan);
 
-  if (!priceId || !PADDLE_CLIENT_TOKEN) {
-    console.warn('[Checkout] Checkout nije dostupan — Paddle nije konfiguriran.');
+  if (!priceId) {
+    console.error(`[Checkout] Price ID nije pronađen za plan: ${plan}, tier: ${userData?.tier || 'A'}`);
+    alert('Greška: Price ID nije pronađen.');
+    return;
+  }
+
+  if (!PADDLE_CLIENT_TOKEN) {
+    console.warn('[Checkout] Checkout nije dostupan — Client Token nije konfiguriran.');
     showCheckoutUnavailableMessage();
     return;
   }
 
-  // TODO (Faza 2): Uncomment i prilagoditi
-  // Paddle.Checkout.open({
-  //   items: [{ priceId: priceId, quantity: 1 }],
-  //   customer: {
-  //     email: userData.email,
-  //   },
-  //   customData: {
-  //     userId: userData.uid,
-  //     plan: plan,
-  //     tier: userData.tier,
-  //   },
-  //   successUrl: 'https://tvoja-domena.com/success',
-  //   closeCallback: () => console.log('[Checkout] Zatvoren bez kupnje.'),
-  // });
+  if (typeof Paddle === 'undefined' || !Paddle.Checkout) {
+    alert('Paddle SDK nije spreman. Molimo osvježite stranicu.');
+    return;
+  }
+
+  const checkoutOptions = {
+    items: [{ 
+      priceId: priceId, 
+      quantity: 1 
+    }],
+    customData: {
+      userId: userData?.uid || userData?.id,
+      plan: plan,
+      tier: userData?.tier || 'A',
+    },
+    settings: {
+      displayMode: 'overlay',
+      theme: 'light',
+      locale: 'en'
+    }
+  };
+
+  console.log('[Checkout] Šaljem parametre u Paddle.Checkout.open():', checkoutOptions);
+
+  try {
+    Paddle.Checkout.open(checkoutOptions);
+  } catch (err) {
+    console.error('[Checkout] Greška pri pozivu Paddle.Checkout.open():', err);
+    alert('Došlo je do greške pri otvaranju prozora za plaćanje.');
+  }
 }
 
 /**

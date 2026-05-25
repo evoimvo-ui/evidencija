@@ -18,11 +18,12 @@ export const CONFIG = {
   // Ključ za lokalnu enkripciju podataka u IndexedDB
   // U idealnom slučaju, ovo bi trebao biti derivat korisničke lozinke ili 
   // jedinstveni ključ koji se dohvaća nakon autentifikacije.
-  ENCRYPTION_KEY: 'evidencija-secret-key',
+  ENCRYPTION_KEY: 'new-secret-key-2026-temp-test', // OVAJ KLJUČ TREBA BITI UPRAVLJAN SIGURNO I NE SMIJE BITI HARDKODIRAN U PRODUKCIJI!
+  OLD_ENCRYPTION_KEY: 'evidencija-tajni-kljuc-2024', // Ključ korišten prije migracije
   
   // Paddle Billing (ako se koristi)
   PADDLE: {
-    clientToken: null,
+    clientToken: 'test_5c279b020ae876e582661c1b086',
     environment: 'sandbox'
   }
 };

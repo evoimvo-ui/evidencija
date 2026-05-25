@@ -78,6 +78,7 @@
     "error_no_phone": "電話番号が入力されていません！",
     "cancel": "キャンセル",
     "new_service": "新規サービス",
+    "edit_service": "Edit service",
     "login_title": "ログイン",
     "confirm_delete_msg": "本当に削除しますか？",
     "confirm": "確認",
@@ -97,6 +98,9 @@
     "print_report": "レポートを印刷",
     "remove": "削除",
     "debtor_name": "債務者名",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "全サービス",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "優先サポート",
     "coming_soon": "まもなく登場",
     "secure_payment_note": "💳 Paddle による安全な支払い — 長期的な契約は不要です。<br>サブスクリプションは近日公開予定です。お待ちいただきありがとうございます。",
-    "close_btn": "閉じる"
+    "close_btn": "閉じる",
+    "tos_intro": "続行する前に規約をお読みください。このアプリケーションを使用することにより、以下のドキュメントを読み、同意したことになります。",
+    "tos_link_terms": "利用規約",
+    "tos_link_privacy": "プライバシーポリシー",
+    "tos_note": "これらのドキュメントは、Work Recordsを含むei-apps.comプラットフォーム上のすべてのアプリケーションの使用に適用されます。",
+    "tos_checkbox": "利用規約とプライバシーポリシーを読み、同意します",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

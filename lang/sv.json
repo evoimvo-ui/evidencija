@@ -78,6 +78,7 @@
     "error_no_phone": "Inget telefonnummer angivet!",
     "cancel": "Avbryt",
     "new_service": "Ny tjänst",
+    "edit_service": "Edit service",
     "login_title": "Logga in",
     "confirm_delete_msg": "Är du säker på att du vill radera detta?",
     "confirm": "Bekräfta",
@@ -97,6 +98,9 @@
     "print_report": "SKRIV UT RAPPORT",
     "remove": "Ta bort",
     "debtor_name": "Gäldenär",
+    "corrupted_data": "Corrupted Data",
+    "confirm_delete_client": "Delete this client and all their history?",
+    "client_deleted": "Client deleted!",
     "all_services": "Alla tjänster",
     "none": "None",
     "vip": "VIP",
@@ -177,5 +181,12 @@
     "feature_priority_support": "Prioriterad support",
     "coming_soon": "Kommer snart",
     "secure_payment_note": "💳 Säker betalning via Paddle — inga långsiktiga åtaganden.<br>Prenumerationer kommer snart. Tack för ditt tålamod!",
-    "close_btn": "Stäng"
+    "close_btn": "Stäng",
+    "tos_intro": "Läs våra villkor innan du fortsätter. Genom att använda denna applikation bekräftar du att du har läst och accepterat följande dokument:",
+    "tos_link_terms": "Användarvillkor",
+    "tos_link_privacy": "Integritetspolicy",
+    "tos_note": "Dessa dokument styr användningen av alla applikationer på ei-apps.com-plattformen, inklusive Work Records.",
+    "tos_checkbox": "Jag har läst och godkänner användarvillkoren och integritetspolicyn",
+    "service_duration_minutes": "Duration (minutes)",
+    "service_duration_minutes_placeholder": "Service duration in minutes"
 }

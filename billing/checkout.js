@@ -18,6 +18,7 @@ const PADDLE_ENVIRONMENT = CONFIG.PADDLE.environment;
  * Poziva se jednom pri učitavanju app-a.
  */
 export function initPaddle() {
+  console.log('[Checkout] Inicijalizacija Paddle-a pozvana...');
   if (!PADDLE_CLIENT_TOKEN) {
     console.info('[Checkout] Paddle nije konfiguriran — checkout je onemogućen.');
     return false;

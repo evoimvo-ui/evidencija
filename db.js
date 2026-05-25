@@ -119,7 +119,7 @@ function legacyDecrypt(encoded, keyText = OLD_ENCRYPTION_KEY) {
 
 // IndexedDB Wrapper
 const DB_NAME = 'EvidencijaDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Povećano sa 1 na 2 radi dodavanja novih store-ova
 
 export async function initDB() {
   return new Promise((resolve, reject) => {
@@ -139,6 +139,9 @@ export async function initDB() {
       }
       if (!db.objectStoreNames.contains('clients')) {
         db.createObjectStore('clients', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('users')) {
+        db.createObjectStore('users', { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains('sync_queue')) {
         db.createObjectStore('sync_queue', { keyPath: 'id', autoIncrement: true });
@@ -410,10 +413,15 @@ export async function pullFromFirestore(user) {
 
   // Provjeri sinkronizacijski red čekanja
   const queue = await new Promise((resolve, reject) => {
-    const transaction = db.transaction('sync_queue', 'readonly');
-    const request = transaction.objectStore('sync_queue').getAll();
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    try {
+      const transaction = db.transaction('sync_queue', 'readonly');
+      const request = transaction.objectStore('sync_queue').getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    } catch (e) {
+      console.warn("[Sync] sync_queue not found or error:", e);
+      resolve([]);
+    }
   });
 
   // Skup ID-ova koji su u redu čekanja (lokalne promjene koje još nisu sinkronizirane)

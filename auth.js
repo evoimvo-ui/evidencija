@@ -71,10 +71,24 @@ export function hasTosAccepted(userData) {
  * Sprema ToS prihvatanje u Firestore.
  */
 export async function acceptTos(userId) {
-  await updateDoc(doc(db, "users", userId), {
-    tosAcceptedAt: serverTimestamp(),
-    tosVersion: "1.0"
-  });
+  const userRef = doc(db, "users", userId);
+  try {
+    await updateDoc(userRef, {
+      tosAcceptedAt: serverTimestamp(),
+      tosVersion: "1.0"
+    });
+  } catch (e) {
+    if (e.code === 'not-found') {
+      // Ako dokument ne postoji (npr. stari korisnik bez doc-a), kreiraj ga
+      await setDoc(userRef, {
+        uid: userId,
+        tosAcceptedAt: serverTimestamp(),
+        tosVersion: "1.0"
+      }, { merge: true });
+    } else {
+      throw e;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

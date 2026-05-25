@@ -10,6 +10,7 @@ import {
   setDoc, 
   getDoc, 
   updateDoc, 
+  onSnapshot,
   collection, 
   query, 
   where, 
@@ -116,18 +117,33 @@ async function isWhitelisted(email) {
 // ---------------------------------------------------------------------------
 
 export function initAuth(onLoggedIn, onLoggedOut) {
+  let unsubscribeSnapshot = null;
+
   onAuthStateChanged(auth, async (user) => {
+    // Ako imamo prethodni snapshot listener, ugasi ga
+    if (unsubscribeSnapshot) {
+      unsubscribeSnapshot();
+      unsubscribeSnapshot = null;
+    }
+
     try {
       if (user) {
         const userRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userRef);
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          onLoggedIn(user, userData);
-        } else {
-          const fallbackData = { role: 'solo', uid: user.uid, name: user.displayName || 'Korisnik' };
-          onLoggedIn(user, fallbackData);
-        }
+        
+        // Postavi real-time listener na korisnički dokument
+        unsubscribeSnapshot = onSnapshot(userRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const userData = snapshot.data();
+            console.log("[Auth] Real-time update primljen:", userData.subscriptionStatus);
+            onLoggedIn(user, userData);
+          } else {
+            const fallbackData = { role: 'solo', uid: user.uid, name: user.displayName || 'Korisnik' };
+            onLoggedIn(user, fallbackData);
+          }
+        }, (error) => {
+          console.error("Firestore snapshot error:", error);
+        });
+
       } else {
         onLoggedOut();
       }

@@ -2646,17 +2646,25 @@ async function refreshAppData() {
     const roleKey = currentUser.role === 'owner' ? 'owner_label' : (currentUser.role === 'worker' ? 'worker_label' : 'solo_label');
     roleEl.textContent = translations[roleKey] || currentUser.role;
   }
+
+  // Provjera Premium statusa (active ili trialing)
+  const isPremium = currentUser.subscriptionStatus === 'active' || 
+                    currentUser.subscriptionStatus === 'lifetime' || 
+                    currentUser.subscriptionStatus === 'trialing' || 
+                    (currentUser.subscriptionStatus === 'trial' && !window._isTrialExpired(currentUser));
+
   const navOwner = document.getElementById('navOwner');
-  if (currentUser.role === 'owner' || currentUser.role === 'solo') {
+  if (isPremium && (currentUser.role === 'owner' || currentUser.role === 'solo')) {
     if (navOwner) navOwner.style.display = 'flex';
   } else {
     if (navOwner) navOwner.style.display = 'none';
   }
-  if (currentUser.role === 'owner') {
+
+  if (isPremium && currentUser.role === 'owner') {
     document.getElementById('ownerDashboard').style.display = 'block';
     document.getElementById('becomeOwnerSection').style.display = 'none';
     loadShopInfo();
-  } else if (currentUser.role === 'solo') {
+  } else if (isPremium && currentUser.role === 'solo') {
     document.getElementById('ownerDashboard').style.display = 'none';
     document.getElementById('becomeOwnerSection').style.display = 'block';
   } else {
@@ -3992,9 +4000,12 @@ const BLOK1_PRICES = {
 function blok1UpdateTrialBanner(userData) {
   const banner = document.getElementById('trialBanner');
   if (!banner) return;
-  if (userData?.subscriptionStatus === 'active') { banner.style.display = 'none'; return; }
+  const isPremium = userData?.subscriptionStatus === 'active' || 
+                    userData?.subscriptionStatus === 'lifetime' || 
+                    userData?.subscriptionStatus === 'trialing';
+  if (isPremium) { banner.style.display = 'none'; return; }
+  
   const days = window._trialDaysLeft(userData);
-  if (userData?.subscriptionStatus === 'lifetime') { banner.style.display = 'none'; return; }
   if (days <= 0) { banner.style.display = 'none'; return; }
   banner.style.display = 'block';
   banner.classList.toggle('danger', days <= 5);
@@ -4057,10 +4068,27 @@ window.onHideUpgradeScreen = function() {
   document.getElementById('upgradeScreen').classList.remove('active');
 };
 
+// Automatsko zatvaranje upgrade ekrana ako korisnik postane Premium
+function checkAndAutoCloseUpgrade(userData) {
+  const isPremium = userData?.subscriptionStatus === 'active' || 
+                    userData?.subscriptionStatus === 'lifetime' || 
+                    userData?.subscriptionStatus === 'trialing';
+  if (isPremium) {
+    const upgradeScreen = document.getElementById('upgradeScreen');
+    if (upgradeScreen && upgradeScreen.classList.contains('active')) {
+      window.onHideUpgradeScreen();
+      showToast(translations['premium_activated'] || "Premium status aktiviran!");
+    }
+  }
+}
+
 // ── Glavni access check — poziva se iz initAuth callbacka ──
 window.checkAndShowTos = function(user, userData) {
   window._currentUser     = user;
   window._currentUserData = userData;
+  
+  // Automatski zatvori upgrade ako je plaćeno
+  checkAndAutoCloseUpgrade(userData);
 
   if (!window._hasTosAccepted(userData)) {
     document.getElementById('tosScreen').classList.add('active');
@@ -4070,14 +4098,22 @@ window.checkAndShowTos = function(user, userData) {
 };
 
 window.checkAppAccess = function(user, userData) {
-  if (window._isTrialExpired(userData)) {
+  const isPremium = userData?.subscriptionStatus === 'active' || 
+                    userData?.subscriptionStatus === 'lifetime' || 
+                    userData?.subscriptionStatus === 'trialing';
+
+  if (!isPremium && window._isTrialExpired(userData)) {
     // Sakrij app, prikaži expired screen
     const appContent = document.getElementById('appContent');
     if (appContent) appContent.style.display = 'none';
     document.getElementById('trialExpiredScreen').classList.add('active');
     return;
   }
-  // Sve OK — prikaži trial banner
+  // Sve OK — sakrij expired screen (ako je bio aktivan) i prikaži trial banner
+  document.getElementById('trialExpiredScreen').classList.remove('active');
+  const appContent = document.getElementById('appContent');
+  if (appContent) appContent.style.display = 'block';
+  
   blok1UpdateTrialBanner(userData);
 };
 </script>

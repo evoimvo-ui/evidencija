@@ -267,16 +267,12 @@ export async function register(name, email, pass, role = 'solo') {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, pass);
     
-    // Slanje verifikacionog mejla (samo jednom ovdje po registraciji, perzistira kroz sessionStorage)
-    if (sessionStorage.getItem('verificationEmailSent') !== 'true') {
-      try {
-        await sendEmailVerification(res.user);
-        sessionStorage.setItem('verificationEmailSent', 'true');
-        // Odmah pokaži ekran za verifikaciju bez čekanja na polling
-        showVerificationScreen(email);
-      } catch (err) {
-        console.error("Error sending verification email:", err);
-      }
+    // 1. Send verification email
+    try {
+      await sendEmailVerification(res.user);
+      sessionStorage.setItem('verificationEmailSent', 'true');
+    } catch (err) {
+      console.error("Error sending verification email:", err);
     }
 
     // Paralelno: detekcija tiera i whitelist provjera
@@ -284,8 +280,6 @@ export async function register(name, email, pass, role = 'solo') {
       detectCountryAndTier(),
       isWhitelisted(email)
     ]);
-
-    console.log(`[Auth] Whitelist: ${whitelisted}, country: ${country}, tier: ${tier}`);
 
     const userData = {
       uid: res.user.uid,
@@ -295,14 +289,11 @@ export async function register(name, email, pass, role = 'solo') {
       shopId: null,
       invitedBy: null,
       createdAt: serverTimestamp(),
-      // Trial & ToS
       trialStartedAt: serverTimestamp(),
       tosAcceptedAt: null,
       tosVersion: null,
-      // Whitelist korisnici dobivaju lifetime status odmah
       subscriptionStatus: whitelisted ? 'lifetime' : 'trial',
       subscriptionPlan: whitelisted ? 'premium' : null,
-      // Billing tier
       country: country,
       tier: tier,
       roleHistory: [{ 
@@ -315,7 +306,15 @@ export async function register(name, email, pass, role = 'solo') {
     await setDoc(doc(db, "users", res.user.uid), userData);
     await checkAndApplyInvites(res.user.uid, email.toLowerCase());
 
-    return { user: res.user, userData };
+    // 2. Immediately signOut to force verification before login
+    await signOut(auth);
+
+    // 3. Inform user (caller should handle UI transition to login/initial)
+    if (window.showToast) {
+      window.showToast("Registration successful! Please check your email to verify your account before logging in.", false, 5000);
+    }
+
+    return { success: true };
   } catch (e) {
     console.error("Registration error:", e);
     throw e;

@@ -24,6 +24,31 @@ import {
 import { detectCountryAndTier } from './billing/country.js';
 
 // ---------------------------------------------------------------------------
+// Central Auth State
+// ---------------------------------------------------------------------------
+
+export const AUTH_STATES = {
+  LOGGED_OUT: 'logged_out',
+  UNVERIFIED: 'unverified',
+  VERIFIED_NO_TOS: 'verified_no_tos',
+  VERIFIED_READY: 'verified_ready'
+};
+
+let currentAuthState = AUTH_STATES.LOGGED_OUT;
+let currentAuthUser = null;
+let currentAuthData = null;
+
+/**
+ * Određuje trenutno stanje autentifikacije na osnovu Firebase korisnika i Firestore podataka.
+ */
+function determineAuthState(user, userData) {
+  if (!user) return AUTH_STATES.LOGGED_OUT;
+  if (!user.emailVerified) return AUTH_STATES.UNVERIFIED;
+  if (!hasTosAccepted(userData)) return AUTH_STATES.VERIFIED_NO_TOS;
+  return AUTH_STATES.VERIFIED_READY;
+}
+
+// ---------------------------------------------------------------------------
 // Trial & ToS helpers
 // ---------------------------------------------------------------------------
 
@@ -138,9 +163,13 @@ export async function resendVerificationEmail() {
   const user = auth.currentUser;
   if (user) {
     try {
+      const actionCodeSettings = {
+        url: window.location.origin,
+        handleCodeInApp: false
+      };
       sessionStorage.removeItem('verificationEmailSent');
-      console.log("sendEmailVerification called");
-      await sendEmailVerification(user);
+      console.log("sendEmailVerification called (resend)");
+      await sendEmailVerification(user, actionCodeSettings);
       sessionStorage.setItem('verificationEmailSent', 'true');
       return true;
     } catch (e) {
@@ -155,23 +184,30 @@ export async function handleResendEmail() {
   const btn = document.getElementById('resendBtn');
   const status = document.getElementById('verificationStatus');
   
+  // Ako je currentUser null, a pozvan je resend, znači da je korisnik vjerojatno registriran ali nije prijavljen
+  // jer naš novi flow radi signOut odmah nakon registracije.
+  // Korisnik se mora prijaviti da bi dobio novi link (sigurnosna mjera Firebase-a).
   if (!auth.currentUser) {
-    if (status) status.textContent = "Please log in again to resend verification email.";
-    if (status) status.style.color = "var(--red)";
+    if (status) {
+      status.textContent = "Molimo prijavite se ponovo kako biste poslali verifikacijski email.";
+      status.style.color = "var(--red)";
+    }
     return;
   }
 
   if (btn) btn.disabled = true;
-  if (status) status.textContent = "...";
+  if (status) status.textContent = "Šaljem...";
   if (status) status.style.color = "#4ade80";
 
   try {
     await resendVerificationEmail();
-    if (status) status.textContent = "✓ Email sent!"; 
+    if (status) status.textContent = "✓ Email poslan!"; 
   } catch (e) {
     console.error(e);
-    if (status) status.textContent = "Error! Try again later.";
-    if (status) status.style.color = "var(--red)";
+    if (status) {
+      status.textContent = "Greška! Pokušajte kasnije.";
+      status.style.color = "var(--red)";
+    }
   } finally {
     setTimeout(() => {
       if (btn) btn.disabled = false;
@@ -184,10 +220,17 @@ export async function handleResendEmail() {
 // Auth core
 // ---------------------------------------------------------------------------
 
-export function initAuth(onLoggedIn, onLoggedOut) {
+/**
+ * Glavna inicijalizacija autentifikacije.
+ * Upravlja centralnim stanjem i poziva callback pri svakoj promjeni.
+ * 
+ * @param {Function} onStateChange - Callback(state, user, userData)
+ */
+export function initAuth(onStateChange) {
   let unsubscribeSnapshot = null;
 
   onAuthStateChanged(auth, async (user) => {
+    // 1. Cleanup prethodnih listenera i pollinga
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
@@ -200,52 +243,65 @@ export function initAuth(onLoggedIn, onLoggedOut) {
 
     try {
       if (!user) {
-        hideVerificationScreen();
-        onLoggedOut();
+        currentAuthState = AUTH_STATES.LOGGED_OUT;
+        currentAuthUser = null;
+        currentAuthData = null;
+        onStateChange(currentAuthState, null, null);
         return;
       }
 
-      // Osiguraj svjež status verifikacije da izbjegnemo flash ToS-a
+      // 2. Osiguraj najsvježiji status (reload)
       await reload(user);
 
+      // 3. Provjera verifikacije
       if (!user.emailVerified) {
-        showVerificationScreen(user.email);
+        currentAuthState = AUTH_STATES.UNVERIFIED;
+        currentAuthUser = user;
+        currentAuthData = null;
         
+        // Pokreni polling samo za provjeru statusa, bez side-effectova
         verificationPolling = setInterval(async () => {
           try {
             await reload(user);
             if (user.emailVerified) {
               clearInterval(verificationPolling);
               verificationPolling = null;
-              hideVerificationScreen();
-              location.reload(); 
+              location.reload(); // Najsigurniji način za prelazak u verificirano stanje
             }
           } catch (e) {
-            console.error("Polling reload error:", e);
+            console.error("[Auth] Polling error:", e);
           }
         }, 3000);
-        return; // Blokiraj dok nije verifikovan
+
+        onStateChange(currentAuthState, user, null);
+        return;
       }
 
-      hideVerificationScreen();
-      hideAuthScreen(); // Dodano: Osigurava da se auth screen sakrije i app prikaže odmah nakon verifikacije
+      // 4. Korisnik je verificiran, dohvati podatke iz Firestore
       const userRef = doc(db, "users", user.uid);
       
+      // Koristimo onSnapshot za real-time praćenje ToS i pretplate
       unsubscribeSnapshot = onSnapshot(userRef, (snapshot) => {
+        let userData = null;
         if (snapshot.exists()) {
-          const userData = snapshot.data();
-          onLoggedIn(user, userData);
+          userData = snapshot.data();
         } else {
-          const fallbackData = { role: 'solo', uid: user.uid, name: user.displayName || 'Korisnik' };
-          onLoggedIn(user, fallbackData);
+          // Fallback ako doc još nije kreiran (trka sa registracijom)
+          userData = { role: 'solo', uid: user.uid, name: user.displayName || 'Korisnik' };
         }
+
+        currentAuthUser = user;
+        currentAuthData = userData;
+        currentAuthState = determineAuthState(user, userData);
+        
+        onStateChange(currentAuthState, user, userData);
       }, (error) => {
-        console.error("Firestore snapshot error:", error);
+        console.error("[Auth] Firestore snapshot error:", error);
       });
 
     } catch (error) {
-      console.error("Auth initialization error:", error);
-      onLoggedOut();
+      console.error("[Auth] Initialization error:", error);
+      onStateChange(AUTH_STATES.LOGGED_OUT, null, null);
     }
   });
 }
@@ -268,16 +324,19 @@ export async function register(name, email, pass, role = 'solo') {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, pass);
     
-    // 1. Send verification email
+    // 1. Slanje verifikacijskog emaila (TAČNO JEDNOM)
     try {
-      console.log("sendEmailVerification called");
-      await sendEmailVerification(res.user);
-      sessionStorage.setItem('verificationEmailSent', 'true');
+      const actionCodeSettings = {
+        url: window.location.origin,
+        handleCodeInApp: false
+      };
+      console.log("sendEmailVerification called (register)");
+      await sendEmailVerification(res.user, actionCodeSettings);
     } catch (err) {
-      console.error("Error sending verification email:", err);
+      console.error("[Auth] Greška pri slanju verifikacijskog emaila:", err);
     }
 
-    // Paralelno: detekcija tiera i whitelist provjera
+    // 2. Kreiranje Firestore dokumenta
     const [{ country, tier }, whitelisted] = await Promise.all([
       detectCountryAndTier(),
       isWhitelisted(email)
@@ -308,17 +367,12 @@ export async function register(name, email, pass, role = 'solo') {
     await setDoc(doc(db, "users", res.user.uid), userData);
     await checkAndApplyInvites(res.user.uid, email.toLowerCase());
 
-    // 2. Immediately signOut to force verification before login
+    // 3. ODMAH ODJAVA (Sigurnosni zahtjev: verifikacija prije prvog login-a)
     await signOut(auth);
 
-    // 3. Inform user (caller should handle UI transition to login/initial)
-    if (window.showToast) {
-      window.showToast("Registration successful! Please check your email to verify your account before logging in.", false, 5000);
-    }
-
-    return { success: true };
+    return { success: true, email: email };
   } catch (e) {
-    console.error("Registration error:", e);
+    console.error("[Auth] Registration error:", e);
     throw e;
   }
 }
@@ -350,19 +404,17 @@ async function checkAndApplyInvites(userId, email) {
       workerId: userId
     });
 
-    console.log(`Invite accepted for ${email}. User ${userId} joined shop ${inviteData.shopId}`);
+    console.log(`[Auth] Pozivnica prihvaćena za ${email}.`);
   }
 }
 
 export async function login(email, pass) {
   try {
     const res = await signInWithEmailAndPassword(auth, email, pass);
-    sessionStorage.removeItem('verificationEmailSent'); // Resetujemo flag pri login-u
-    await checkAndApplyInvites(res.user.uid, email.toLowerCase());
-    const userDoc = await getDoc(doc(db, "users", res.user.uid));
-    return { user: res.user, userData: userDoc.data() };
+    // Pri prijavi samo vraćamo usera, onAuthStateChanged će odraditi reload i provjeru verifikacije
+    return { user: res.user };
   } catch (e) {
-    console.error("Login error:", e);
+    console.error("[Auth] Login error:", e);
     throw e;
   }
 }

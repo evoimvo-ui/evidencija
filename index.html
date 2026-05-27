@@ -2634,10 +2634,24 @@ async function handleRegister() {
     document.getElementById('authError').textContent = translations['error_fill_all'] || 'Popunite sva polja!';
     return;
   }
+  const btn = document.getElementById('authSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Registracija...';
+
   try {
-    await register(name, email, pass);
-    showToast(translations['reg_success'] || "Registracija uspješna!");
-  } catch (e) { document.getElementById('authError').textContent = e.message; }
+    const res = await register(name, email, pass);
+    if (res.success) {
+      // Pokaži jasnu poruku o verifikaciji
+      setAuthMode('initial');
+      showToast("Registracija uspješna! Molimo provjerite vaš email (uključujući spam) i potvrdite račun prije prijave.", false, 8000);
+      document.getElementById('authError').textContent = "";
+    }
+  } catch (e) { 
+    document.getElementById('authError').textContent = e.message; 
+  } finally {
+    btn.disabled = false;
+    btn.textContent = translations['register_btn'] || 'Registruj se';
+  }
 }
 
 async function handleLogin() {
@@ -2647,19 +2661,20 @@ async function handleLogin() {
     document.getElementById('authError').textContent = translations['error_fill_all'] || 'Popunite sva polja!';
     return;
   }
+  const btn = document.getElementById('authSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Prijava...';
+
   try {
-    const { user, userData } = await login(email, pass);
+    await login(email, pass);
     // UI tranzicija se dešava automatski kroz initAuth -> onAuthStateChanged
-    // ali za svaki slučaj forsiramo update ako login() vrati podatke
-    if (user && user.emailVerified) {
-      currentUser = { ...user, ...userData };
-      window._currentUser = user;
-      window._currentUserData = currentUser;
-      hideAuthScreen();
-      window.checkAndShowTos(user, currentUser);
-      refreshAppData();
-    }
-  } catch (e) { document.getElementById('authError').textContent = e.message; }
+    document.getElementById('authError').textContent = "";
+  } catch (e) { 
+    document.getElementById('authError').textContent = e.message; 
+  } finally {
+    btn.disabled = false;
+    btn.textContent = translations['login_btn'] || 'Prijavi se';
+  }
 }
 
 async function handleLogout() {
@@ -3975,45 +3990,78 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   initPaddle();
 
-  initAuth(async (user, userData) => {
-    console.log("Auth callback: User logged in.");
-    currentUser = { ...user, ...userData };
+  initAuth(async (state, user, userData) => {
+    console.log(`[Auth] State changed: ${state}`);
+    
+    // Reset globalnih varijabli
+    currentUser = userData ? { ...user, ...userData } : null;
+    window._currentUser = user;
+    window._currentUserData = userData;
 
-    // ── BLOK 1: Expose user state za non-module skriptu, pa provjeri ToS/Trial ──
-    window._currentUser     = user;
-    window._currentUserData = currentUser;
+    // CENTRALNI ROUTING BAZIRAN NA STATE-U
+    switch (state) {
+      case 'logged_out':
+        showAuthScreen();
+        setAuthMode('initial');
+        hideVerificationScreen();
+        document.getElementById('tosScreen').classList.remove('active');
+        document.getElementById('appContent').style.display = 'none';
+        break;
 
-    // auth.js initAuth se brine o verifikaciji prije nego pozove ovaj callback
-    window.checkAndShowTos(user, currentUser);
+      case 'unverified':
+        showAuthScreen();
+        showVerificationScreen(user.email);
+        document.getElementById('tosScreen').classList.remove('active');
+        document.getElementById('appContent').style.display = 'none';
+        break;
 
-    const updateOnlineStatus = () => {
-      const statusDot = document.getElementById('syncStatus');
-      if (statusDot) {
-        if (navigator.onLine) {
-          statusDot.style.background = '#25D366';
-          syncWithFirestore(currentUser).then(() => refreshAppData());
+      case 'verified_no_tos':
+        hideAuthScreen();
+        hideVerificationScreen();
+        document.getElementById('tosScreen').classList.add('active');
+        document.getElementById('appContent').style.display = 'none';
+        break;
+
+      case 'verified_ready':
+        hideAuthScreen();
+        hideVerificationScreen();
+        document.getElementById('tosScreen').classList.remove('active');
+        
+        // Finalna provjera pristupa (Trial/Subscription)
+        if (window.checkAppAccess) {
+          window.checkAppAccess(user, userData);
         } else {
-          statusDot.style.background = '#ff5c5c';
+          document.getElementById('appContent').style.display = 'block';
         }
-      }
-    };
 
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-    updateOnlineStatus();
+        // Inicijalizacija aplikacije
+        await refreshAppData();
+        
+        // Sync i ostali pozadinski procesi
+        const updateOnlineStatus = () => {
+          const statusDot = document.getElementById('syncStatus');
+          if (statusDot) {
+            if (navigator.onLine) {
+              statusDot.style.background = '#25D366';
+              syncWithFirestore(currentUser).then(() => refreshAppData());
+            } else {
+              statusDot.style.background = '#ff5c5c';
+            }
+          }
+        };
 
-    if (navigator.onLine) await pullFromFirestore(currentUser);
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
 
-    await refreshAppData();
-    setTimeout(() => checkUpcomingAppointments(), 1500);
-    setInterval(checkUpcomingAppointments, 60000);
-  }, 
-  () => {
-    console.log("Auth callback: User logged out.");
-    currentUser = null;
-    showAuthScreen();
-    setAuthMode('initial');
+        if (navigator.onLine) await pullFromFirestore(currentUser);
+        
+        setTimeout(() => checkUpcomingAppointments(), 1500);
+        break;
+    }
   });
+
+  setInterval(checkUpcomingAppointments, 60000);
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')

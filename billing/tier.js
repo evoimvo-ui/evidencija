@@ -31,13 +31,13 @@ export const TIERS = {
         price: 4.99,
         priceLabel: '€4.99',
         period: 'mj',
-        paddlePriceId: null, // TODO
+        paddlePriceId: 'pri_01ksg6w7ffr8syaaewns4xghdp', // Koristimo Tier A ID dok B ne bude spreman
       },
       premium: {
         price: 19.99,
         priceLabel: '€19.99',
         period: 'mj',
-        paddlePriceId: null, // TODO
+        paddlePriceId: 'pri_01ksg73dctd8dzbz0bcqy4my9s', // Koristimo Tier A ID dok B ne bude spreman
       }
     }
   }

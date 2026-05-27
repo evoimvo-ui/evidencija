@@ -94,6 +94,7 @@ export async function openCheckout(userData, plan) {
   };
 
   console.log('[Checkout] Šaljem parametre u Paddle.Checkout.open():', checkoutOptions);
+  console.log("[Billing] USPJEH: Pokrećem Paddle checkout sa Price ID-jem:", priceId);
 
   try {
     Paddle.Checkout.open(checkoutOptions);

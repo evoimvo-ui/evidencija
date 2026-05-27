@@ -2659,21 +2659,24 @@ async function handleRegister() {
 async function handleLogin() {
   const email = document.getElementById('authEmail').value;
   const pass = document.getElementById('authPass').value;
+  const errorEl = document.getElementById('authError');
+  const btn = document.getElementById('authSubmitBtn');
+
   if (!email || !pass) {
-    document.getElementById('authError').textContent = translations['error_fill_all'] || 'Popunite sva polja!';
+    errorEl.textContent = translations['error_fill_all'] || 'Popunite sva polja!';
     return;
   }
-  const btn = document.getElementById('authSubmitBtn');
+  
   btn.disabled = true;
   btn.textContent = 'Prijava...';
+  errorEl.textContent = "";
 
   try {
     await login(email, pass);
     // UI tranzicija se dešava automatski kroz initAuth -> onAuthStateChanged
-    document.getElementById('authError').textContent = "";
+    // onAuthStateChanged će pozvati onLoggedIn callback koji vrši UI promjene
   } catch (e) { 
-    document.getElementById('authError').textContent = e.message; 
-  } finally {
+    errorEl.textContent = e.message; 
     btn.disabled = false;
     btn.textContent = translations['login_btn'] || 'Prijavi se';
   }
@@ -4012,6 +4015,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     window._currentUserData = currentUser;
 
     window.checkAndShowTos(user, currentUser);
+    
+    // Eksplicitno aktiviraj glavni sadržaj ako je sve OK
+    if (user.emailVerified && window._hasTosAccepted(currentUser)) {
+      document.getElementById('appContent').style.display = 'block';
+    }
 
     const updateOnlineStatus = () => {
       const statusDot = document.getElementById('syncStatus');

@@ -48,5 +48,5 @@ export const TIERS = {
  * @param {string} tier - 'A' ili 'B', default 'A'
  */
 export function getTierData(tier) {
-  return TIERS[tier] || TIERS['A'];
+  return TIERS[tier] || TIERS.A; 
 }

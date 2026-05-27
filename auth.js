@@ -306,27 +306,33 @@ export function showAuthScreen() {
 export async function register(name, email, pass, role = 'solo') {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, pass);
+    const user = res.user;
     
-    // 1. Slanje verifikacijskog emaila (SAMO JEDNOM ODMAH NAKON REGISTRACIJE)
+    // 1. Slanje verifikacijskog emaila (TAČNO JEDNOM)
     try {
       const actionCodeSettings = {
         url: window.location.origin,
         handleCodeInApp: false
       };
       console.log("sendEmailVerification called (register)");
-      await sendEmailVerification(res.user, actionCodeSettings);
+      await sendEmailVerification(user, actionCodeSettings);
     } catch (err) {
       console.error("[Auth] Greška pri slanju verifikacijskog emaila:", err);
     }
 
-    // 2. Kreiranje Firestore dokumenta
+    // 2. ODMAH ODJAVA - SPREČAVANJE RACE CONDITION-A
+    // onAuthStateChanged će reagovati, ali pošto je signOut() pozvan odmah,
+    // sesija će biti prekinuta prije nego što bilo kakav UI stigne da se učita.
+    await signOut(auth);
+
+    // 3. Kreiranje Firestore dokumenta
     const [{ country, tier }, whitelisted] = await Promise.all([
       detectCountryAndTier(),
       isWhitelisted(email)
     ]);
 
     const userData = {
-      uid: res.user.uid,
+      uid: user.uid,
       name: name,
       email: email.toLowerCase(),
       role: role,
@@ -347,14 +353,10 @@ export async function register(name, email, pass, role = 'solo') {
       }]
     };
 
-    await setDoc(doc(db, "users", res.user.uid), userData);
-    await checkAndApplyInvites(res.user.uid, email.toLowerCase());
+    await setDoc(doc(db, "users", user.uid), userData);
+    await checkAndApplyInvites(user.uid, email.toLowerCase());
 
-    // 3. ODMAH ODJAVA - SPREČAVANJE RACE CONDITION-A
-    // onAuthStateChanged će reagovati, ali pošto je signOut() pozvan odmah,
-    // sesija će biti prekinuta prije nego što bilo kakav UI stigne da se učita.
-    await signOut(auth);
-
+    console.log("KORAK 1: Email poslat, korisnik odjavljen.");
     return { success: true, email: email };
   } catch (e) {
     console.error("[Auth] Registration error:", e);

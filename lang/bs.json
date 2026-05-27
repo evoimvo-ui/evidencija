@@ -188,5 +188,9 @@
     "tos_note": "Ovi dokumenti upravljaju upotrebom svih aplikacija na ei-apps.com platformi, uključujući Work Records.",
     "tos_checkbox": "Pročitao/la sam i prihvatam Uvjete korištenja i Policu privatnosti",
     "service_duration_minutes": "Trajanje (minuti)",
-    "service_duration_minutes_placeholder": "Trajanje usluge u minutama"
+    "service_duration_minutes_placeholder": "Trajanje usluge u minutama",
+    "verify_email_title": "Potvrdite vaš email",
+    "verify_email_msg_1": "Molimo potvrdite vaš email. Poslali smo link na ",
+    "verify_email_msg_2": "Provjerite vaš inbox.",
+    "resend_email_btn": "Ponovo pošalji email"
 }

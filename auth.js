@@ -3,7 +3,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  signOut
+  signOut,
+  sendEmailVerification,
+  reload
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { 
   doc, 
@@ -113,6 +115,71 @@ async function isWhitelisted(email) {
 }
 
 // ---------------------------------------------------------------------------
+// Verification helpers
+// ---------------------------------------------------------------------------
+
+let verificationPolling = null;
+
+export function showVerificationScreen(email) {
+  const screen = document.getElementById('verificationScreen');
+  const emailSpan = document.getElementById('verificationEmail');
+  if (screen) {
+    if (emailSpan) emailSpan.textContent = email;
+    screen.style.display = 'flex';
+  }
+}
+
+export function hideVerificationScreen() {
+  const screen = document.getElementById('verificationScreen');
+  if (screen) screen.style.display = 'none';
+}
+
+export async function resendVerificationEmail() {
+  const user = auth.currentUser;
+  if (user) {
+    try {
+      sessionStorage.removeItem('verificationEmailSent');
+      await sendEmailVerification(user);
+      sessionStorage.setItem('verificationEmailSent', 'true');
+      return true;
+    } catch (e) {
+      console.error("Resend error:", e);
+      throw e;
+    }
+  }
+  return false;
+}
+
+export async function handleResendEmail() {
+  const btn = document.getElementById('resendBtn');
+  const status = document.getElementById('verificationStatus');
+  
+  if (!auth.currentUser) {
+    if (status) status.textContent = "Please log in again to resend verification email.";
+    if (status) status.style.color = "var(--red)";
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = "...";
+  if (status) status.style.color = "#4ade80";
+
+  try {
+    await resendVerificationEmail();
+    if (status) status.textContent = "✓ Email sent!"; 
+  } catch (e) {
+    console.error(e);
+    if (status) status.textContent = "Error! Try again later.";
+    if (status) status.style.color = "var(--red)";
+  } finally {
+    setTimeout(() => {
+      if (btn) btn.disabled = false;
+      if (status) status.textContent = "";
+    }, 5000);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Auth core
 // ---------------------------------------------------------------------------
 
@@ -120,33 +187,61 @@ export function initAuth(onLoggedIn, onLoggedOut) {
   let unsubscribeSnapshot = null;
 
   onAuthStateChanged(auth, async (user) => {
-    // Ako imamo prethodni snapshot listener, ugasi ga
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
     }
 
-    try {
-      if (user) {
-        const userRef = doc(db, "users", user.uid);
-        
-        // Postavi real-time listener na korisnički dokument
-        unsubscribeSnapshot = onSnapshot(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const userData = snapshot.data();
-            console.log("[Auth] Real-time update primljen:", userData.subscriptionStatus);
-            onLoggedIn(user, userData);
-          } else {
-            const fallbackData = { role: 'solo', uid: user.uid, name: user.displayName || 'Korisnik' };
-            onLoggedIn(user, fallbackData);
-          }
-        }, (error) => {
-          console.error("Firestore snapshot error:", error);
-        });
+    if (verificationPolling) {
+      clearInterval(verificationPolling);
+      verificationPolling = null;
+    }
 
-      } else {
+    try {
+      if (!user) {
+        hideVerificationScreen();
         onLoggedOut();
+        return;
       }
+
+      // Osiguraj svjež status verifikacije da izbjegnemo flash ToS-a
+      await reload(user);
+
+      if (!user.emailVerified) {
+        showVerificationScreen(user.email);
+        
+        verificationPolling = setInterval(async () => {
+          try {
+            await reload(user);
+            if (user.emailVerified) {
+              clearInterval(verificationPolling);
+              verificationPolling = null;
+              hideVerificationScreen();
+              location.reload(); 
+            }
+          } catch (e) {
+            console.error("Polling reload error:", e);
+          }
+        }, 3000);
+        return; // Blokiraj dok nije verifikovan
+      }
+
+      hideVerificationScreen();
+      hideAuthScreen(); // Dodano: Osigurava da se auth screen sakrije i app prikaže odmah nakon verifikacije
+      const userRef = doc(db, "users", user.uid);
+      
+      unsubscribeSnapshot = onSnapshot(userRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const userData = snapshot.data();
+          onLoggedIn(user, userData);
+        } else {
+          const fallbackData = { role: 'solo', uid: user.uid, name: user.displayName || 'Korisnik' };
+          onLoggedIn(user, fallbackData);
+        }
+      }, (error) => {
+        console.error("Firestore snapshot error:", error);
+      });
+
     } catch (error) {
       console.error("Auth initialization error:", error);
       onLoggedOut();
@@ -171,6 +266,18 @@ export function showAuthScreen() {
 export async function register(name, email, pass, role = 'solo') {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, pass);
+    
+    // Slanje verifikacionog mejla (samo jednom ovdje po registraciji, perzistira kroz sessionStorage)
+    if (sessionStorage.getItem('verificationEmailSent') !== 'true') {
+      try {
+        await sendEmailVerification(res.user);
+        sessionStorage.setItem('verificationEmailSent', 'true');
+        // Odmah pokaži ekran za verifikaciju bez čekanja na polling
+        showVerificationScreen(email);
+      } catch (err) {
+        console.error("Error sending verification email:", err);
+      }
+    }
 
     // Paralelno: detekcija tiera i whitelist provjera
     const [{ country, tier }, whitelisted] = await Promise.all([
@@ -249,6 +356,7 @@ async function checkAndApplyInvites(userId, email) {
 export async function login(email, pass) {
   try {
     const res = await signInWithEmailAndPassword(auth, email, pass);
+    sessionStorage.removeItem('verificationEmailSent'); // Resetujemo flag pri login-u
     await checkAndApplyInvites(res.user.uid, email.toLowerCase());
     const userDoc = await getDoc(doc(db, "users", res.user.uid));
     return { user: res.user, userData: userDoc.data() };
@@ -270,6 +378,7 @@ import {
 export async function logout() {
   const cleared = await clearLocalData();
   if (cleared) {
+    sessionStorage.removeItem('verificationEmailSent');
     await signOut(auth);
     location.reload(); 
   }

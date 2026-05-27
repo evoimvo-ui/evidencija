@@ -1879,6 +1879,28 @@
 </div>
 
 <!-- ══════════════════════════════════════════════
+     BLOK 1 — Email Verifikacija
+     ══════════════════════════════════════════════ -->
+<div id="verificationScreen" class="blok1-overlay" style="display:none;">
+  <div class="blok1-card" style="text-align:center;">
+    <div style="font-size:3rem; margin-bottom:0.75rem;">✉️</div>
+    <h2 data-i18n="verify_email_title">Potvrdite vaš email</h2>
+    <p id="verificationMessage">
+      <span data-i18n="verify_email_msg_1">Molimo potvrdite vaš email. Poslali smo link na</span>
+      <strong id="verificationEmail"></strong>.
+      <span data-i18n="verify_email_msg_2">Provjerite vaš inbox.</span>
+    </p>
+    <button class="blok1-btn-primary" onclick="window.handleResendEmail()" id="resendBtn">
+      <span data-i18n="resend_email_btn">Ponovo pošalji email</span>
+    </button>
+    <button class="blok1-btn-secondary" onclick="window.logout()">
+      <span data-i18n="logout_btn">Odjava</span>
+    </button>
+    <div id="verificationStatus" style="margin-top: 15px; font-size: 13px; color: #4ade80; min-height: 20px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
      BLOK 1 — Upgrade ekran
      ══════════════════════════════════════════════ -->
 <div id="upgradeScreen" class="blok1-overlay">
@@ -2300,7 +2322,8 @@ import {
   isTrialExpired,
   trialDaysLeft,
   hasTosAccepted,
-  acceptTos
+  acceptTos,
+  handleResendEmail
 } from './auth.js';
 import { getPriceLabel } from './billing/pricing.js';
 import { initPaddle, openCheckout } from './billing/checkout.js';
@@ -2319,6 +2342,9 @@ window._isTrialExpired = isTrialExpired;
 window._trialDaysLeft  = trialDaysLeft;
 window._hasTosAccepted = hasTosAccepted;
 window._acceptTos      = acceptTos;
+window.handleResendEmail = handleResendEmail;
+window.hideAuthScreen = hideAuthScreen;
+window.showAuthScreen = showAuthScreen;
 window._getPriceLabel  = getPriceLabel;
 window.openCheckout    = openCheckout;
 window.saveService = saveService;
@@ -3947,9 +3973,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     window._currentUser     = user;
     window._currentUserData = currentUser;
 
-    hideAuthScreen();
+    // auth.js initAuth se brine o verifikaciji prije nego pozove ovaj callback
     window.checkAndShowTos(user, currentUser);
-    // ─────────────────────────────────────────────────────────────────────────
 
     const updateOnlineStatus = () => {
       const statusDot = document.getElementById('syncStatus');
@@ -4088,6 +4113,9 @@ window.checkAndShowTos = function(user, userData) {
   window._currentUser     = user;
   window._currentUserData = userData;
   
+  // Prvo sakrij auth screen ako smo ovdje (znači email je verifikovan)
+  window.hideAuthScreen();
+
   // Automatski zatvori upgrade ako je plaćeno
   checkAndAutoCloseUpgrade(userData);
 

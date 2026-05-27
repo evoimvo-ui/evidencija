@@ -4014,6 +4014,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.checkAndShowTos(user, currentUser);
 
     const updateOnlineStatus = () => {
+      const statusDot = document.getElementById('syncStatus');
+      if (statusDot) {
+        if (navigator.onLine) {
+          statusDot.style.background = '#25D366';
+          syncWithFirestore(currentUser).then(() => refreshAppData());
+        } else {
+          statusDot.style.background = '#ff5c5c';
+        }
+      }
+    };
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+
+    if (navigator.onLine) await pullFromFirestore(currentUser);
+
+    await refreshAppData();
+    setTimeout(() => checkUpcomingAppointments(), 1500);
+  }, 
+  () => {
+    console.log("Auth callback: User logged out.");
+    currentUser = null;
+    showAuthScreen();
+    setAuthMode('initial');
+  });
 
   setInterval(checkUpcomingAppointments, 60000);
 

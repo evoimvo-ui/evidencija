@@ -2643,7 +2643,8 @@ async function handleRegister() {
     if (res.success) {
       // Pokaži jasnu poruku o verifikaciji
       setAuthMode('initial');
-      showToast("Registracija uspješna! Molimo provjerite vaš email (uključujući spam) i potvrdite račun prije prijave.", false, 8000);
+      showVerificationScreen(email); // Ručno prikazujemo ekran za verifikaciju
+      showToast("Registracija uspješna! Molimo provjerite vaš email i potvrdite račun prije prijave.", false, 8000);
       document.getElementById('authError').textContent = "";
     }
   } catch (e) { 
@@ -3990,76 +3991,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   initPaddle();
 
-  initAuth(async (state, user, userData) => {
-    console.log(`[Auth] State changed: ${state}`);
+  initAuth(async (user, userData) => {
+    console.log("Auth callback: User logged in.");
     
-    // Reset globalnih varijabli
-    currentUser = userData ? { ...user, ...userData } : null;
-    window._currentUser = user;
-    window._currentUserData = userData;
-
-    // CENTRALNI ROUTING BAZIRAN NA STATE-U
-    switch (state) {
-      case 'logged_out':
-        showAuthScreen();
-        setAuthMode('initial');
-        hideVerificationScreen();
-        document.getElementById('tosScreen').classList.remove('active');
-        document.getElementById('appContent').style.display = 'none';
-        break;
-
-      case 'unverified':
-        showAuthScreen();
-        showVerificationScreen(user.email);
-        document.getElementById('tosScreen').classList.remove('active');
-        document.getElementById('appContent').style.display = 'none';
-        break;
-
-      case 'verified_no_tos':
-        hideAuthScreen();
-        hideVerificationScreen();
-        document.getElementById('tosScreen').classList.add('active');
-        document.getElementById('appContent').style.display = 'none';
-        break;
-
-      case 'verified_ready':
-        hideAuthScreen();
-        hideVerificationScreen();
-        document.getElementById('tosScreen').classList.remove('active');
-        
-        // Finalna provjera pristupa (Trial/Subscription)
-        if (window.checkAppAccess) {
-          window.checkAppAccess(user, userData);
-        } else {
-          document.getElementById('appContent').style.display = 'block';
-        }
-
-        // Inicijalizacija aplikacije
-        await refreshAppData();
-        
-        // Sync i ostali pozadinski procesi
-        const updateOnlineStatus = () => {
-          const statusDot = document.getElementById('syncStatus');
-          if (statusDot) {
-            if (navigator.onLine) {
-              statusDot.style.background = '#25D366';
-              syncWithFirestore(currentUser).then(() => refreshAppData());
-            } else {
-              statusDot.style.background = '#ff5c5c';
-            }
-          }
-        };
-
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-        updateOnlineStatus();
-
-        if (navigator.onLine) await pullFromFirestore(currentUser);
-        
-        setTimeout(() => checkUpcomingAppointments(), 1500);
-        break;
+    // 1. STROGA PROVJERA VERIFIKACIJE
+    if (user && !user.emailVerified) {
+      currentUser = null;
+      window._currentUser = user;
+      window._currentUserData = null;
+      showAuthScreen();
+      showVerificationScreen(user.email);
+      return;
     }
-  });
+
+    currentUser = { ...user, ...userData };
+
+    // ── BLOK 1: Expose user state za non-module skriptu, pa provjeri ToS/Trial ──
+    window._currentUser     = user;
+    window._currentUserData = currentUser;
+
+    window.checkAndShowTos(user, currentUser);
+
+    const updateOnlineStatus = () => {
 
   setInterval(checkUpcomingAppointments, 60000);
 
@@ -4168,6 +4121,13 @@ function checkAndAutoCloseUpgrade(userData) {
 
 // ── Glavni access check — poziva se iz initAuth callbacka ──
 window.checkAndShowTos = function(user, userData) {
+  // STROGA PROVJERA VERIFIKACIJE
+  if (user && !user.emailVerified) {
+    showAuthScreen();
+    showVerificationScreen(user.email);
+    return;
+  }
+
   window._currentUser     = user;
   window._currentUserData = userData;
   

@@ -2648,7 +2648,17 @@ async function handleLogin() {
     return;
   }
   try {
-    await login(email, pass);
+    const { user, userData } = await login(email, pass);
+    // UI tranzicija se dešava automatski kroz initAuth -> onAuthStateChanged
+    // ali za svaki slučaj forsiramo update ako login() vrati podatke
+    if (user && user.emailVerified) {
+      currentUser = { ...user, ...userData };
+      window._currentUser = user;
+      window._currentUserData = currentUser;
+      hideAuthScreen();
+      window.checkAndShowTos(user, currentUser);
+      refreshAppData();
+    }
   } catch (e) { document.getElementById('authError').textContent = e.message; }
 }
 

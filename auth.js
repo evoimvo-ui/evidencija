@@ -139,6 +139,7 @@ export async function resendVerificationEmail() {
   if (user) {
     try {
       sessionStorage.removeItem('verificationEmailSent');
+      console.log("sendEmailVerification called");
       await sendEmailVerification(user);
       sessionStorage.setItem('verificationEmailSent', 'true');
       return true;
@@ -269,6 +270,7 @@ export async function register(name, email, pass, role = 'solo') {
     
     // 1. Send verification email
     try {
+      console.log("sendEmailVerification called");
       await sendEmailVerification(res.user);
       sessionStorage.setItem('verificationEmailSent', 'true');
     } catch (err) {

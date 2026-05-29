@@ -2703,9 +2703,8 @@ async function refreshAppData() {
     roleEl.textContent = translations[roleKey] || currentUser.role;
   }
 
-  // Provjera Premium statusa (active + premium plan, ili lifetime/trial)
-  const isPremium = (currentUser.subscriptionStatus === 'active' && currentUser.subscriptionPlan === 'premium') || 
-                    currentUser.subscriptionStatus === 'lifetime' || 
+  // Provjera Premium statusa (Premium plan, ili aktivni trial koji uključuje premium features)
+  const isPremium = (currentUser.subscriptionPlan === 'premium') || 
                     (currentUser.subscriptionStatus === 'trial' && !window._isTrialExpired(currentUser));
 
   // Provjera da li korisnik ima bilo kakav plaćeni plan (Basic ili Premium)

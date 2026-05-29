@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v16'; // Verzija v16 - Fix Auth Register Permissions Flow
+const CACHE = 'evidencija-v17'; // Verzija v17 - Fix Premium feature visibility logic
 const FILES = [
   './', 
   './index.html', 

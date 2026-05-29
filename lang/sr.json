@@ -185,8 +185,9 @@
     "tos_intro": "Molimo pročitajte naše uslove pre nastavka. Korišćenjem ove aplikacije potvrđujete da ste pročitali i prihvatili sledeće dokumente:",
     "tos_link_terms": "Uslovi korišćenja",
     "tos_link_privacy": "Politika privatnosti",
+    "tos_link_refund": "Politika povraćaja",
     "tos_note": "Ovi dokumenti upravljaju upotrebom svih aplikacija na ei-apps.com platformi, uključujući Work Records.",
-    "tos_checkbox": "Pročitao/la sam i prihvatam Uslove korišćenja i Politiku privatnosti",
+    "tos_checkbox": "Pročitao/la sam i prihvatam Uslove korišćenja, Politiku privatnosti i Politiku povraćaja",
     "service_duration_minutes": "Duration (minutes)",
     "service_duration_minutes_placeholder": "Service duration in minutes"
 }

@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v18'; // Verzija v18 - Remove duplicate Paddle init
+const CACHE = 'evidencija-v19'; // Verzija v19 - Add Refund Policy link to ToS screen
 const FILES = [
   './', 
   './index.html', 

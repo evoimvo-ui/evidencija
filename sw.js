@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v20'; // Verzija v20 - Add legal links to auth screen footer for Paddle approval
+const CACHE = 'evidencija-v21'; // Verzija v21 - Force authScreen visibility and add contact email for Paddle review
 const FILES = [
   './', 
   './index.html', 

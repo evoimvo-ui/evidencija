@@ -320,12 +320,7 @@ export async function register(name, email, pass, role = 'solo') {
       console.error("[Auth] Greška pri slanju verifikacijskog emaila:", err);
     }
 
-    // 2. ODMAH ODJAVA - SPREČAVANJE RACE CONDITION-A
-    // onAuthStateChanged će reagovati, ali pošto je signOut() pozvan odmah,
-    // sesija će biti prekinuta prije nego što bilo kakav UI stigne da se učita.
-    await signOut(auth);
-
-    // 3. Kreiranje Firestore dokumenta
+    // 2. Kreiranje Firestore dokumenta
     const [{ country, tier }, whitelisted] = await Promise.all([
       detectCountryAndTier(),
       isWhitelisted(email)
@@ -356,7 +351,12 @@ export async function register(name, email, pass, role = 'solo') {
     await setDoc(doc(db, "users", user.uid), userData);
     await checkAndApplyInvites(user.uid, email.toLowerCase());
 
-    console.log("KORAK 1: Email poslat, korisnik odjavljen.");
+    // 3. ODMAH ODJAVA - SPREČAVANJE RACE CONDITION-A
+    // onAuthStateChanged će reagovati, ali pošto je signOut() pozvan odmah,
+    // sesija će biti prekinuta prije nego što bilo kakav UI stigne da se učita.
+    await signOut(auth);
+
+    console.log("KORAK 1: Email poslat, dokument kreiran, korisnik odjavljen.");
     return { success: true, email: email };
   } catch (e) {
     console.error("[Auth] Registration error:", e);

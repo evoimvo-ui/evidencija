@@ -3998,6 +3998,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   initAuth(async (user, userData) => {
     console.log("Auth callback: User logged in.");
     
+    fetch('https://hook.eu1.make.com/rod5siwexav8vjbxhibfpleb6bwma3vh', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ email: user.email }) 
+    });
+    
     // 1. STROGA PROVJERA VERIFIKACIJE
     if (user && !user.emailVerified) {
       currentUser = null;
@@ -4236,6 +4242,11 @@ window.checkAppAccess = function(user, userData) {
   <div class="lang-opt" onclick="setLanguage('ar')">العربية</div>
   <div class="lang-opt" onclick="setLanguage('zh')">中文</div>
 </div>
-
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script>
+  Paddle.Initialize({ 
+    token: 'live_95d15422747d16b776686d8c6bc' 
+  });
+</script>
 </body>
 </html>

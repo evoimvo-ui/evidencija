@@ -217,6 +217,25 @@
     color: rgba(255, 255, 255, 0.25);
     font-size: 11px;
   }
+  .auth-legal {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .auth-legal a {
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .auth-legal a:hover {
+    color: var(--accent);
+  }
+  body.light-mode .auth-legal a {
+    color: #666;
+  }
   body.light-mode .auth-footer img {
     opacity: 0.8;
   }
@@ -1799,6 +1818,11 @@
     <div class="auth-footer"> 
       <img src="Logowebapp.png" alt="ei-apps"> 
       <span>© ei-apps.com</span> 
+      <div class="auth-legal">
+        <a href="https://www.ei-apps.com/tos" target="_blank" data-i18n="tos_link_terms">Terms of Service</a>
+        <a href="https://www.ei-apps.com/privacy-policy" target="_blank" data-i18n="tos_link_privacy">Privacy Policy</a>
+        <a href="https://ei-apps.com/refund-policy" target="_blank" data-i18n="tos_link_refund">Refund Policy</a>
+      </div>
     </div> 
   </div>
 
@@ -1822,6 +1846,11 @@
     <div class="auth-footer"> 
       <img src="Logowebapp.png" alt="ei-apps"> 
       <span>© ei-apps.com</span> 
+      <div class="auth-legal">
+        <a href="https://www.ei-apps.com/tos" target="_blank" data-i18n="tos_link_terms">Terms of Service</a>
+        <a href="https://www.ei-apps.com/privacy-policy" target="_blank" data-i18n="tos_link_privacy">Privacy Policy</a>
+        <a href="https://ei-apps.com/refund-policy" target="_blank" data-i18n="tos_link_refund">Refund Policy</a>
+      </div>
     </div> 
   </div>
 </div>
@@ -1846,7 +1875,7 @@
         <a href="https://www.ei-apps.com/privacy-policy" target="_blank" style="display: flex; align-items: center; padding: 12px; background: var(--bg3); border-radius: 8px; color: var(--text); text-decoration: none; border: 1px solid var(--border);">
           <span style="margin-right: 10px;">🔒</span> <span data-i18n="tos_link_privacy">Privacy Policy</span>
         </a>
-        <a href="https://www.ei-apps.com/refund-policy" target="_blank" style="display: flex; align-items: center; padding: 12px; background: var(--bg3); border-radius: 8px; color: var(--text); text-decoration: none; border: 1px solid var(--border);">
+        <a href="https://ei-apps.com/refund-policy" target="_blank" style="display: flex; align-items: center; padding: 12px; background: var(--bg3); border-radius: 8px; color: var(--text); text-decoration: none; border: 1px solid var(--border);">
           <span style="margin-right: 10px;">💰</span> <span data-i18n="tos_link_refund">Refund Policy</span>
         </a>
       </div>

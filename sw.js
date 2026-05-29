@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v19'; // Verzija v19 - Add Refund Policy link to ToS screen
+const CACHE = 'evidencija-v20'; // Verzija v20 - Add legal links to auth screen footer for Paddle approval
 const FILES = [
   './', 
   './index.html', 

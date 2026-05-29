@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v15'; // Verzija v15 - Full Auth Refactor & Production Billing
+const CACHE = 'evidencija-v16'; // Verzija v16 - Fix Auth Register Permissions Flow
 const FILES = [
   './', 
   './index.html', 

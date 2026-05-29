@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v14'; // Verzija v14 - dodana AES enkripcija i config.js
+const CACHE = 'evidencija-v15'; // Verzija v15 - Full Auth Refactor & Production Billing
 const FILES = [
   './', 
   './index.html', 

@@ -21,7 +21,7 @@ export const CONFIG = {
   
   // Paddle Billing (ako se koristi)
   PADDLE: {
-    clientToken: 'test_5c279b020ae876e582661c1b086',
-    environment: 'sandbox'
+    clientToken: 'live_95d15422747d16b776686d8c6bc',
+    environment: 'production'
   }
 };

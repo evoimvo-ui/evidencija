@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v17'; // Verzija v17 - Fix Premium feature visibility logic
+const CACHE = 'evidencija-v18'; // Verzija v18 - Remove duplicate Paddle init
 const FILES = [
   './', 
   './index.html', 

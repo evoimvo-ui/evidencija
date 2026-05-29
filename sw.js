@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v22'; // Verzija v22 - Final Paddle review fixes (remove coming soon, update footer email)
+const CACHE = 'evidencija-v24'; // Verzija v24 - Fix contact email visibility in light mode
 const FILES = [
   './', 
   './index.html', 

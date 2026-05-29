@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v21'; // Verzija v21 - Force authScreen visibility and add contact email for Paddle review
+const CACHE = 'evidencija-v22'; // Verzija v22 - Final Paddle review fixes (remove coming soon, update footer email)
 const FILES = [
   './', 
   './index.html', 

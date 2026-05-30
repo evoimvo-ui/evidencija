@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v24'; // Verzija v24 - Fix contact email visibility in light mode
+const CACHE = 'evidencija-v25'; // Verzija v25 - Make contact email a clickable link
 const FILES = [
   './', 
   './index.html', 

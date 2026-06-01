@@ -189,5 +189,10 @@
     "tos_checkbox":  "Elolvastam és elfogadom a felhasználási feltételeket és az adatvédelmi irányelveket",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Visszatérítési politika",
+    "auth_info_desc": "Átfogó platform a szolgáltatásmenedzsmenthez, a fizetési és tartozási nyilvántartásokhoz, az időpont-ütemezéshez, a jelentésekhez és a munkavállalók koordinálásához.",
+    "auth_info_trial": "🎁 30 nap ingyen — hitelkártya nem szükséges",
+    "auth_info_note": "(az ár régiótól függ)",
+    "month_short": "hó",
+    "contact_label": "Kapcsolat"
 }

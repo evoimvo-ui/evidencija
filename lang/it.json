@@ -189,5 +189,10 @@
     "tos_checkbox":  "Ho letto e accetto i termini di servizio e l\u0027informativa sulla privacy",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund":  "Politica di rimborso",
+    "auth_info_desc":  "Piattaforma completa per la gestione dei servizi, la registrazione di pagamenti e debiti, la pianificazione degli appuntamenti, i report e il coordinamento dei dipendenti.",
+    "auth_info_trial":  "🎁 30 giorni gratuiti — nessuna carta di credito richiesta",
+    "auth_info_note":  "(il prezzo dipende dalla regione)",
+    "month_short":  "mes",
+    "contact_label":  "Contatto"
 }

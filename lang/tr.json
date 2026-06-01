@@ -189,5 +189,10 @@
     "tos_checkbox":  "Kullanım Şartlarını ve Gizlilik Politikasını okudum ve kabul ediyorum",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Geri Ödeme Politikası",
+    "auth_info_desc": "Hizmet yönetimi, ödeme ve borç kayıtları, randevu planlama, raporlar ve çalışan koordinasyonu için kapsamlı platform.",
+    "auth_info_trial": "🎁 30 gün ücretsiz — kredi kartı gerekmez",
+    "auth_info_note": "(fiyat bölgeye göre değişir)",
+    "month_short": "ay",
+    "contact_label": "İletişim"
 }

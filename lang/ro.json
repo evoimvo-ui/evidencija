@@ -189,5 +189,10 @@
     "tos_checkbox":  "Am citit și accept Termenii de utilizare și Politica de confidențialitate",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Politica de rambursare",
+    "auth_info_desc": "Platformă cuprinzătoare pentru managementul serviciilor, evidența plăților și datoriilor, programarea programărilor, rapoarte și coordonarea angajaților.",
+    "auth_info_trial": "🎁 30 de zile gratuit — nu este necesar card de credit",
+    "auth_info_note": "(prețul depinde de regiune)",
+    "month_short": "lună",
+    "contact_label": "Contact"
 }

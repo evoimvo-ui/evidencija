@@ -189,5 +189,10 @@
     "tos_checkbox":  "我已阅读并接受服务条款和隐私政策",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "退款政策",
+    "auth_info_desc": "全面的服务管理、收支记录、预约调度、报表生成和员工协作平台。",
+    "auth_info_trial": "🎁 30 天免费试用 — 无需信用卡",
+    "auth_info_note": "（价格取决于地区）",
+    "month_short": "月",
+    "contact_label": "联系方式"
 }

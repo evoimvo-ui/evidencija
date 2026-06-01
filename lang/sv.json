@@ -189,5 +189,10 @@
     "tos_checkbox":  "Jag har läst och godkänner användarvillkoren och integritetspolicyn",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Återbetalningspolicy",
+    "auth_info_desc": "Omfattende plattform för tjänstehantering, betalnings- och skuldbokföring, tidsbokning, rapporter och medarbetarkoordinering.",
+    "auth_info_trial": "🎁 30 dagar gratis — inget kreditkort krävs",
+    "auth_info_note": "(priset beror på regionen)",
+    "month_short": "mån",
+    "contact_label": "Kontakt"
 }

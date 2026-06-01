@@ -189,5 +189,10 @@
     "tos_checkbox":  "Έχω διαβάσει και αποδέχομαι τους Όρους Χρήσης και την Πολιτική Απορρήτου",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Πολιτική Επιστροφής Χρημάτων",
+    "auth_info_desc": "Ολοκληρωμένη πλατφόρμα για διαχείριση υπηρεσιών, καταγραφή πληρωμών και χρεών, προγραμματισμό ραντεβού, αναφορές και συντονισμό εργαζομένων.",
+    "auth_info_trial": "🎁 30 ημέρες δωρεάν — δεν απαιτείται πιστωτική κάρτα",
+    "auth_info_note": "(η τιμή εξαρτάται από την περιοχή)",
+    "month_short": "μήν",
+    "contact_label": "Επικοινωνία"
 }

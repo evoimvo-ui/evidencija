@@ -189,5 +189,10 @@
     "tos_checkbox":  "Olen lugenud ja nõustun kasutustingimuste ja privaatsuspoliitikaga",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Tagasimakse poliitika",
+    "auth_info_desc": "Põhjalik platvorm teenuste haldamiseks, maksete ja võlgade registreerimiseks, kohtumiste planeerimiseks, aruanneteks ja töötajate koordineerimiseks.",
+    "auth_info_trial": "🎁 30 päeva tasuta — krediitkaarti pole vaja",
+    "auth_info_note": "(hind sõltub piirkonnast)",
+    "month_short": "kuu",
+    "contact_label": "Kontakt"
 }

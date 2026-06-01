@@ -189,5 +189,10 @@
     "tos_checkbox":  "Przeczytałem i akceptuję regulamin oraz politykę prywatności",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Polityka zwrotów",
+    "auth_info_desc": "Kompleksowa platforma do zarządzania usługami, ewidencji płatności i zadłużenia, planowania wizyt, raportów i koordynacji pracowników.",
+    "auth_info_trial": "🎁 30 dni za darmo — karta kredytowa nie jest wymagana",
+    "auth_info_note": "(cena zależy od regionu)",
+    "month_short": "mies",
+    "contact_label": "Kontakt"
 }

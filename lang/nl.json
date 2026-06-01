@@ -189,5 +189,10 @@
     "tos_checkbox":  "Ik heb de servicevoorwaarden en het privacybeleid gelezen en ga ermee akkoord",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Restitutiebeleid",
+    "auth_info_desc": "Uitgebreid platform voor servicebeheer, betalings- en schuldenregistratie, afspraakplanning, rapportages en medewerkerscoördinatie.",
+    "auth_info_trial": "🎁 30 dagen gratis — geen creditcard vereist",
+    "auth_info_note": "(prijs is afhankelijk van de regio)",
+    "month_short": "mnd",
+    "contact_label": "Contact"
 }

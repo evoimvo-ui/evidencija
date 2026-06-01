@@ -189,5 +189,10 @@
     "tos_checkbox":  "Прочетох и приемам Общите условия и Политиката за поверителност",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Политика за възстановяване",
+    "auth_info_desc": "Изчерпателна платформа за управление на услуги, записи на плащания и дългове, планиране на срещи, отчети и координация на служителите.",
+    "auth_info_trial": "🎁 30 дни безплатно — не се изисква кредитна карта",
+    "auth_info_note": "(цената зависи от региона)",
+    "month_short": "мес",
+    "contact_label": "Контакт"
 }

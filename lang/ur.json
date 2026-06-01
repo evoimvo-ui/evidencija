@@ -189,5 +189,10 @@
     "tos_checkbox":  "میں نے سروس کی شرائط اور رازداری کی پالیسی پڑھ لی ہے اور قبول کرتا ہوں",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "واپسی کی پالیسی",
+    "auth_info_desc": "سروس مینجمنٹ، ادائیگی اور قرض کے ریکارڈ، ملاقات کی شیڈولنگ، رپورٹس، اور ملازمین کے کوآرڈینیشن کے لیے جامع پلیٹ فارم۔",
+    "auth_info_trial": "🎁 30 دن مفت — کسی کریڈٹ کارڈ کی ضرورت نہیں ہے",
+    "auth_info_note": "(قیمت کا انحصار علاقے پر ہے)",
+    "month_short": "ماہ",
+    "contact_label": "رابطہ"
 }

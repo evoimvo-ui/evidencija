@@ -189,5 +189,10 @@
     "tos_checkbox":  "Я прочитал(а) и принимаю Условия использования и Политику конфиденциальности",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Политика возврата",
+    "auth_info_desc": "Комплексная платформа для управления услугами, учета платежей и долгов, планирования встреч, отчетов и координации сотрудников.",
+    "auth_info_trial": "🎁 30 дней бесплатно — кредитная карта не требуется",
+    "auth_info_note": "(цена зависит от региона)",
+    "month_short": "мес",
+    "contact_label": "Контакт"
 }

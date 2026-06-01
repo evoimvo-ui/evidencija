@@ -189,5 +189,10 @@
     "tos_checkbox":  "Jeg har lest og godtar vilkårene for bruk og personvernerklæringen",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Refusjonspolitikk",
+    "auth_info_desc": "Omfattende plattform for tjenestehåndtering, betalings- og gjeldsregistrering, timebestilling, rapporter og medarbeiderkoordinering.",
+    "auth_info_trial": "🎁 30 dager gratis — ingen kredittkort kreves",
+    "auth_info_note": "(prisen avhenger av regionen)",
+    "month_short": "mnd",
+    "contact_label": "Kontakt"
 }

@@ -189,5 +189,10 @@
     "tos_checkbox":  "لقد قرأت وأوافق على شروط الخدمة وسياسة الخصوصية",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "سياسة الاسترداد",
+    "auth_info_desc": "منصة شاملة لإدارة الخدمات، وسجلات الدفع والديون، وجدولة المواعيد، والتقارير، وتنسيق الموظفين.",
+    "auth_info_trial": "🎁 30 يومًا مجانًا — لا يلزم وجود بطاقة ائتمان",
+    "auth_info_note": "(السعر يعتمد على المنطقة)",
+    "month_short": "شهر",
+    "contact_label": "اتصال"
 }

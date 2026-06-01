@@ -189,5 +189,10 @@
     "tos_checkbox":  "من شرایط خدمات و سیاست حفظ حریم خصوصی را خوانده ام و می پذیرم",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "سیاست بازپرداخت",
+    "auth_info_desc": "پلتفرم جامع برای مدیریت خدمات، ثبت پرداخت‌ها و بدهی‌ها، زمان‌بندی قرارها، گزارش‌ها و هماهنگی کارکنان.",
+    "auth_info_trial": "🎁 ۳۰ روز رایگان — بدون نیاز به کارت اعتباری",
+    "auth_info_note": "(قیمت به منطقه بستگی دارد)",
+    "month_short": "ماه",
+    "contact_label": "تماس"
 }

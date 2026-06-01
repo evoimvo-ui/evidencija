@@ -1,4 +1,4 @@
-{
+﻿{
     "owner_label": "Vlasnik",
     "debts": "Dugovi",
     "client": "Klijent",
@@ -189,5 +189,11 @@
     "tos_note": "Ovi dokumenti upravljaju upotrebom svih aplikacija na ei-apps.com platformi, uključujući Work Records.",
     "tos_checkbox": "Pročitao/la sam i prihvatam Uslove korišćenja, Politiku privatnosti i Politiku povraćaja",
     "service_duration_minutes": "Duration (minutes)",
-    "service_duration_minutes_placeholder": "Service duration in minutes"
+    "service_duration_minutes_placeholder": "Service duration in minutes",
+    "auth_info_desc": "Sveobuhvatna platforma za upravljanje uslugama, evidenciju naplata i dugovanja, zakazivanje termina, izvještaje i koordinaciju zaposlenika.",
+    "auth_info_trial": "🎁 30 dana besplatno — bez kreditne kartice",
+    "auth_info_note": "(cijena ovisi o regiji)",
+    "month_short": "mj",
+    "contact_label": "Kontakt",
+    "tos_link_refund": "Politika povraćaja"
 }

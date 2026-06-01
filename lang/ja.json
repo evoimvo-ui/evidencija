@@ -189,5 +189,10 @@
     "tos_checkbox":  "利用規約とプライバシーポリシーを読み、同意します",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "返金ポリシー",
+    "auth_info_desc": "サービス管理、支払い・負債記録、予約スケジューリング、レポート、従業員の調整のための包括的なプラットフォーム。",
+    "auth_info_trial": "🎁 30日間無料 — クレジットカード不要",
+    "auth_info_note": "（価格は地域によって異なります）",
+    "month_short": "月",
+    "contact_label": "お問い合わせ"
 }

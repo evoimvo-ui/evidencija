@@ -1417,7 +1417,7 @@
   #authInitial p[data-i18n="tagline"] {
     font-size: 13px !important;
     color: rgba(255, 255, 255, 0.35) !important;
-    margin-bottom: 48px !important;
+    margin-bottom: 24px !important;
     text-align: center;
   }
   body.light-mode #authInitial p[data-i18n="tagline"] {
@@ -1455,6 +1455,88 @@
     background: #ffffff !important;
     border: 0.5px solid #e2e2dc !important;
     color: #4a4a44 !important;
+  }
+
+  /* Paddle Verification Info Block */
+  .auth-info-block {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .auth-info-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+    margin: 0 0 12px 0;
+  }
+  .auth-info-trial {
+    display: inline-block;
+    font-size: 11px;
+    color: #0f1117;
+    background: #4ade80;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .auth-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .auth-info-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 4px;
+  }
+  .auth-info-pill span {
+    display: block;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 2px;
+  }
+  .auth-info-pill strong {
+    display: block;
+    font-size: 11px;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .auth-info-note {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  body.light-mode .auth-info-block {
+    background: #ffffff;
+    border: 1px solid #e2e2dc;
+  }
+  body.light-mode .auth-info-desc {
+    color: #4a4a44;
+  }
+  body.light-mode .auth-info-trial {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+  body.light-mode .auth-info-pill {
+    background: #f8f8f6;
+    border: 0.5px solid #e2e2dc;
+  }
+  body.light-mode .auth-info-pill span {
+    color: #9a9a94;
+  }
+  body.light-mode .auth-info-pill strong {
+    color: #1a1a18;
+  }
+  body.light-mode .auth-info-note {
+    color: #9a9a94;
   }
 
   /* Login/Register form — visual redesign */
@@ -1829,8 +1911,31 @@
   
   <div id="authInitial" style="width:100%; max-width:340px; display:flex; flex-direction:column; align-items:center;">
     <h1 style="font-size:32px; font-weight:800; margin-bottom:4px;"><span style="color:#4f7ef7 !important">W</span>ork Records</h1>
-    <p style="font-size:14px; color:var(--text2); margin-bottom:48px;" data-i18n="tagline">evidencija rada</p>
+    <p style="font-size:14px; color:var(--text2); margin-bottom:24px;" data-i18n="tagline">evidencija rada</p>
     
+    <!-- INFO BLOK ZA PADDLE VERIFIKACIJU -->
+    <div class="auth-info-block">
+      <p class="auth-info-desc" data-i18n="auth_info_desc">
+        Comprehensive platform for service management, payment and debt records, appointment scheduling, reports, and employee coordination.
+      </p>
+      <div class="auth-info-trial" data-i18n="auth_info_trial">
+        🎁 30 days free — no credit card required
+      </div>
+      <div class="auth-info-grid">
+        <div class="auth-info-pill">
+          <span data-i18n="plan_basic_name">Basic</span>
+          <strong>€2.49 – €4.99 / <span data-i18n="month_short">mo</span></strong>
+        </div>
+        <div class="auth-info-pill">
+          <span data-i18n="plan_premium_name">Premium</span>
+          <strong>€9.99 – €19.99 / <span data-i18n="month_short">mo</span></strong>
+        </div>
+      </div>
+      <div class="auth-info-note" data-i18n="auth_info_note">
+        (price depends on region)
+      </div>
+    </div>
+
     <button class="submit-btn pay" onclick="setAuthMode('register')" data-i18n="get_started">ZAPOČNI</button>
     <button class="submit-btn" style="background:var(--bg3); color:var(--text); margin-top:12px;" onclick="setAuthMode('login')" data-i18n="login_btn">PRIJAVA</button>
 
@@ -1842,7 +1947,7 @@
         <a href="https://www.ei-apps.com/privacy-policy" target="_blank" data-i18n="tos_link_privacy">Privacy Policy</a>
         <a href="https://ei-apps.com/refund-policy" target="_blank" data-i18n="tos_link_refund">Refund Policy</a>
         <div class="auth-contact">
-          Contact: <a href="mailto:info@ei-apps.com">info@ei-apps.com</a>
+          <span data-i18n="contact_label">Contact</span>: <a href="mailto:info@ei-apps.com">info@ei-apps.com</a>
         </div>
       </div>
     </div> 
@@ -1873,7 +1978,7 @@
         <a href="https://www.ei-apps.com/privacy-policy" target="_blank" data-i18n="tos_link_privacy">Privacy Policy</a>
         <a href="https://ei-apps.com/refund-policy" target="_blank" data-i18n="tos_link_refund">Refund Policy</a>
         <div class="auth-contact">
-          Contact: <a href="mailto:info@ei-apps.com">info@ei-apps.com</a>
+          <span data-i18n="contact_label">Contact</span>: <a href="mailto:info@ei-apps.com">info@ei-apps.com</a>
         </div>
       </div>
     </div> 
@@ -2536,10 +2641,11 @@ const DEFAULT_CURRENCIES = {
 
 async function initI18n() {
   try {
-    const enRes = await fetch(`lang/en.json`);
+    const timestamp = new Date().getTime();
+    const enRes = await fetch(`lang/en.json?v=${timestamp}`);
     const enTranslations = await enRes.json();
     if (currentLang !== 'en') {
-      const res = await fetch(`lang/${currentLang}.json`);
+      const res = await fetch(`lang/${currentLang}.json?v=${timestamp}`);
       const selectedTranslations = await res.json();
       translations = { ...enTranslations, ...selectedTranslations };
     } else {

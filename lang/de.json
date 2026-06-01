@@ -189,5 +189,10 @@
     "tos_checkbox":  "Ich habe die Nutzungsbedingungen und die Datenschutzrichtlinie gelesen und akzeptiere sie",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Rückerstattungsrichtlinie",
+    "auth_info_desc": "Umfassende Plattform für Service-Management, Zahlungs- und Schuldenaufzeichnungen, Terminplanung, Berichte und Mitarbeiterkoordination.",
+    "auth_info_trial": "🎁 30 Tage kostenlos — keine Kreditkarte erforderlich",
+    "auth_info_note": "(Preis ist regionsabhängig)",
+    "month_short": "Mon",
+    "contact_label": "Kontakt"
 }

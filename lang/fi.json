@@ -189,5 +189,10 @@
     "tos_checkbox":  "Olen lukenut ja hyväksyn käyttöehdot ja tietosuojakäytännön",
     "service_duration_minutes":  "Duration (minutes)",
     "service_duration_minutes_placeholder":  "Service duration in minutes",
-    "tos_link_refund":  "Refund Policy"
+    "tos_link_refund": "Hyvityskäytäntö",
+    "auth_info_desc": "Kattava alusta palveluiden hallintaan, maksu- ja velkakirjanpitoon, tapaamisten varaukseen, raportteihin ja työntekijöiden koordinointiin.",
+    "auth_info_trial": "🎁 30 päivää ilmaiseksi — luottokorttia ei tarvita",
+    "auth_info_note": "(hinta riippuu alueesta)",
+    "month_short": "kk",
+    "contact_label": "Ota yhteyttä"
 }

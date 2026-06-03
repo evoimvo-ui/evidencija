@@ -170,6 +170,12 @@
     justify-content: center;
     z-index: 1001;
   }
+  @media (max-width: 480px) {
+    .auth-lang-btn {
+      left: auto;
+      right: 16px;
+    }
+  }
   body.light-mode .auth-lang-btn {
     background: #f0f0ea;
     border-color: #e0e0da;
@@ -1903,7 +1909,7 @@
 
 <!-- AUTH SCREEN -->
   <div id="authScreen" style="display:flex; position:fixed; inset:0; background:var(--bg); z-index:999; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
-    <div style="position: fixed; top: 16px; left: 16px; z-index: 1001;">
+    <div>
       <button class="auth-lang-btn" onclick="event.stopPropagation(); toggleLangMenu(this)">
         <i class="ti ti-language" aria-hidden="true"></i>
       </button>

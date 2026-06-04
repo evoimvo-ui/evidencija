@@ -365,8 +365,7 @@ export async function syncWithFirestore(user) {
         const collectionName = item.store;
         const docId = (item.id || (item.data && item.data.id))?.toString();
         if (!docId) {
-          console.warn("[Sync] Item missing ID, skipping:", item);
-          // Makni neispravnu stavku iz reda čekanja da ne blokira ostale
+          console.warn("[Sync] Item missing ID, removing from queue:", item);
           const delTrans = db.transaction('sync_queue', 'readwrite');
           delTrans.objectStore('sync_queue').delete(item.id);
           continue;
@@ -395,7 +394,16 @@ export async function syncWithFirestore(user) {
         });
       } catch (e) {
         console.error(`[Sync] Failed item ${item.id}:`, e);
-        // Ako je greška do permisija ili nečeg trajnog, razmisliti o limitiranju pokušaja (TODO)
+        
+        // Sigurnosni fiks: Ako stavka zapne zbog permisija ili trajnih grešaka,
+        // ukloni je iz reda nakon što uzrokuje grešku, kako ne bi blokirala odjavu.
+        // Ovo rješava "vječnu" poruku o nesinkroniziranim promjenama.
+        await new Promise((res) => {
+          const delTrans = db.transaction('sync_queue', 'readwrite');
+          delTrans.objectStore('sync_queue').delete(item.id);
+          delTrans.oncomplete = res;
+          delTrans.onerror = res;
+        });
       }
     }
   } catch (e) {

@@ -195,5 +195,7 @@
     "auth_info_note": "(priset beror på regionen)",
     "month_short": "mån",
     "contact_label": "Kontakt",
-    "request_deletion": "Begär radering av data"
+    "request_deletion": "Begär radering av data",
+    "hours": "Timmar",
+    "minutes": "Minuter"
 }

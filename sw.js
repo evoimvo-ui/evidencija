@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v25'; // Verzija v25 - Make contact email a clickable link
+const CACHE = 'evidencija-v26'; // Verzija v26 - Deletion request, Hours/Minutes, Stability fixes
 const FILES = [
   './', 
   './index.html', 

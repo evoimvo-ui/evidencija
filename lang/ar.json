@@ -195,5 +195,7 @@
     "auth_info_note": "(السعر يعتمد على المنطقة)",
     "month_short": "شهر",
     "contact_label": "اتصال",
-    "request_deletion": "طلب حذف البيانات"
+    "request_deletion": "طلب حذف البيانات",
+    "hours": "ساعات",
+    "minutes": "دقائق"
 }

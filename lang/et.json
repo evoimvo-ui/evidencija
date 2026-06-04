@@ -195,5 +195,7 @@
     "auth_info_note": "(hind sõltub piirkonnast)",
     "month_short": "kuu",
     "contact_label": "Kontakt",
-    "request_deletion": "Andmete kustutamise taotlus"
+    "request_deletion": "Andmete kustutamise taotlus",
+    "hours": "Tunnid",
+    "minutes": "Minutid"
 }

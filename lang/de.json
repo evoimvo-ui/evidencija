@@ -195,5 +195,7 @@
     "auth_info_note": "(Preis ist regionsabhängig)",
     "month_short": "Mon",
     "contact_label": "Kontakt",
-    "request_deletion": "Datenlöschung anfordern"
+    "request_deletion": "Datenlöschung anfordern",
+    "hours": "Stunden",
+    "minutes": "Minuten"
 }

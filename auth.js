@@ -37,6 +37,7 @@ export const AUTH_STATES = {
 let currentAuthState = AUTH_STATES.LOGGED_OUT;
 let currentAuthUser = null;
 let currentAuthData = null;
+let isRegistering = false; // Guard flag
 
 /**
  * Određuje trenutno stanje autentifikacije na osnovu Firebase korisnika i Firestore podataka.
@@ -228,6 +229,12 @@ export function initAuth(onLoggedIn, onLoggedOut) {
   let unsubscribeSnapshot = null;
 
   onAuthStateChanged(auth, async (user) => {
+    // Ako smo u procesu registracije, ignoriramo promjene stanja jer handleRegister sam upravlja flow-om
+    if (isRegistering) {
+      console.log("[Auth] Registracija u tijeku, ignoriram onAuthStateChanged.");
+      return;
+    }
+
     if (unsubscribeSnapshot) {
       unsubscribeSnapshot();
       unsubscribeSnapshot = null;
@@ -308,6 +315,7 @@ export function showAuthScreen() {
 }
 
 export async function register(name, email, pass, role = 'solo') {
+  isRegistering = true; // Aktiviraj guard
   try {
     const res = await createUserWithEmailAndPassword(auth, email, pass);
     const user = res.user;
@@ -365,6 +373,8 @@ export async function register(name, email, pass, role = 'solo') {
   } catch (e) {
     console.error("[Auth] Registration error:", e);
     throw e;
+  } finally {
+    isRegistering = false; // Deaktiviraj guard bez obzira na ishod
   }
 }
 
@@ -420,9 +430,13 @@ import {
 } from './db.js';
 
 export async function logout() {
-  const cleared = await clearLocalData();
-  if (cleared) {
+  const confirmed = await clearLocalData();
+  if (confirmed) {
     sessionStorage.removeItem('verificationEmailSent');
+    // Postavi currentUser na null odmah kako bi spriječio renderiranje tijekom odjave
+    const appContent = document.getElementById('appContent');
+    if (appContent) appContent.style.display = 'none';
+    
     await signOut(auth);
     location.reload(); 
   }

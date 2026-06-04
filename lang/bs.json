@@ -200,5 +200,7 @@
     "verify_email_msg_1": "Molimo potvrdite vaš email. Poslali smo link na ",
     "verify_email_msg_2": "Provjerite vaš inbox.",
     "resend_email_btn": "Ponovo pošalji email",
-    "request_deletion": "Zatraži brisanje podataka"
+    "request_deletion": "Zatraži brisanje podataka",
+    "hours": "Sati",
+    "minutes": "Minuti"
 }

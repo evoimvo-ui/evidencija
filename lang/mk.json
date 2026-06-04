@@ -195,5 +195,7 @@
     "auth_info_note": "(цената зависи од регионот)",
     "month_short": "мес",
     "contact_label": "Контакт",
-    "request_deletion": "Побарајте бришење на податоци"
+    "request_deletion": "Побарајте бришење на податоци",
+    "hours": "Часови",
+    "minutes": "Минути"
 }

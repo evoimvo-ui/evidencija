@@ -195,5 +195,7 @@
     "auth_info_note": "(قیمت به منطقه بستگی دارد)",
     "month_short": "ماه",
     "contact_label": "تماس",
-    "request_deletion": "درخواست حذف داده ها"
+    "request_deletion": "درخواست حذف داده ها",
+    "hours": "ساعت",
+    "minutes": "دقیقه"
 }

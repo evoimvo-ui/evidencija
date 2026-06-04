@@ -195,5 +195,7 @@
     "auth_info_note": "(az ár régiótól függ)",
     "month_short": "hó",
     "contact_label": "Kapcsolat",
-    "request_deletion": "Adattörlés kérése"
+    "request_deletion": "Adattörlés kérése",
+    "hours": "Óra",
+    "minutes": "Perc"
 }

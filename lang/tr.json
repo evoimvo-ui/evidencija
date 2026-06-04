@@ -195,5 +195,7 @@
     "auth_info_note": "(fiyat bölgeye göre değişir)",
     "month_short": "ay",
     "contact_label": "İletişim",
-    "request_deletion": "Veri silme talebi"
+    "request_deletion": "Veri silme talebi",
+    "hours": "Saat",
+    "minutes": "Dakika"
 }

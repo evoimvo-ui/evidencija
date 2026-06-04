@@ -195,5 +195,7 @@
     "auth_info_note": "(prisen avhenger av regionen)",
     "month_short": "mnd",
     "contact_label": "Kontakt",
-    "request_deletion": "Be om sletting av data"
+    "request_deletion": "Be om sletting av data",
+    "hours": "Timer",
+    "minutes": "Minutter"
 }

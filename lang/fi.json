@@ -195,5 +195,7 @@
     "auth_info_note": "(hinta riippuu alueesta)",
     "month_short": "kk",
     "contact_label": "Ota yhteyttä",
-    "request_deletion": "Pyydä tietojen poistamista"
+    "request_deletion": "Pyydä tietojen poistamista",
+    "hours": "Tunnit",
+    "minutes": "Minuutit"
 }

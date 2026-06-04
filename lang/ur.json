@@ -195,5 +195,7 @@
     "auth_info_note": "(قیمت کا انحصار علاقے پر ہے)",
     "month_short": "ماہ",
     "contact_label": "رابطہ",
-    "request_deletion": "ڈیٹا کی واپسی کی درخواست"
+    "request_deletion": "ڈیٹا کی واپسی کی درخواست",
+    "hours": "گھنٹے",
+    "minutes": "منٹ"
 }

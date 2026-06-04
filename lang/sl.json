@@ -195,5 +195,7 @@
     "auth_info_note": "(cena je odvisna od regije)",
     "month_short": "mes",
     "contact_label": "Kontakt",
-    "request_deletion": "Zahtevaj izbris podatkov"
+    "request_deletion": "Zahtevaj izbris podatkov",
+    "hours": "Ure",
+    "minutes": "Minute"
 }

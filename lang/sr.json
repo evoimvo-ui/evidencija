@@ -196,5 +196,7 @@
     "month_short": "mj",
     "contact_label": "Kontakt",
     "tos_link_refund": "Politika povraćaja",
-    "request_deletion": "Zatraži brisanje podataka"
+    "request_deletion": "Zatraži brisanje podataka",
+    "hours": "Sati",
+    "minutes": "Minuti"
 }

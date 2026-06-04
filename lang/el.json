@@ -195,5 +195,7 @@
     "auth_info_note": "(η τιμή εξαρτάται από την περιοχή)",
     "month_short": "μήν",
     "contact_label": "Επικοινωνία",
-    "request_deletion": "Αίτημα διαγραφής δεδομένων"
+    "request_deletion": "Αίτημα διαγραφής δεδομένων",
+    "hours": "Ώρες",
+    "minutes": "Λεπτά"
 }

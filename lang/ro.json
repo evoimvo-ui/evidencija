@@ -195,5 +195,7 @@
     "auth_info_note": "(prețul depinde de regiune)",
     "month_short": "lună",
     "contact_label": "Contact",
-    "request_deletion": "Solicitați ștergerea datelor"
+    "request_deletion": "Solicitați ștergerea datelor",
+    "hours": "Ore",
+    "minutes": "Minute"
 }

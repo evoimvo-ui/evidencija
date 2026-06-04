@@ -195,5 +195,7 @@
     "auth_info_note":  "(le prix dépend de la région)",
     "month_short":  "mois",
     "contact_label": "Contact",
-    "request_deletion": "Demander la suppression des données"
+    "request_deletion": "Demander la suppression des données",
+    "hours": "Heures",
+    "minutes": "Minutes"
 }

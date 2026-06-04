@@ -195,5 +195,7 @@
     "auth_info_note": "（価格は地域によって異なります）",
     "month_short": "月",
     "contact_label": "お問い合わせ",
-    "request_deletion": "データの削除をリクエストする"
+    "request_deletion": "データの削除をリクエストする",
+    "hours": "時間",
+    "minutes": "分"
 }

@@ -195,5 +195,7 @@
     "auth_info_note": "（价格取决于地区）",
     "month_short": "月",
     "contact_label": "联系方式",
-    "request_deletion": "请求删除数据"
+    "request_deletion": "请求删除数据",
+    "hours": "小时",
+    "minutes": "分钟"
 }

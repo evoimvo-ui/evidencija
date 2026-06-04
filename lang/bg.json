@@ -195,5 +195,7 @@
     "auth_info_note": "(цената зависи от региона)",
     "month_short": "мес",
     "contact_label": "Контакт",
-    "request_deletion": "Поискайте изтриване на данни"
+    "request_deletion": "Поискайте изтриване на данни",
+    "hours": "Часове",
+    "minutes": "Минути"
 }

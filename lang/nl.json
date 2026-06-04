@@ -195,5 +195,7 @@
     "auth_info_note": "(prijs is afhankelijk van de regio)",
     "month_short": "mnd",
     "contact_label": "Contact",
-    "request_deletion": "Verzoek om gegevensverwijdering"
+    "request_deletion": "Verzoek om gegevensverwijdering",
+    "hours": "Uren",
+    "minutes": "Minuten"
 }

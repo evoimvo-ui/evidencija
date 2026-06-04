@@ -2319,9 +2319,21 @@
     <h3 data-i18n="new_service">New service</h3>
     <input class="input-plain" type="text" id="newServiceInput" placeholder="...">
     <input type="hidden" id="editServiceId">
-    <div style="display:flex; align-items:center;">
-      <input class="input-plain" type="number" id="newServiceDurationInput" placeholder="60" value="60" data-i18n-placeholder="service_duration_minutes_placeholder" data-i18n-label="service_duration_minutes" style="flex-grow:1; margin-right:5px;">
-      <span style="color:var(--text2); font-size:14px;">min</span>
+    <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+      <div style="flex:1;">
+        <div class="section-label" style="margin-top:0; margin-bottom:4px;" data-i18n="hours">Sati</div>
+        <div class="input-row">
+          <input type="number" id="newServiceHoursInput" placeholder="0" min="0" value="0">
+          <span class="input-suffix">h</span>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="section-label" style="margin-top:0; margin-bottom:4px;" data-i18n="minutes">Minuti</div>
+        <div class="input-row">
+          <input type="number" id="newServiceMinutesInput" placeholder="0" min="0" max="59" value="0">
+          <span class="input-suffix">min</span>
+        </div>
+      </div>
     </div>
     <div class="modal-btns">
       <button class="lang-btn" onclick="closeModal()" data-i18n="cancel">Cancel</button>
@@ -2956,29 +2968,33 @@ async function loadInvites() {
 function openServiceModal(service = null) {
   const modalOverlay = document.getElementById('modalOverlay');
   const newServiceInput = document.getElementById('newServiceInput');
-  const newServiceDurationInput = document.getElementById('newServiceDurationInput');
+  const newServiceHoursInput = document.getElementById('newServiceHoursInput');
+  const newServiceMinutesInput = document.getElementById('newServiceMinutesInput');
   const editServiceId = document.getElementById('editServiceId');
   const modalTitle = modalOverlay.querySelector('h3'); 
   const saveButton = modalOverlay.querySelector('.submit-btn.pay');
 
   if (service) {
     // Editing existing service
-    modalTitle.textContent = translations['edit_service'] || 'Edit Service'; // Will add 'edit_service' to lang files
+    modalTitle.textContent = translations['edit_service'] || 'Edit Service'; 
     newServiceInput.value = service.name || '';
-    newServiceDurationInput.value = service.trajanje_minuta || 60;
+    const totalMin = service.trajanje_minuta || 0;
+    newServiceHoursInput.value = Math.floor(totalMin / 60);
+    newServiceMinutesInput.value = totalMin % 60;
     editServiceId.value = service.id;
     saveButton.textContent = translations['save'] || 'Save';
   } else {
     // Creating new service
     modalTitle.textContent = translations['new_service'] || 'New Service';
     newServiceInput.value = '';
-    newServiceDurationInput.value = 60; // Default value
+    newServiceHoursInput.value = 1; // Default 1h
+    newServiceMinutesInput.value = 0;
     editServiceId.value = '';
     saveButton.textContent = translations['add'] || 'Add';
   }
 
   modalOverlay.classList.add('open');
-  applyTranslations(); // Apply translations after setting textContent for title
+  applyTranslations(); 
 }
 
 async function loadWorkers() {
@@ -3031,6 +3047,13 @@ async function handleInviteWorker() {
 
 async function submitEntry() {
   if (!selectedService) { showToast(translations['error_service'] || 'Select service!', true); return; }
+  
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = translations['saving'] || 'Spremanje...';
+  }
+
   const now = new Date();
   let entry = {
     id: Date.now().toString(),
@@ -3067,11 +3090,21 @@ async function submitEntry() {
     console.log("Entry for new client:", entry.debtor);
   }
 
-  await saveData('entries', entry);
-  await syncWithFirestore(currentUser);
-  showToast(translations['saved'] || 'Sačuvano!');
-  resetForm();
-  renderPregled();
+  try {
+    await saveData('entries', entry);
+    await syncWithFirestore(currentUser);
+    showToast(translations['saved'] || 'Sačuvano!');
+    resetForm();
+    renderPregled();
+  } catch (e) {
+    console.error("Error saving entry:", e);
+    showToast(translations['error'] || "Greška pri spremanju!", true);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = translations['save'] || 'Sačuvaj';
+    }
+  }
 }
 
 function resetForm() {
@@ -3109,13 +3142,28 @@ async function renderServices() {
     container.style.position = 'relative';
     const btn = document.createElement('button');
     btn.className = 'service-btn' + (s.name === selectedService ? ' selected' : '');
-    btn.textContent = s.name + ((s.trajanje_minuta && s.trajanje_minuta > 0) ? ` ${s.trajanje_minuta}min` : '');
+    
+    // Čitljiv prikaz trajanja (h i min)
+    let durationText = '';
+    if (s.trajanje_minuta && s.trajanje_minuta > 0) {
+      const h = Math.floor(s.trajanje_minuta / 60);
+      const m = s.trajanje_minuta % 60;
+      if (h > 0) durationText += `${h}h `;
+      if (m > 0 || h === 0) durationText += `${m}min`;
+    }
+    
+    btn.textContent = s.name + (durationText ? ` ${durationText}` : '');
     btn.onclick = () => { 
       selectedService = s.name; 
       renderServices(); 
-      // If an existing service is clicked, we also want to populate the duration in the service input
-      const durationInput = document.getElementById('newServiceDurationInput');
-      if (durationInput) durationInput.value = s.trajanje_minuta || 60;
+      // If an existing service is clicked, we also want to populate the duration in the inputs
+      const hoursInput = document.getElementById('newServiceHoursInput');
+      const minutesInput = document.getElementById('newServiceMinutesInput');
+      if (hoursInput && minutesInput) {
+        const totalMin = s.trajanje_minuta || 0;
+        hoursInput.value = Math.floor(totalMin / 60);
+        minutesInput.value = totalMin % 60;
+      }
     };
     const del = document.createElement('div');
     del.className = 'service-delete';
@@ -3138,14 +3186,16 @@ async function renderServices() {
 
 async function saveService() {
   const name = document.getElementById('newServiceInput').value.trim();
-  const duration = parseInt(document.getElementById('newServiceDurationInput').value, 10);
+  const hours = parseInt(document.getElementById('newServiceHoursInput').value, 10) || 0;
+  const minutes = parseInt(document.getElementById('newServiceMinutesInput').value, 10) || 0;
+  const duration = (hours * 60) + minutes;
   const id = document.getElementById('editServiceId').value;
 
   if (name) {
     const serviceData = {
       id: id || Date.now().toString(), // Use existing ID or generate new one
       name: name,
-      trajanje_minuta: isNaN(duration) ? 60 : duration,
+      trajanje_minuta: duration > 0 ? duration : 60, // Default to 60 if 0
       userId: currentUser.uid,
       shopId: currentUser.shopId || null
     };
@@ -3165,6 +3215,12 @@ async function deleteS(id) {
 async function renderPregled() {
   const content = document.getElementById('pregledContent');
   if (!content) return;
+  
+  // Osiguraj da je valuta učitana iz localStorage-a ako nije globalno dostupna
+  if (!currentCurrency) {
+    currentCurrency = localStorage.getItem('evidencija_currency') || '€';
+  }
+
   const rawEntries = await getAllData('entries', currentUser);
   const entries = getDeduplicatedEntries(rawEntries);
 
@@ -3219,6 +3275,7 @@ async function renderPregled() {
       <div class="stat-sub"><span data-i18n="entry_count">Broj unosa</span>: ${filtered.length}</div>
       ${totalDebts > 0 ? `<div class="stat-sub" style="color:var(--red); margin-top:5px;"><span data-i18n="remaining_debts">Preostali dugovi</span>: ${totalDebts.toFixed(2)} ${currentCurrency}</div>` : ''}
     </div>
+    ${filtered.length === 0 ? `<div class="empty-state" data-i18n="no_entries" style="text-align:center; padding:40px 20px; color:var(--text3); font-size:14px;">${translations['no_entries'] || 'Nema unosa za odabrani period'}</div>` : ''}
     ${[...filtered].reverse().map(e => {
       const paidAmount = (e.history || []).reduce((s, h) => s + (parseFloat(h.amount) || 0), 0);
       const isPaid = e.status === 'paid';
@@ -3528,12 +3585,17 @@ async function renderIzvjestaji(mode = 'selected') {
     let paidInPeriod = 0;
     if (e.type === 'pay' && e.status === 'paid') {
       const ed = new Date(e.date);
-      if (!targetMonth || (ed.getMonth() + 1 === targetMonth && ed.getFullYear() === targetYear)) paidInPeriod += (parseFloat(e.total) || 0);
-    }
-    if (e.history) {
+      if (!targetMonth || (ed.getMonth() + 1 === targetMonth && ed.getFullYear() === targetYear)) {
+        paidInPeriod += (parseFloat(e.total) || 0);
+      }
+    } else if (e.history) {
+      // Koristimo 'else if' kako bismo osigurali da se iznosi iz history ne zbrajaju 
+      // ako je već uračunat e.total (za 'pay' tip).
       e.history.forEach(h => {
         const hd = new Date(h.date);
-        if (!targetMonth || (hd.getMonth() + 1 === targetMonth && hd.getFullYear() === targetYear)) paidInPeriod += (parseFloat(h.amount) || 0);
+        if (!targetMonth || (hd.getMonth() + 1 === targetMonth && hd.getFullYear() === targetYear)) {
+          paidInPeriod += (parseFloat(h.amount) || 0);
+        }
       });
     }
     return sum + paidInPeriod;
@@ -3789,6 +3851,26 @@ function getCategoryKey(cat) {
   return c;
 }
 
+function getDeduplicatedClients(rawClients) {
+  const clientsMap = new Map();
+  rawClients.forEach(c => {
+    // Ključ za deduplikaciju: Ime + Prezime + Telefon (očišćen od razmaka i znakova)
+    const cleanPhone = (c.phone || '').replace(/\D/g, '');
+    const semanticKey = `${(c.name || '').trim().toLowerCase()}|${(c.surname || '').trim().toLowerCase()}|${cleanPhone}`;
+    
+    if (!clientsMap.has(semanticKey)) {
+      clientsMap.set(semanticKey, c);
+    } else {
+      // Ako već postoji, zadrži onaj koji ima više podataka (npr. email) ili je noviji
+      const existing = clientsMap.get(semanticKey);
+      if (c.email && !existing.email) {
+        clientsMap.set(semanticKey, c);
+      }
+    }
+  });
+  return Array.from(clientsMap.values());
+}
+
 // ── Klijenti Funkcionalnost ──
 async function renderClients() {
   const list = document.getElementById('clientsList');
@@ -3796,11 +3878,8 @@ async function renderClients() {
   const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
   const rawClients = await getAllData('clients', currentUser);
   
-  // Deduplikacija i filtriranje
-  const seen = new Set();
-  const clients = rawClients.filter(c => {
-    if (seen.has(c.id)) return false;
-    seen.add(c.id);
+  // Semantička deduplikacija i filtriranje
+  const clients = getDeduplicatedClients(rawClients).filter(c => {
     const fullName = `${c.name} ${c.surname}`.toLowerCase();
     return fullName.includes(searchTerm) || (c.phone && c.phone.includes(searchTerm));
   }).sort((a, b) => a.name.localeCompare(b.name));
@@ -3843,6 +3922,12 @@ async function saveClient() {
 
   if (!name) return showToast(translations['error_name'] || "Unesite ime!", true);
 
+  const saveBtn = document.querySelector('#clientModal .submit-btn.pay');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = translations['saving'] || 'Spremanje...';
+  }
+
   const clientData = {
     id: Date.now().toString(),
     name,
@@ -3864,6 +3949,11 @@ async function saveClient() {
   } catch (e) {
     console.error("Error saving client:", e);
     showToast(translations['error'] || "Greška pri spremanju!", true);
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = translations['save'] || 'Spremi';
+    }
   }
 }
 
@@ -3980,10 +4070,7 @@ async function renderSelectionClients() {
   const searchTerm = document.getElementById('selectionClientSearch').value.toLowerCase();
   const rawClients = await getAllData('clients', currentUser);
   
-  const seen = new Set();
-  const clients = rawClients.filter(c => {
-    if (seen.has(c.id)) return false;
-    seen.add(c.id);
+  const clients = getDeduplicatedClients(rawClients).filter(c => {
     const fullName = `${c.name} ${c.surname}`.toLowerCase();
     return fullName.includes(searchTerm);
   }).sort((a, b) => a.name.localeCompare(b.name));
@@ -4040,6 +4127,12 @@ function closeSaveClientPrompt() {
 async function confirmSaveClientFromAppointment() {
   if (!pendingNewClientFromAppointment) return;
   
+  const saveBtn = document.getElementById('confirmSaveClientBtn');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = translations['saving'] || 'Spremanje...';
+  }
+
   const parts = pendingNewClientFromAppointment.fullName.split(' ');
   const name = parts[0];
   const surname = parts.slice(1).join(' ');
@@ -4060,10 +4153,15 @@ async function confirmSaveClientFromAppointment() {
     await syncWithFirestore(currentUser);
     showToast(translations['client_saved'] || "Klijent spremljen!");
     renderClients();
+    closeSaveClientPrompt();
   } catch (e) {
     console.error("Error saving client from appointment:", e);
+    showToast(translations['error'] || "Greška pri spremanju!", true);
   } finally {
-    closeSaveClientPrompt();
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = translations['yes'] || 'DA';
+    }
   }
 }
 

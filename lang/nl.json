@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 dagen gratis — geen creditcard vereist",
     "auth_info_note": "(prijs is afhankelijk van de regio)",
     "month_short": "mnd",
-    "contact_label": "Contact"
+    "contact_label": "Contact",
+    "request_deletion": "Verzoek om gegevensverwijdering"
 }

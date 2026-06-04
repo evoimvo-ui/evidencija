@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 дена бесплатно — без кредитна картичка",
     "auth_info_note": "(цената зависи од регионот)",
     "month_short": "мес",
-    "contact_label": "Контакт"
+    "contact_label": "Контакт",
+    "request_deletion": "Побарајте бришење на податоци"
 }

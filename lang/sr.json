@@ -1,4 +1,4 @@
-﻿{
+{
     "owner_label": "Vlasnik",
     "debts": "Dugovi",
     "client": "Klijent",
@@ -195,5 +195,6 @@
     "auth_info_note": "(cijena ovisi o regiji)",
     "month_short": "mj",
     "contact_label": "Kontakt",
-    "tos_link_refund": "Politika povraćaja"
+    "tos_link_refund": "Politika povraćaja",
+    "request_deletion": "Zatraži brisanje podataka"
 }

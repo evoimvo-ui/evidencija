@@ -1,4 +1,4 @@
-﻿{
+{
     "owner_label": "Vlasnik",
     "debts": "Dugovi",
     "client": "Klijent",
@@ -198,5 +198,6 @@
     "verify_email_title": "Verify email",
     "verify_email_msg_1": "Verify email msg 1",
     "verify_email_msg_2": "Verify email msg 2",
-    "resend_email_btn": "Resend email"
+    "resend_email_btn": "Resend email",
+    "request_deletion": "Zatraži brisanje podataka"
 }

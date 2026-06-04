@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 dager gratis — ingen kredittkort kreves",
     "auth_info_note": "(prisen avhenger av regionen)",
     "month_short": "mnd",
-    "contact_label": "Kontakt"
+    "contact_label": "Kontakt",
+    "request_deletion": "Be om sletting av data"
 }

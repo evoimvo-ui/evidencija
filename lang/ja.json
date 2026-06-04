@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30日間無料 — クレジットカード不要",
     "auth_info_note": "（価格は地域によって異なります）",
     "month_short": "月",
-    "contact_label": "お問い合わせ"
+    "contact_label": "お問い合わせ",
+    "request_deletion": "データの削除をリクエストする"
 }

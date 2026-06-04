@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 de zile gratuit — nu este necesar card de credit",
     "auth_info_note": "(prețul depinde de regiune)",
     "month_short": "lună",
-    "contact_label": "Contact"
+    "contact_label": "Contact",
+    "request_deletion": "Solicitați ștergerea datelor"
 }

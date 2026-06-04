@@ -2,56 +2,91 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Funkcija za provjeru da li je korisnik prijavljen
+    // --- POMOĆNE FUNKCIJE ---
+    
+    // Provjerava je li korisnik prijavljen
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Korisnički profili
-    match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-      // Vlasnik može vidjeti profile svojih radnika
-      allow read: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == resource.data.shopId;
+    // Dohvaća podatke trenutnog korisnika iz 'users' kolekcije
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Radnje (Shops)
+    // Provjerava je li korisnik vlasnik (owner) radnje kojoj dokument pripada
+    function isOwnerOf(shopId) {
+      return isSignedIn() && getUserData().role == 'owner' && getUserData().shopId == shopId;
+    }
+
+    // Provjerava opći pristup podacima (vlasnik dokumenta ili vlasnik radnje)
+    function canAccessData(data) {
+      return isSignedIn() && (
+        request.auth.uid == data.userId || 
+        isOwnerOf(data.shopId)
+      );
+    }
+
+    // --- PRAVILA ZA KOLEKCIJE ---
+
+    // 1. Korisnički profili
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      // Vlasnik može vidjeti profile svojih radnika unutar iste radnje
+      allow read: if isSignedIn() && getUserData().shopId == resource.data.shopId;
+    }
+
+    // 2. Radnje (Shops)
     match /shops/{shopId} {
       allow read: if isSignedIn() && (
         resource.data.ownerId == request.auth.uid || 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == shopId
+        getUserData().shopId == shopId
       );
-      allow create: if isSignedIn();
+      // POPRAVAK: Korisnik može kreirati radnju samo ako sebe postavi kao vlasnika
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
       allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
     }
 
-    // Unosi (Entries), Termini (Appointments), Usluge (Services)
-    match /{collection}/{docId} {
-      allow read, write: if isSignedIn() && (
-        // Korisnik može upravljati svojim podacima
-        request.auth.uid == (resource == null ? request.resource.data.userId : resource.data.userId) ||
-        // Vlasnik radnje može upravljati svim podacima koji pripadaju njegovoj radnji
-        (
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' &&
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == (resource == null ? request.resource.data.shopId : resource.data.shopId)
-        )
-      );
-      
-      // Dozvoli kreiranje ako su userId i shopId ispravno postavljeni
-      allow create: if isSignedIn() && 
-        request.resource.data.userId == request.auth.uid;
-    }
-
-    // Pozivnice (Invites)
+    // 3. Pozivnice (Invites)
     match /invites/{inviteId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isSignedIn() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+      allow create, update, delete: if isSignedIn() && getUserData().role == 'owner';
     }
     
-    // Logovi (Logs) - samo pisanje
+    // 4. Logovi (Logs) - samo slanje logova s klijenta, bez čitanja
     match /logs/{logId} {
       allow create: if isSignedIn(); 
       allow read, update, delete: if false;
+    }
+
+    // 5. Konfiguracija (Config) - npr. whitelist
+    match /config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Pisanje dozvoljeno samo kroz Firebase konzolu (Admin)
+    }
+
+    // 6. Unosi (Entries)
+    match /entries/{docId} {
+      allow read, update, delete: if canAccessData(resource.data);
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
+    }
+
+    // 7. Termini (Appointments)
+    match /appointments/{docId} {
+      allow read, update, delete: if canAccessData(resource.data);
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
+    }
+
+    // 8. Usluge (Services)
+    match /services/{docId} {
+      allow read, update, delete: if canAccessData(resource.data);
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
+    }
+
+    // 9. Klijenti (Clients)
+    match /clients/{docId} {
+      allow read, update, delete: if canAccessData(resource.data);
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
     }
   }
 }

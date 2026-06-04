@@ -194,5 +194,6 @@
     "auth_info_trial":  "🎁 30 giorni gratuiti — nessuna carta di credito richiesta",
     "auth_info_note":  "(il prezzo dipende dalla regione)",
     "month_short":  "mes",
-    "contact_label":  "Contatto"
+    "contact_label": "Contatto",
+    "request_deletion": "Richiedi la cancellazione dei dati"
 }

@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 дней бесплатно — кредитная карта не требуется",
     "auth_info_note": "(цена зависит от региона)",
     "month_short": "мес",
-    "contact_label": "Контакт"
+    "contact_label": "Контакт",
+    "request_deletion": "Запросить удаление данных"
 }

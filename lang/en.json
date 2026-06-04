@@ -198,5 +198,6 @@
     "verify_email_title": "Verify your email",
     "verify_email_msg_1": "Please verify your email. We sent a link to ",
     "verify_email_msg_2": "Check your inbox.",
-    "resend_email_btn": "Resend verification email"
+    "resend_email_btn": "Resend verification email",
+    "request_deletion": "Request data deletion"
 }

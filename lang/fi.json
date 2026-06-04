@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 päivää ilmaiseksi — luottokorttia ei tarvita",
     "auth_info_note": "(hinta riippuu alueesta)",
     "month_short": "kk",
-    "contact_label": "Ota yhteyttä"
+    "contact_label": "Ota yhteyttä",
+    "request_deletion": "Pyydä tietojen poistamista"
 }

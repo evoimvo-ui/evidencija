@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 ۳۰ روز رایگان — بدون نیاز به کارت اعتباری",
     "auth_info_note": "(قیمت به منطقه بستگی دارد)",
     "month_short": "ماه",
-    "contact_label": "تماس"
+    "contact_label": "تماس",
+    "request_deletion": "درخواست حذف داده ها"
 }

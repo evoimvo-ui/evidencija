@@ -1750,7 +1750,7 @@
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.75);
-    z-index: 900;
+    z-index: 1001;
     align-items: center;
     justify-content: center;
     padding: 1rem;
@@ -2475,6 +2475,11 @@
 
 <div class="toast" id="toast"></div>
 
+  <div style="text-align: center; padding: 20px; margin-top: 20px; border-top: 1px solid var(--border);">
+    <a href="#" id="deleteDataLink" style="color: var(--text3); font-size: 12px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+      <i class="ti ti-trash"></i> <span data-i18n="request_deletion">Request data deletion</span>
+    </a>
+  </div>
 </div> <!-- kraj appContent -->
 
 <script type="module">
@@ -2482,6 +2487,7 @@ import {
   initAuth, 
   hideAuthScreen, 
   showAuthScreen, 
+  showVerificationScreen,
   register, 
   login, 
   logout,
@@ -2514,6 +2520,7 @@ window._acceptTos      = acceptTos;
 window.handleResendEmail = handleResendEmail;
 window.hideAuthScreen = hideAuthScreen;
 window.showAuthScreen = showAuthScreen;
+window.showVerificationScreen = showVerificationScreen;
 window._getPriceLabel  = getPriceLabel;
 window.openCheckout    = openCheckout;
 window.saveService = saveService;
@@ -2905,6 +2912,14 @@ async function refreshAppData() {
   // Ažuriraj trial banner ako postoji
   if (typeof blok1UpdateTrialBanner === 'function') {
     blok1UpdateTrialBanner(currentUser);
+  }
+
+  // Update deletion link with dynamic UID
+  const deleteLink = document.getElementById('deleteDataLink');
+  if (deleteLink && currentUser) {
+    const subject = encodeURIComponent("Data Deletion Request - Work Records");
+    const body = encodeURIComponent(`I am requesting the permanent deletion of my account and all associated data. User UID: ${currentUser.uid}`);
+    deleteLink.href = `mailto:info@ei-apps.com?subject=${subject}&body=${body}`;
   }
 }
 

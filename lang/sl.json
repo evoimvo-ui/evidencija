@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 dni brezplačno — brez kreditne kartice",
     "auth_info_note": "(cena je odvisna od regije)",
     "month_short": "mes",
-    "contact_label": "Kontakt"
+    "contact_label": "Kontakt",
+    "request_deletion": "Zahtevaj izbris podatkov"
 }

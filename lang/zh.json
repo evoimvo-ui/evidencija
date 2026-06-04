@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 天免费试用 — 无需信用卡",
     "auth_info_note": "（价格取决于地区）",
     "month_short": "月",
-    "contact_label": "联系方式"
+    "contact_label": "联系方式",
+    "request_deletion": "请求删除数据"
 }

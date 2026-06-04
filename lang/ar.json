@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 يومًا مجانًا — لا يلزم وجود بطاقة ائتمان",
     "auth_info_note": "(السعر يعتمد على المنطقة)",
     "month_short": "شهر",
-    "contact_label": "اتصال"
+    "contact_label": "اتصال",
+    "request_deletion": "طلب حذف البيانات"
 }

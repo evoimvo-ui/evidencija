@@ -194,5 +194,6 @@
     "auth_info_trial": "🎁 30 gün ücretsiz — kredi kartı gerekmez",
     "auth_info_note": "(fiyat bölgeye göre değişir)",
     "month_short": "ay",
-    "contact_label": "İletişim"
+    "contact_label": "İletişim",
+    "request_deletion": "Veri silme talebi"
 }

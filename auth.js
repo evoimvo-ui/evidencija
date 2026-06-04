@@ -151,12 +151,16 @@ export function showVerificationScreen(email) {
   if (screen) {
     if (emailSpan) emailSpan.textContent = email;
     screen.style.display = 'flex';
+    screen.classList.add('active');
   }
 }
 
 export function hideVerificationScreen() {
   const screen = document.getElementById('verificationScreen');
-  if (screen) screen.style.display = 'none';
+  if (screen) {
+    screen.style.display = 'none';
+    screen.classList.remove('active');
+  }
 }
 
 export async function resendVerificationEmail() {

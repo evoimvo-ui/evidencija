@@ -3,6 +3,9 @@
  * Pozadinski servis za obradu Paddle Billing (v2) Webhook-ova.
  */
 
+const Sentry = require('@sentry/node');
+Sentry.init({ dsn: 'https://de9a89b4821f581bfe0184753058164e@o4511571182485504.ingest.de.sentry.io/4511571327647824' });
+
 const admin = require('firebase-admin');
 const crypto = require('crypto');
 
@@ -61,6 +64,7 @@ exports.handler = async (event) => {
     }
   } catch (err) {
     console.error('[Verify] Error during verification:', err.message);
+    Sentry.captureException(err);
     return { statusCode: 401, body: 'Error during verification' };
   }
 
@@ -136,6 +140,7 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('[Paddle Webhook] Sistemska greška:', err.message);
+    Sentry.captureException(err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message })

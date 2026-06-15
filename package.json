@@ -4,6 +4,8 @@
   "description": "Evidencija rada - PWA with Paddle integration",
   "main": "index.html",
   "dependencies": {
+    "@sentry/browser": "^10.58.0",
+    "@sentry/node": "^10.58.0",
     "firebase-admin": "^12.0.0"
   },
   "devDependencies": {

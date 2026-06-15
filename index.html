@@ -6,6 +6,12 @@
 <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
 <link rel="icon" href="/icon-512.png" type="image/png">
 <meta name="theme-color" content="#0f0f0f">
+<script src="https://browser.sentry-cdn.com/8.34.0/bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  Sentry.init({
+    dsn: 'https://8582c42bf81a4afe009961f411570315@o4511571182485504.ingest.de.sentry.io/4511571338330192'
+  });
+</script>
 <title>Work Records</title>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -173,11 +179,7 @@
   @media (max-width: 480px) {
     .auth-lang-btn {
       left: auto;
-      right: 10px;
-      top: 10px;
-    }
-    #authInitial h1, #authForm {
-      margin-top: 24px;
+      right: 16px;
     }
   }
   body.light-mode .auth-lang-btn {
@@ -250,6 +252,33 @@
     font-weight: 600;
     font-size: 11px;
     text-align: center;
+  }
+  .manual-link {
+    color: var(--accent);
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 12px;
+    background: rgba(200, 240, 101, 0.1);
+    transition: all 0.2s ease;
+  }
+  .manual-link:hover {
+    background: rgba(200, 240, 101, 0.2);
+    transform: translateY(-1px);
+  }
+  body.light-mode .manual-link {
+    background: rgba(120, 156, 27, 0.1);
+  }
+  .footer-divider {
+    height: 1px;
+    background: var(--border);
+    width: 40px;
+    margin: 15px auto;
   }
   .auth-contact a {
     color: inherit;
@@ -1949,6 +1978,12 @@
     <button class="submit-btn pay" onclick="setAuthMode('register')" data-i18n="get_started">ZAPOČNI</button>
     <button class="submit-btn" style="background:var(--bg3); color:var(--text); margin-top:12px;" onclick="setAuthMode('login')" data-i18n="login_btn">PRIJAVA</button>
 
+    <div style="margin-top: 24px;">
+      <a href="https://ei-apps.com/work-records" target="_blank" class="manual-link">
+        <i class="ti ti-help"></i> <span data-i18n="how_it_works">Uputstvo za korištenje</span>
+      </a>
+    </div>
+
     <div class="auth-footer"> 
       <img src="Logowebapp.png" alt="ei-apps"> 
       <span>© ei-apps.com</span> 
@@ -1979,6 +2014,12 @@
     <div id="authError" style="color:var(--red); font-size:12px; min-height:16px;"></div>
     
     <button id="authSubmitBtn" class="submit-btn pay" style="margin-top:10px;"></button>
+
+    <div style="margin-top: 24px; text-align: center;">
+      <a href="https://ei-apps.com/work-records" target="_blank" class="manual-link">
+        <i class="ti ti-help"></i> <span data-i18n="how_it_works">Uputstvo za korištenje</span>
+      </a>
+    </div>
 
     <div class="auth-footer"> 
       <img src="Logowebapp.png" alt="ei-apps"> 
@@ -2492,6 +2533,10 @@
 <div class="toast" id="toast"></div>
 
   <div style="text-align: center; padding: 20px; margin-top: 20px; border-top: 1px solid var(--border);">
+    <a href="https://ei-apps.com/work-records" target="_blank" class="manual-link" style="margin-bottom: 0;">
+      <i class="ti ti-help"></i> <span data-i18n="how_it_works">Uputstvo za korištenje</span>
+    </a>
+    <div class="footer-divider"></div>
     <a href="#" id="deleteDataLink" style="color: var(--text3); font-size: 12px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
       <i class="ti ti-trash"></i> <span data-i18n="request_deletion">Request data deletion</span>
     </a>

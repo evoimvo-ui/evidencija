@@ -122,7 +122,14 @@ exports.handler = async (event) => {
       
       if (userIdFromCustomData) {
         console.log(`[Paddle Webhook] Korisnik nađen preko custom_data: ${userIdFromCustomData}`);
-        await usersRef.doc(userIdFromCustomData).update(updateData);
+        const userDocRef = usersRef.doc(userIdFromCustomData);
+        const userDoc = await userDocRef.get();
+        
+        if (userDoc.exists) {
+          await userDocRef.update(updateData);
+        } else {
+          console.warn(`[Paddle Webhook] Dokument za korisnika ${userIdFromCustomData} ne postoji (verovatno je izbrisan).`);
+        }
       } else {
         console.warn(`[Paddle Webhook] Korisnik sa customerId ${customerId} nije pronađen u bazi.`);
         return { statusCode: 200, body: 'User not found' };

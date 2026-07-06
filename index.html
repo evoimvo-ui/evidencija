@@ -1936,6 +1936,50 @@
     margin-top: 0.5rem;
     line-height: 1.6;
   }
+
+  /* Toggle switch */
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+  }
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg3);
+    transition: .3s;
+    border-radius: 34px;
+    border: 1px solid var(--border);
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text3);
+    transition: .3s;
+    border-radius: 50%;
+  }
+  input:checked + .slider {
+    background-color: var(--accent);
+    border-color: var(--accent);
+  }
+  input:checked + .slider:before {
+    transform: translateX(24px);
+    background-color: var(--bg);
+  }
 </style>
 </head>
 <body onclick="hideLangMenu()">
@@ -2160,6 +2204,34 @@
 </div>
 
 <!-- ══════════════════════════════════════════════
+     BLOK 1 — Subscription expired
+     ══════════════════════════════════════════════ -->
+<div id="subscriptionExpiredScreen" class="blok1-overlay">
+  <div class="blok1-card" style="text-align:center;">
+    <div style="font-size:3rem; margin-bottom:0.75rem;">⏰</div>
+    <h2 data-i18n="subscription_expired_title">Pretplata je istekla</h2>
+    <p data-i18n="subscription_expired_desc">Vaša pretplata je istekla. Ponovno se pretplatite kako biste nastavili koristiti aplikaciju.</p>
+    <button class="blok1-btn-primary" onclick="onShowUpgradeFromExpired()" data-i18n="renew_subscription">
+      Ponovno se pretplatite
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BLOK 1 — Subscription paused
+     ══════════════════════════════════════════════ -->
+<div id="subscriptionPausedScreen" class="blok1-overlay">
+  <div class="blok1-card" style="text-align:center;">
+    <div style="font-size:3rem; margin-bottom:0.75rem;">⏸️</div>
+    <h2 data-i18n="subscription_paused_title">Pretplata je pauzirana</h2>
+    <p data-i18n="subscription_paused_desc">Vaša pretplata je pauzirana. Nastavite ju kako biste nastavili koristiti aplikaciju.</p>
+    <button class="blok1-btn-primary" onclick="onShowUpgradeFromExpired()" data-i18n="resume_subscription">
+      Nastavite pretplatu
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
      BLOK 1 — Trial banner (ubačen IZNAD #appContent)
      ══════════════════════════════════════════════ -->
 <div id="trialBanner"></div>
@@ -2252,6 +2324,26 @@
 
     <div class="section-label" data-i18n="sent_invites">POSLATE POZIVNICE</div>
     <div id="invitesList"></div>
+    
+    <div class="section-label" data-i18n="billing_settings">POSTAVKE PLAĆANJA</div>
+    <div id="billingSettingsSection">
+      <div id="billingStatus">
+        <div class="stat-label" id="subscriptionStatusLabel">Pretplata</div>
+        <div class="stat-value" id="subscriptionStatusValue">-</div>
+      </div>
+      <div id="autoRenewalToggle" style="display:none; margin-top:20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom:10px;">
+          <span data-i18n="auto_renewal">Automatsko obnavljanje</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoRenewalCheckbox" onchange="handleAutoRenewalChange()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p style="font-size:12px; color: var(--text3);" data-i18n="auto_renewal_desc">
+          Uključite automatsko obnavljanje da biste automatski plaćali sljedeći mjesec bez potrebe za ručnom plaćanjem.
+        </p>
+      </div>
+    </div>
   </div>
   
   <div id="becomeOwnerSection" style="display:none; text-align:center; padding:40px 20px;">
@@ -2557,6 +2649,7 @@ import {
   // ── BLOK 1 ──
   isTrialExpired,
   trialDaysLeft,
+  getSubscriptionState,
   hasTosAccepted,
   acceptTos,
   handleResendEmail
@@ -2576,6 +2669,7 @@ import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp
 // ── BLOK 1: Expose helpers na window za non-module skriptu ──
 window._isTrialExpired = isTrialExpired;
 window._trialDaysLeft  = trialDaysLeft;
+window._getSubscriptionState = getSubscriptionState;
 window._hasTosAccepted = hasTosAccepted;
 window._acceptTos      = acceptTos;
 window.handleResendEmail = handleResendEmail;
@@ -2925,6 +3019,51 @@ async function handleLogout() {
   }
 }
 
+function updateBillingSettingsUI() {
+  const statusLabel = document.getElementById('subscriptionStatusValue');
+  const autoRenewalToggle = document.getElementById('autoRenewalToggle');
+  const autoRenewalCheckbox = document.getElementById('autoRenewalCheckbox');
+
+  if (!statusLabel) return;
+
+  const state = window._getSubscriptionState(currentUser);
+
+  // Update status label
+  let statusText = '';
+  switch (state.state) {
+    case 'trial_active':
+      statusText = translations['trial_active'] || `Probni period (${state.daysLeft} dana)`;
+      break;
+    case 'trial_expired':
+      statusText = translations['trial_expired'] || 'Probni period istekao';
+      break;
+    case 'subscription_active':
+      statusText = translations['subscription_active'] || 'Aktivna pretplata';
+      break;
+    case 'subscription_cancelled_active':
+      statusText = translations['subscription_cancelled_active'] || `Pretplata otkazana (${state.daysLeft} dana)`;
+      break;
+    case 'subscription_expired':
+      statusText = translations['subscription_expired'] || 'Pretplata istekla';
+      break;
+    case 'subscription_paused':
+      statusText = translations['subscription_paused'] || 'Pretplata pauzirana';
+      break;
+    case 'lifetime':
+      statusText = translations['subscription_lifetime'] || 'Lifetime';
+      break;
+  }
+  statusLabel.textContent = statusText;
+
+  // Show/hide auto-renewal toggle
+  if (state.state === 'subscription_active' || state.state === 'subscription_cancelled_active') {
+    autoRenewalToggle.style.display = 'block';
+    autoRenewalCheckbox.checked = !currentUser.cancelAtPeriodEnd;
+  } else {
+    autoRenewalToggle.style.display = 'none';
+  }
+}
+
 async function refreshAppData() {
   if (!currentUser) return;
   if (currentUser.currency) {
@@ -2969,6 +3108,7 @@ async function refreshAppData() {
   renderPregled();
   renderAppointments();
   renderClients();
+  updateBillingSettingsUI();
   
   // Ažuriraj trial banner ako postoji
   if (typeof blok1UpdateTrialBanner === 'function') {
@@ -4409,16 +4549,64 @@ const BLOK1_PRICES = {
 function blok1UpdateTrialBanner(userData) {
   const banner = document.getElementById('trialBanner');
   if (!banner) return;
-  const isPaid = userData?.subscriptionStatus === 'active' || 
-                 userData?.subscriptionStatus === 'lifetime';
-  if (isPaid) { banner.style.display = 'none'; return; }
   
+  const state = window._getSubscriptionState(userData);
+  const trans = window._translations || {};
+  
+  // Lifetime: no banner
+  if (state.state === 'lifetime') {
+    banner.style.display = 'none';
+    return;
+  }
+
+  // Cancelled but still active: show warning
+  if (state.state === 'subscription_cancelled_active') {
+    const days = state.daysLeft;
+    const dayWord = days === 1 
+      ? (trans['trial_banner_day'] || 'dan') 
+      : (trans['trial_banner_days'] || 'dana');
+    const prefix = trans['access_expires_prefix'] || '⏰ Pristup istječe za:';
+    const suffix = trans['access_expires_suffix'] || '.';
+    const renew = trans['renew_subscription'] || 'Ponovno se pretplatite →';
+    
+    banner.style.display = 'block';
+    banner.classList.add('danger');
+    
+    banner.innerHTML = `${prefix} <strong>${days} ${dayWord}</strong> ${suffix}
+      <a onclick="window.onShowUpgradeFromBanner()">${renew}</a>`;
+    return;
+  }
+
+  // Active subscription with renewal soon (≤ 7 days: show renewal warning
+  if (state.state === 'subscription_active' && state.daysLeft <= 7) {
+    const days = state.daysLeft;
+    const dayWord = days === 1 
+      ? (trans['trial_banner_day'] || 'dan') 
+      : (trans['trial_banner_days'] || 'dana');
+    const prefix = trans['renewal_soon_prefix'] || '🔄 Pretplata se obnavlja za:';
+    const suffix = trans['renewal_soon_suffix'] || '.';
+    
+    banner.style.display = 'block';
+    banner.classList.remove('danger');
+    banner.innerHTML = `${prefix} <strong>${days} ${dayWord}</strong> ${suffix}`;
+    return;
+  }
+
+  // Active subscription: no banner
+  if (state.state === 'subscription_active') {
+    banner.style.display = 'none';
+    return;
+  }
+
+  // Trial
   const days = window._trialDaysLeft(userData);
-  if (days <= 0) { banner.style.display = 'none'; return; }
+  if (days <= 0) { 
+    banner.style.display = 'none'; 
+    return; 
+  }
   banner.style.display = 'block';
   banner.classList.toggle('danger', days <= 5);
   
-  const trans = window._translations || {};
   const prefix = trans['trial_banner_prefix'] || '⏳ Probni period:';
   const suffix = trans['trial_banner_suffix'] || 'preostalo.';
   const subscribe = trans['subscribe_now'] || 'Pretplati se →';
@@ -4470,6 +4658,42 @@ document.getElementById('upgradeBasicPrice').textContent = window._getPriceLabel
   const isExpired = window._isTrialExpired(ud);
   document.getElementById('upgradeCloseBtn').style.display = (isExpired || fromExpired) ? 'none' : 'block';
   document.getElementById('upgradeScreen').classList.add('active');
+}
+
+window.handleAutoRenewalChange = async function() {
+  const checkbox = document.getElementById('autoRenewalCheckbox');
+  const checked = checkbox.checked;
+
+  try {
+    // Disable checkbox while processing
+    checkbox.disabled = true;
+
+    // Call Netlify function to update Paddle subscription
+    const response = await fetch('/.netlify/functions/update-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: window._currentUser.uid,
+        autoRenewal: checked
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update subscription');
+    }
+
+    // Update local state
+    window._currentUser.cancelAtPeriodEnd = !checked;
+    updateBillingSettingsUI();
+    blok1UpdateTrialBanner(window._currentUser);
+  } catch (error) {
+    console.error('Error updating auto-renewal:', error);
+    alert('Greška prilikom promjene postavki. Molimo pokušajte ponovo.');
+    // Revert checkbox state
+    checkbox.checked = !window._currentUser.cancelAtPeriodEnd;
+  } finally {
+    checkbox.disabled = false;
+  }
 };
 
 window.onHideUpgradeScreen = function() {
@@ -4516,24 +4740,33 @@ window.checkAndShowTos = function(user, userData) {
 };
 
 window.checkAppAccess = function(user, userData) {
-  const isPremium = (userData?.subscriptionStatus === 'active' && userData?.subscriptionPlan === 'premium') || 
-                    userData?.subscriptionStatus === 'lifetime';
-  
-  const isBasic = (userData?.subscriptionStatus === 'active' && userData?.subscriptionPlan === 'basic');
-  
-  const isTrialActive = userData?.subscriptionStatus === 'trial' && !window._isTrialExpired(userData);
+  const state = window._getSubscriptionState(userData);
 
-  const hasAccess = isPremium || isBasic || isTrialActive;
+  // Check access
+  const hasAccess = ['trial_active', 'subscription_active', 'subscription_cancelled_active', 'lifetime'].includes(state.state);
+
+  // Hide all overlay screens first
+  document.getElementById('trialExpiredScreen').classList.remove('active');
+  document.getElementById('subscriptionExpiredScreen').classList.remove('active');
+  document.getElementById('subscriptionPausedScreen').classList.remove('active');
 
   if (!hasAccess) {
-    // Sakrij app, prikaži expired screen
+    // Hide app
     const appContent = document.getElementById('appContent');
     if (appContent) appContent.style.display = 'none';
-    document.getElementById('trialExpiredScreen').classList.add('active');
+    
+    // Show appropriate screen
+    if (state.state === 'subscription_expired') {
+      document.getElementById('subscriptionExpiredScreen').classList.add('active');
+    } else if (state.state === 'subscription_paused') {
+      document.getElementById('subscriptionPausedScreen').classList.add('active');
+    } else {
+      document.getElementById('trialExpiredScreen').classList.add('active');
+    }
     return;
   }
-  // Sve OK — sakrij expired screen (ako je bio aktivan) i prikaži trial banner
-  document.getElementById('trialExpiredScreen').classList.remove('active');
+
+  // All OK — show app
   const appContent = document.getElementById('appContent');
   if (appContent) appContent.style.display = 'block';
   

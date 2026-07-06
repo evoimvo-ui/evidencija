@@ -90,6 +90,80 @@ export function trialDaysLeft(userData) {
 }
 
 /**
+ * Returns a clear subscription state object differentiating all scenarios
+ * @param {Object} userData
+ * @returns {{
+ *   state: 'trial_active' | 'trial_expired' | 'subscription_active' | 'subscription_cancelled_active' | 'subscription_expired' | 'subscription_paused' | 'lifetime',
+ *   daysLeft: number,
+ *   nextBillingDate: string | null
+ * }}
+ */
+export function getSubscriptionState(userData) {
+  if (!userData) {
+    return { state: 'trial_active', daysLeft: TRIAL_DAYS, nextBillingDate: null };
+  }
+
+  const status = userData.subscriptionStatus;
+  
+  // Lifetime subscription
+  if (status === 'lifetime') {
+    return { state: 'lifetime', daysLeft: Infinity, nextBillingDate: null };
+  }
+
+  // Paused subscription
+  if (status === 'paused') {
+    return { state: 'subscription_paused', daysLeft: 0, nextBillingDate: null };
+  }
+
+  // Active subscription
+  if (status === 'active') {
+    let daysLeft = Infinity;
+    if (userData.nextBillingDate) {
+      const nextBillingMs = new Date(userData.nextBillingDate).getTime();
+      daysLeft = Math.max(0, Math.ceil((nextBillingMs - Date.now()) / (24 * 60 * 60 * 1000)));
+    }
+    
+    if (userData.cancelAtPeriodEnd) {
+      return { 
+        state: 'subscription_cancelled_active', 
+        daysLeft, 
+        nextBillingDate: userData.nextBillingDate || null 
+      };
+    }
+    
+    return { 
+      state: 'subscription_active', 
+      daysLeft, 
+      nextBillingDate: userData.nextBillingDate || null 
+    };
+  }
+
+  // Cancelled/expired subscription or trial
+  // First check if nextBillingDate is in past
+  if (userData.nextBillingDate && status === 'cancelled') {
+    const nextBillingMs = new Date(userData.nextBillingDate).getTime();
+    if (nextBillingMs < Date.now()) {
+      return { state: 'subscription_expired', daysLeft: 0, nextBillingDate: null };
+    } else {
+      const daysLeft = Math.max(0, Math.ceil((nextBillingMs - Date.now()) / (24 * 60 * 60 * 1000)));
+      return { state: 'subscription_cancelled_active', daysLeft, nextBillingDate: userData.nextBillingDate };
+    }
+  }
+
+  if (status === 'expired') {
+    return { state: 'subscription_expired', daysLeft: 0, nextBillingDate: null };
+  }
+
+  // Trial status
+  const trialDays = trialDaysLeft(userData);
+  if (trialDays > 0) {
+    return { state: 'trial_active', daysLeft: trialDays, nextBillingDate: null };
+  } else {
+    return { state: 'trial_expired', daysLeft: 0, nextBillingDate: null };
+  }
+}
+
+/**
  * Vraća true ako je korisnik prihvatio ToS.
  */
 export function hasTosAccepted(userData) {

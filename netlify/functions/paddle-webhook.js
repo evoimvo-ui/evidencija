@@ -94,6 +94,13 @@ exports.handler = async (event) => {
       case 'subscription.paused':
         newStatus = 'paused';
         break;
+      case 'subscription.updated':
+        // Handle updates but don't change status
+        newStatus = null;
+        break;
+      case 'subscription.past_due':
+        newStatus = 'cancelled';
+        break;
       default:
         console.log(`[Paddle Webhook] Ignorišem event tip: ${eventType}`);
         return { statusCode: 200, body: 'Event type ignored' };
@@ -105,15 +112,27 @@ exports.handler = async (event) => {
     const snapshot = await usersRef.where('paddleCustomerId', '==', customerId).limit(1).get();
 
     const updateData = {
-      subscriptionStatus: newStatus,
       subscriptionId: subscriptionId,
       paddleCustomerId: customerId,
       subscriptionUpdatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
+    // Only update status if we have one
+    if (newStatus) {
+      updateData.subscriptionStatus = newStatus;
+    }
+
     // Ako imamo plan u custom_data, spremamo ga
     if (planFromCustomData) {
       updateData.subscriptionPlan = planFromCustomData;
+    }
+
+    // Extract additional data from Paddle event
+    if (data.next_billed_at) {
+      updateData.nextBillingDate = data.next_billed_at;
+    }
+    if (data.cancel_at_period_end !== undefined) {
+      updateData.cancelAtPeriodEnd = data.cancel_at_period_end;
     }
 
     if (snapshot.empty) {

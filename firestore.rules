@@ -27,6 +27,35 @@ service cloud.firestore {
       );
     }
 
+    // Provjerava je li korisnik imao pravo na pisanje podataka (aktivni trial ili pretplata)
+    function hasWriteAccess() {
+      let userData = getUserData();
+      
+      // Lifetime access
+      if (userData.subscriptionStatus == 'lifetime') {
+        return true;
+      }
+      
+      // Aktivna pretplata
+      if (userData.subscriptionStatus == 'active') {
+        return true;
+      }
+      
+      // Otkazana pretplata, ali još uvijek u plaćenom periodu
+      if (userData.subscriptionStatus == 'cancelled' && userData.nextBillingDate != null) {
+        return timestamp.value(request.time) < timestamp.value(userData.nextBillingDate);
+      }
+      
+      // Aktivni trial
+      if (userData.subscriptionStatus == 'trial' && userData.trialStartedAt != null) {
+        let trialEnd = userData.trialStartedAt + duration.value(30, 'd');
+        return request.time < trialEnd;
+      }
+      
+      // U suprotnom, nema pristupa pisanju
+      return false;
+    }
+
     // --- PRAVILA ZA KOLEKCIJE ---
 
     // 1. Korisnički profili
@@ -67,26 +96,26 @@ service cloud.firestore {
 
     // 6. Unosi (Entries)
     match /entries/{docId} {
-      allow read, update, delete: if canAccessData(resource.data);
-      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
+      allow read: if canAccessData(resource.data);
+      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
     }
 
     // 7. Termini (Appointments)
     match /appointments/{docId} {
-      allow read, update, delete: if canAccessData(resource.data);
-      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
+      allow read: if canAccessData(resource.data);
+      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
     }
 
     // 8. Usluge (Services)
     match /services/{docId} {
-      allow read, update, delete: if canAccessData(resource.data);
-      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
+      allow read: if canAccessData(resource.data);
+      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
     }
 
     // 9. Klijenti (Clients)
     match /clients/{docId} {
-      allow read, update, delete: if canAccessData(resource.data);
-      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid;
+      allow read: if canAccessData(resource.data);
+      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
     }
   }
 }

@@ -28,7 +28,7 @@ export function getPrice(userData, plan) {
 
 /**
  * Vraća priceLabel stringu direktno — korisno za template rendering.
- * Npr. getPriceLabel(userData, 'basic') → '€2.49'
+ * Npr. getPriceLabel(userData, 'basic') → '€9.99'
  */
 export function getPriceLabel(userData, plan) {
   return getPrice(userData, plan).priceLabel;

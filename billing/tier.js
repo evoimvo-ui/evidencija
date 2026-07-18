@@ -4,14 +4,14 @@ export const TIERS = {
     currency: 'EUR',
     plans: {
       basic: {
-        price: 9.99,
-        priceLabel: '€9.99',
+        price: 4.99,
+        priceLabel: '€4.99',
         period: 'month',
         paddlePriceId: 'pri_01kssgnms0p7frm3q5zvh1vebb',
       },
       premium: {
-        price: 29.99,
-        priceLabel: '€29.99',
+        price: 19.99,
+        priceLabel: '€19.99',
         period: 'month',
         paddlePriceId: 'pri_01kssgx7q9kwkey14zgs3nn24f',
       }

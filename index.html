@@ -4378,11 +4378,12 @@ function toggleSingleDayOff(dateStr) {
   } else {
     addDoc(collection(fdb, 'timeOff'), {
       userId: auth.currentUser.uid,
+      shopId: currentUser.shopId || null,
       date: dateStr,
       endDate: null,
       reason: ''
     }).then(docRef => {
-      whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, date: dateStr, endDate: null, reason: '' });
+      whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, shopId: currentUser.shopId || null, date: dateStr, endDate: null, reason: '' });
       renderTimeOffCalendar();
     });
   }
@@ -4413,11 +4414,12 @@ async function saveVacationPeriod() {
   }
   const docRef = await addDoc(collection(fdb, 'timeOff'), {
     userId: auth.currentUser.uid,
+    shopId: currentUser.shopId || null,
     date: from,
     endDate: to === from ? null : to,
     reason: reason
   });
-  whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, date: from, endDate: to === from ? null : to, reason: reason });
+  whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, shopId: currentUser.shopId || null, date: from, endDate: to === from ? null : to, reason: reason });
   closeVacationModal();
   renderTimeOffCalendar();
   showToast(translations['time_off_saved'] || 'Time off saved!');

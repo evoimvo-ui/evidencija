@@ -1,15 +1,18 @@
 const admin = require('firebase-admin');
 
+// Initialize Firebase Admin
 if (!admin.apps.length) {
-  const serviceAccount = require('../../service-account.json');
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  } catch (error) {
+    console.error('[Firebase Admin] Greška pri inicijalizaciji:', error.message);
+  }
 }
 
-const db = admin.firestore();
-
-exports.handler = async (event) => {
+const db = admin.firestore();exports.handler = async (event) => {
   try {
     const { slug } = event.queryStringParameters;
     

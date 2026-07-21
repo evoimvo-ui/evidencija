@@ -5325,6 +5325,9 @@ async function initPublicBooking() {
   if (slug) {
     publicBookingState.slug = slug;
     
+    // Show public booking screen RIGHT AWAY so auth callback knows not to show login
+    document.getElementById('publicBookingScreen').classList.add('active');
+    
     // Detect browser language for public page
     const browserLang = navigator.language.split('-')[0];
     const supportedLangs = ['en', 'bs'];
@@ -5339,7 +5342,8 @@ async function initPublicBooking() {
       console.log('Using default language');
     }
     
-    loadPublicUser(slug);
+    // Load user data
+    await loadPublicUser(slug);
   }
 }
 

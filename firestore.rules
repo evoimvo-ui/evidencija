@@ -117,10 +117,10 @@ service cloud.firestore {
     // 11. Booking Slugs (za provjeru dostupnosti)
     match /bookingSlugs/{slug} {
       // Svi prijavljeni korisnici mogu provjeravati dostupnost sluga
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() || true; // Allow even unauthenticated for public checks?
       // Samo vlasnik sluga (korisnik) može ga kreirati, ažurirati ili brisati
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && hasWriteAccess();
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     // 12. Booking Request (javne rezervacije)

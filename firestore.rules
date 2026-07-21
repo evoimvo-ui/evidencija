@@ -82,31 +82,36 @@ service cloud.firestore {
     // 6. Unosi (Entries)
     match /entries/{docId} {
       allow read: if canAccessData(resource.data);
-      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow update, delete: if canAccessData(resource.data) && resource.data.userId == request.auth.uid && hasWriteAccess();
     }
 
     // 7. Termini (Appointments)
     match /appointments/{docId} {
       allow read: if canAccessData(resource.data);
-      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow update, delete: if canAccessData(resource.data) && resource.data.userId == request.auth.uid && hasWriteAccess();
     }
 
     // 8. Usluge (Services)
     match /services/{docId} {
       allow read: if canAccessData(resource.data);
-      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow update, delete: if canAccessData(resource.data) && resource.data.userId == request.auth.uid && hasWriteAccess();
     }
 
     // 9. Klijenti (Clients)
     match /clients/{docId} {
       allow read: if canAccessData(resource.data);
-      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow update, delete: if canAccessData(resource.data) && resource.data.userId == request.auth.uid && hasWriteAccess();
     }
     
     // 10. Ne radni dani (TimeOff)
     match /timeOff/{docId} {
       allow read: if canAccessData(resource.data);
-      allow create, update, delete: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow update, delete: if canAccessData(resource.data) && resource.data.userId == request.auth.uid && hasWriteAccess();
     }
   }
 }

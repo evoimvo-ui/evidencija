@@ -5072,7 +5072,7 @@ let publicBookingState = {
   selectedTime: null
 };
 
-function initPublicBooking() {
+async function initPublicBooking() {
   // Check URL for slug (either /book/{slug} or ?book=slug)
   let slug = null;
   
@@ -5088,6 +5088,21 @@ function initPublicBooking() {
   
   if (slug) {
     publicBookingState.slug = slug;
+    
+    // Detect browser language for public page
+    const browserLang = navigator.language.split('-')[0];
+    const supportedLangs = ['en', 'bs'];
+    const publicLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
+    
+    // Load public language
+    try {
+      const response = await fetch(`/lang/${publicLang}.json`);
+      const publicTranslations = await response.json();
+      window.translations = { ...window.translations, ...publicTranslations };
+    } catch (e) {
+      console.log('Using default language');
+    }
+    
     loadPublicUser(slug);
   }
 }
@@ -5323,7 +5338,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPaddle();
   
   // Check for public booking
-  initPublicBooking();
+  await initPublicBooking();
 
   initAuth(async (user, userData) => {
     console.log("Auth callback: User logged in.");
@@ -5382,8 +5397,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   () => {
     console.log("Auth callback: User logged out.");
     currentUser = null;
-    showAuthScreen();
-    setAuthMode('initial');
+    // Only show auth screen if we're NOT on public booking screen
+    if (!document.getElementById('publicBookingScreen').classList.contains('active')) {
+      showAuthScreen();
+      setAuthMode('initial');
+    }
   });
 
   setInterval(checkUpcomingAppointments, 60000);
@@ -5634,289 +5652,7 @@ window.checkAppAccess = function(user, userData) {
   blok1UpdateTrialBanner(userData);
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PUBLIC BOOKING FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────────
-let publicBookingState = {
-  slug: null,
-  userData: null,
-  services: [],
-  selectedService: null,
-  selectedDate: null,
-  selectedTime: null,
-  calendarStartDate: null
-};
 
-// Initialize public booking if URL has ?book=slug
-async function initPublicBooking() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const slug = urlParams.get('book');
-  
-  if (!slug) return;
-  
-  publicBookingState.slug = slug;
-  
-  // Detect browser language for public page
-  const browserLang = navigator.language.split('-')[0];
-  const supportedLangs = ['en', 'bs'];
-  const publicLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
-  
-  // Load public language
-  try {
-    const response = await fetch(`/lang/${publicLang}.json`);
-    const publicTranslations = await response.json();
-    window.translations = { ...window.translations, ...publicTranslations };
-  } catch (e) {
-    console.log('Using default language');
-  }
-  
-  // Show public booking screen
-  document.getElementById('publicBookingScreen').classList.add('active');
-  
-  // Load user data and services via a temporary function (we'll create a Netlify function for this too!)
-  await loadPublicUserData(slug);
-}
-
-// Load user data and services for public booking
-async function loadPublicUserData(slug) {
-  // TODO: Create a Netlify function for this, but for now we'll use client-side Firestore with security rules
-  // Wait—user said all Firestore operations should go through Netlify Functions! So let's create a get-public-user function!
-  // For now, let's create a placeholder function and then add it to Netlify!
-  
-  // Let's create get-public-user.js quickly!
-  try {
-    const response = await fetch(`/.netlify/functions/get-public-user?slug=${encodeURIComponent(slug)}`);
-    if (!response.ok) throw new Error('User not found');
-    const data = await response.json();
-    publicBookingState.userData = data.userData;
-    publicBookingState.services = data.services;
-    
-    // Update header
-    document.getElementById('bookingBusinessName').textContent = data.userData.businessName || data.userData.displayName || 'Book an Appointment';
-    document.getElementById('bookingBusinessTagline').textContent = window.translations['public_booking_subtitle'] || 'Select a service, date, and time';
-    
-    // Render services
-    renderPublicServices();
-    
-    // Initialize calendar start date
-    publicBookingState.calendarStartDate = new Date();
-    renderPublicBookingCalendar();
-    
-  } catch (error) {
-    console.error('Error loading public user data:', error);
-    alert(window.translations['public_error'] || 'An error occurred. Please try again.');
-  }
-}
-
-// Render services for public booking
-function renderPublicServices() {
-  const grid = document.getElementById('bookingServicesGrid');
-  if (!publicBookingState.services || publicBookingState.services.length === 0) {
-    grid.innerHTML = `<div class="empty-state">No services available</div>`;
-    return;
-  }
-  
-  grid.innerHTML = publicBookingState.services.map(service => `
-    <button class="service-btn ${publicBookingState.selectedService?.id === service.id ? 'selected' : ''}" onclick="selectPublicService('${service.id}')">
-      <div class="service-name">${service.name}</div>
-      <div class="service-duration">${service.duration || 30} min</div>
-      ${service.price ? `<div class="service-price">€${service.price}</div>` : ''}
-    </button>
-  `).join('');
-}
-
-// Select a service
-function selectPublicService(serviceId) {
-  publicBookingState.selectedService = publicBookingState.services.find(s => s.id === serviceId);
-  renderPublicServices();
-  
-  // Show step 2
-  document.getElementById('bookingStep2').style.display = 'block';
-  document.getElementById('bookingStep3').style.display = 'none';
-  document.getElementById('bookingStep4').style.display = 'none';
-}
-
-// Render calendar strip for public booking
-function renderPublicBookingCalendar() {
-  const strip = document.getElementById('bookingCalendarStrip');
-  if (!strip) return;
-  
-  let html = `<button class="nav-dot" onclick="changePublicBookingCalendar(-7)">←</button>`;
-  
-  const startDate = new Date(publicBookingState.calendarStartDate);
-  for (let i = 0; i < 14; i++) {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + i);
-    const dateStr = date.toISOString().split('T')[0];
-    const isSelected = publicBookingState.selectedDate === dateStr;
-    const isToday = new Date().toISOString().split('T')[0] === dateStr;
-    const dayName = date.toLocaleDateString(navigator.language, { weekday: 'short' });
-    const dayNum = date.getDate();
-    const monthName = date.toLocaleDateString(navigator.language, { month: 'short' });
-    
-    html += `
-      <button class="calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}" onclick="selectPublicBookingDate('${dateStr}')">
-        <div class="day-name">${dayName}</div>
-        <div class="day-num">${dayNum}</div>
-        <div class="month-name">${monthName}</div>
-      </button>
-    `;
-  }
-  
-  html += `<button class="nav-dot" onclick="changePublicBookingCalendar(7)">→</button>`;
-  strip.innerHTML = html;
-}
-
-// Change calendar week
-function changePublicBookingCalendar(days) {
-  publicBookingState.calendarStartDate.setDate(publicBookingState.calendarStartDate.getDate() + days);
-  renderPublicBookingCalendar();
-}
-
-// Select a date
-async function selectPublicBookingDate(dateStr) {
-  publicBookingState.selectedDate = dateStr;
-  renderPublicBookingCalendar();
-  
-  // Load available slots
-  await loadPublicAvailableSlots();
-}
-
-// Load available time slots
-async function loadPublicAvailableSlots() {
-  if (!publicBookingState.selectedService || !publicBookingState.selectedDate) return;
-  
-  const grid = document.getElementById('bookingTimeSlots');
-  grid.innerHTML = `<div class="empty-state">${window.translations['public_loading'] || 'Loading...'}</div>`;
-  
-  try {
-    const response = await fetch(`/.netlify/functions/get-availability?slug=${encodeURIComponent(publicBookingState.slug)}&date=${encodeURIComponent(publicBookingState.selectedDate)}&serviceId=${encodeURIComponent(publicBookingState.selectedService.id)}`);
-    
-    if (!response.ok) throw new Error('Failed to load slots');
-    
-    const data = await response.json();
-    const slots = data.slots || [];
-    
-    if (slots.length === 0) {
-      grid.innerHTML = `<div class="empty-state">${window.translations['public_no_slots_available'] || 'No available slots for this date'}</div>`;
-    } else {
-      grid.innerHTML = slots.map(slot => `
-        <button class="time-slot-btn ${publicBookingState.selectedTime === slot ? 'selected' : ''}" onclick="selectPublicTimeSlot('${slot}')">
-          ${slot}
-        </button>
-      `).join('');
-    }
-    
-    // Show step 3
-    document.getElementById('bookingStep3').style.display = 'block';
-    document.getElementById('bookingStep4').style.display = 'none';
-    
-  } catch (error) {
-    console.error('Error loading slots:', error);
-    grid.innerHTML = `<div class="empty-state">${window.translations['public_error'] || 'An error occurred. Please try again.'}</div>`;
-  }
-}
-
-// Select time slot
-function selectPublicTimeSlot(time) {
-  publicBookingState.selectedTime = time;
-  
-  // Update buttons
-  document.querySelectorAll('.time-slot-btn').forEach(btn => {
-    btn.classList.toggle('selected', btn.textContent.trim() === time);
-  });
-  
-  // Show step 4
-  document.getElementById('bookingStep4').style.display = 'block';
-}
-
-// Submit booking
-async function submitBooking() {
-  const btn = document.getElementById('bookingSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = window.translations['public_loading'] || 'Loading...';
-  
-  try {
-    const clientName = document.getElementById('bookingClientName').value.trim();
-    const clientPhone = document.getElementById('bookingClientPhone').value.trim();
-    const clientEmail = document.getElementById('bookingClientEmail').value.trim();
-    const note = document.getElementById('bookingClientNote').value.trim();
-    const website = document.getElementById('bookingWebsite').value.trim();
-    
-    if (!clientName || !clientPhone) {
-      alert('Please fill in all required fields');
-      btn.disabled = false;
-      btn.textContent = window.translations['public_confirm_booking'] || 'Confirm Booking';
-      return;
-    }
-    
-    const response = await fetch('/.netlify/functions/create-booking', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        slug: publicBookingState.slug,
-        date: publicBookingState.selectedDate,
-        time: publicBookingState.selectedTime,
-        serviceId: publicBookingState.selectedService.id,
-        clientName,
-        clientPhone,
-        clientEmail,
-        note,
-        website
-      })
-    });
-    
-    if (!response.ok) {
-      if (response.status === 409) {
-        alert(window.translations['public_slot_not_available'] || 'This slot is no longer available. Please select another one.');
-        await loadPublicAvailableSlots();
-        document.getElementById('bookingStep4').style.display = 'none';
-      } else {
-        throw new Error('Failed to create booking');
-      }
-      btn.disabled = false;
-      btn.textContent = window.translations['public_confirm_booking'] || 'Confirm Booking';
-      return;
-    }
-    
-    const data = await response.json();
-    
-    // Show confirmation screen
-    const detailsDiv = document.getElementById('bookingConfirmedDetails');
-    detailsDiv.innerHTML = `
-      <div style="margin-bottom: 12px;"><strong>${window.translations['service'] || 'Service'}:</strong> ${data.serviceName || publicBookingState.selectedService.name}</div>
-      <div style="margin-bottom: 12px;"><strong>${window.translations['date'] || 'Date'}:</strong> ${new Date(publicBookingState.selectedDate).toLocaleDateString(navigator.language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-      <div style="margin-bottom: 12px;"><strong>${window.translations['time'] || 'Time'}:</strong> ${publicBookingState.selectedTime}</div>
-      <div><strong>${window.translations['public_client_name'] || 'Name'}:</strong> ${clientName}</div>
-    `;
-    
-    // Hide steps 1-4, show step 5
-    document.getElementById('bookingStep1').style.display = 'none';
-    document.getElementById('bookingStep2').style.display = 'none';
-    document.getElementById('bookingStep3').style.display = 'none';
-    document.getElementById('bookingStep4').style.display = 'none';
-    document.getElementById('bookingStep5').style.display = 'block';
-    
-  } catch (error) {
-    console.error('Error submitting booking:', error);
-    alert(window.translations['public_error'] || 'An error occurred. Please try again.');
-    btn.disabled = false;
-    btn.textContent = window.translations['public_confirm_booking'] || 'Confirm Booking';
-  }
-}
-
-// Call initPublicBooking when page loads
-window.addEventListener('DOMContentLoaded', () => {
-  initPublicBooking();
-});
-
-// Expose functions globally
-window.selectPublicService = selectPublicService;
-window.changePublicBookingCalendar = changePublicBookingCalendar;
-window.selectPublicBookingDate = selectPublicBookingDate;
-window.selectPublicTimeSlot = selectPublicTimeSlot;
-window.submitBooking = submitBooking;
-</script>
 
 <div class="lang-dropdown" id="langDropdown" onclick="event.stopPropagation()">
   <div class="lang-opt" onclick="setLanguage('en')">English</div>

@@ -52,6 +52,11 @@ service cloud.firestore {
         return request.time < trialEnd;
       }
       
+      // Ako nema subscriptionStatus at all, default to allowing trial access (to prevent blocking users)
+      if (userData.subscriptionStatus == null) {
+        return true;
+      }
+      
       // U suprotnom, nema pristupa pisanju
       return false;
     }

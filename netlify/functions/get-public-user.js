@@ -23,18 +23,25 @@ const db = admin.firestore();exports.handler = async (event) => {
       };
     }
 
-    const usersSnapshot = await db.collection('users').where('bookingSlug', '==', slug).limit(1).get();
+    const bookingSlugDoc = await db.collection('bookingSlugs').doc(slug).get();
     
-    if (usersSnapshot.empty) {
+    if (!bookingSlugDoc.exists) {
       return {
         statusCode: 404,
         body: JSON.stringify({ error: 'User not found' })
       };
     }
     
-    const userDoc = usersSnapshot.docs[0];
+    const userId = bookingSlugDoc.data().userId;
+    const userDoc = await db.collection('users').doc(userId).get();
+    
+    if (!userDoc.exists) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: 'User not found' })
+      };
+    }
     const userData = userDoc.data();
-    const userId = userDoc.id;
     const shopId = userData.shopId;
 
     // Get services - check both userId and shopId

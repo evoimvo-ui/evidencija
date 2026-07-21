@@ -43,16 +43,23 @@ exports.handler = async (event) => {
     }
 
     // Find user by bookingSlug
-    const usersSnapshot = await db.collection('users').where('bookingSlug', '==', slug).limit(1).get();
-    if (usersSnapshot.empty) {
+    const bookingSlugDoc = await db.collection('bookingSlugs').doc(slug).get();
+    if (!bookingSlugDoc.exists) {
       return {
         statusCode: 404,
         body: JSON.stringify({ error: 'User not found' })
       };
     }
     
-    const userDoc = usersSnapshot.docs[0];
-    const userId = userDoc.id;
+    const userId = bookingSlugDoc.data().userId;
+    const userDoc = await db.collection('users').doc(userId).get();
+    if (!userDoc.exists) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: 'User not found' })
+      };
+    }
+    
     const userData = userDoc.data();
     const shopId = userData.shopId;
 

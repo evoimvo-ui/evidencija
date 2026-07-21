@@ -4215,9 +4215,9 @@ async function checkSlugAvailability() {
     statusEl.textContent = '';
     return;
   }
-  const q = query(collection(fdb, 'users'), where('bookingSlug', '==', slug));
-  const snapshot = await getDocs(q);
-  const taken = !snapshot.empty && snapshot.docs[0].id !== auth.currentUser?.uid;
+  const docRef = doc(fdb, 'bookingSlugs', slug);
+  const docSnap = await getDoc(docRef);
+  const taken = docSnap.exists() && docSnap.data().userId !== auth.currentUser?.uid;
   if (taken) {
     statusEl.innerHTML = `<span style="color:var(--red);">❌ <span data-i18n="slug_taken">Taken, try another</span></span>`;
   } else {
@@ -4286,11 +4286,31 @@ async function saveWorkingHours() {
     }
   }
   const userRef = doc(fdb, 'users', auth.currentUser.uid);
-  const slug = document.getElementById('bookingSlug').value.trim() || null;
+  const newSlug = document.getElementById('bookingSlug').value.trim() || null;
+  
+  // First, get current user data to find old slug
+  const userSnap = await getDoc(userRef);
+  const oldSlug = userSnap.exists() ? userSnap.data().bookingSlug : null;
+  
+  // If old slug exists and is different from new, delete it
+  if (oldSlug && oldSlug !== newSlug) {
+    await deleteDoc(doc(fdb, 'bookingSlugs', oldSlug));
+  }
+  
+  // If new slug exists, create it in bookingSlugs
+  if (newSlug) {
+    await setDoc(doc(fdb, 'bookingSlugs', newSlug), {
+      userId: auth.currentUser.uid,
+      updatedAt: new Date().toISOString()
+    });
+  }
+  
+  // Update user document
   await updateDoc(userRef, {
     workingHours: whWorkingHours,
-    bookingSlug: slug
+    bookingSlug: newSlug
   });
+  
   showToast(translations['saved'] || 'Saved!');
 }
 

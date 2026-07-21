@@ -113,5 +113,22 @@ service cloud.firestore {
       allow create: if canAccessData(request.resource.data) && request.resource.data.userId == request.auth.uid && hasWriteAccess();
       allow update, delete: if canAccessData(resource.data) && resource.data.userId == request.auth.uid && hasWriteAccess();
     }
+
+    // 11. Booking Slugs (za provjeru dostupnosti)
+    match /bookingSlugs/{slug} {
+      // Svi prijavljeni korisnici mogu provjeravati dostupnost sluga
+      allow read: if isSignedIn();
+      // Samo vlasnik sluga (korisnik) može ga kreirati, ažurirati ili brisati
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && hasWriteAccess();
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid && hasWriteAccess();
+    }
+
+    // 12. Booking Request (javne rezervacije)
+    match /bookingRequests/{requestId} {
+      // Javni pristup za kreiranje rezervacija (bez prijave)
+      allow create: if true;
+      // Vlasnik može čitati i brisati svoje rezervacije
+      allow read, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
   }
 }

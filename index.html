@@ -4366,26 +4366,37 @@ function renderTimeOffCalendar() {
   }
 }
 
-function toggleSingleDayOff(dateStr) {
+async function toggleSingleDayOff(dateStr) {
   const existingIdx = whTimeOff.findIndex(to => to.date === dateStr && !to.endDate);
   if (existingIdx >= 0) {
     if (confirm(translations['confirm_delete_time_off'] || 'Remove this time off?')) {
-      const toDelete = whTimeOff[existingIdx];
-      deleteDoc(doc(fdb, 'timeOff', toDelete.id));
-      whTimeOff.splice(existingIdx, 1);
-      renderTimeOffCalendar();
+      try {
+        const toDelete = whTimeOff[existingIdx];
+        await deleteDoc(doc(fdb, 'timeOff', toDelete.id));
+        whTimeOff.splice(existingIdx, 1);
+        renderTimeOffCalendar();
+        showToast(translations['time_off_removed'] || 'Time off removed!');
+      } catch (error) {
+        console.error('Error removing time off:', error);
+        showToast(translations['error_removing_time_off'] || 'Error removing time off!', true);
+      }
     }
   } else {
-    addDoc(collection(fdb, 'timeOff'), {
-      userId: auth.currentUser.uid,
-      shopId: currentUser.shopId || null,
-      date: dateStr,
-      endDate: null,
-      reason: ''
-    }).then(docRef => {
+    try {
+      const docRef = await addDoc(collection(fdb, 'timeOff'), {
+        userId: auth.currentUser.uid,
+        shopId: currentUser.shopId || null,
+        date: dateStr,
+        endDate: null,
+        reason: ''
+      });
       whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, shopId: currentUser.shopId || null, date: dateStr, endDate: null, reason: '' });
       renderTimeOffCalendar();
-    });
+      showToast(translations['time_off_saved'] || 'Time off saved!');
+    } catch (error) {
+      console.error('Error adding time off:', error);
+      showToast(translations['error_saving_time_off'] || 'Error saving time off!', true);
+    }
   }
 }
 

@@ -2271,7 +2271,61 @@
   <button class="nav-btn" onclick="showScreen('klijenti')"><span>👥</span><div data-i18n="clients">Klijenti</div></button>
   <button class="nav-btn" onclick="showScreen('izvjestaji')"><span>📈</span><div data-i18n="reports">Reports</div></button>
   <button class="nav-btn" id="navOwner" style="display:none;" onclick="showScreen('owner')"><span>🏢</span><div data-i18n="shop">Shop</div></button>
+  <button class="nav-btn full-width" onclick="showScreen('radno-vrijeme')"><span>⏰</span><div data-i18n="working_hours">Working Hours</div></button>
 </nav>
+
+<div class="screen" id="screen-radno-vrijeme">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('unos')">←</button>
+    <div class="screen-title" data-i18n="working_hours">Working Hours</div>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <div class="section-label" data-i18n="booking_link_name">Booking Link Name</div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <input type="text" id="bookingSlug" class="input-plain" style="flex:1;" oninput="slugifyInput(this)" placeholder="your-business-name">
+      <button class="lang-btn" onclick="checkSlugAvailability()" data-i18n="check_availability">Check Availability</button>
+    </div>
+    <div id="slugStatus" style="margin-top:8px; font-size:14px;"></div>
+    <div style="margin-top:8px; font-size:12px; color:var(--text2);" data-i18n="slug_note">This is not your registration name — this is a public identifier for your booking link.</div>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <div class="section-label" data-i18n="working_hours">Working Hours</div>
+    <div id="workingHoursContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <button class="submit-btn pay" style="margin-top:12px;" onclick="saveWorkingHours()" data-i18n="save_working_hours">Save Working Hours</button>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <div class="section-label" data-i18n="time_off">Time Off</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <div style="display:flex; gap:8px;">
+        <button class="lang-btn" onclick="changeCalendarMonth(-1)">←</button>
+        <div id="calendarMonthLabel" style="font-size:14px; font-weight:600;"></div>
+        <button class="lang-btn" onclick="changeCalendarMonth(1)">→</button>
+      </div>
+    </div>
+    <div id="timeOffCalendar" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:4px;"></div>
+    <button class="submit-btn" style="margin-top:12px; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.1);" onclick="openVacationModal()" data-i18n="add_vacation_period">➕ Add vacation period</button>
+  </div>
+</div>
+
+<!-- Vacation Modal -->
+<div class="modal-overlay" id="vacationModal">
+  <div class="modal">
+    <h3 data-i18n="vacation_period">Vacation Period</h3>
+    <div class="section-label" style="margin-top:10px;">From</div>
+    <input type="date" id="vacationFrom" class="input-plain" style="margin-bottom:8px;">
+    <div class="section-label">To</div>
+    <input type="date" id="vacationTo" class="input-plain" style="margin-bottom:8px;">
+    <div class="section-label" data-i18n="reason">Reason</div>
+    <input type="text" id="vacationReason" class="input-plain" placeholder="Reason (optional)">
+    <div class="modal-btns" style="margin-top:20px;">
+      <button class="lang-btn" onclick="closeVacationModal()" data-i18n="cancel">Cancel</button>
+      <button class="submit-btn pay" onclick="saveVacationPeriod()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
 
 <div class="screen" id="screen-izvjestaji">
   <div class="screen-header">
@@ -2663,8 +2717,23 @@ import {
   syncWithFirestore, 
   pullFromFirestore 
 } from './db.js';
+import { auth } from './firebase.js';
 import { db as fdb } from './firebase.js';
-import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Expose auth and Firestore functions on window for non-module script
+window.auth = auth;
+window.fdb = fdb;
+window.doc = doc;
+window.getDoc = getDoc;
+window.collection = collection;
+window.query = query;
+window.where = where;
+window.getDocs = getDocs;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.onSnapshot = onSnapshot;
+window.deleteDoc = deleteDoc;
 
 // ── BLOK 1: Expose helpers na window za non-module skriptu ──
 window._isTrialExpired = isTrialExpired;
@@ -3876,8 +3945,284 @@ function showScreen(name) {
   if (name === 'klijenti') { document.querySelector('.nav-btn:nth-child(4)')?.classList.add('active'); renderClients(); }
   if (name === 'izvjestaji') { document.querySelector('.nav-btn:nth-child(5)')?.classList.add('active'); renderIzvjestaji(); }
   if (name === 'owner') document.getElementById('navOwner')?.classList.add('active');
+  if (name === 'radno-vrijeme') { 
+    document.querySelector('.nav-btn.full-width')?.classList.add('active');
+    renderWorkingHours(); 
+  }
   window.scrollTo(0, 0);
 }
+
+// Working Hours Variables
+let whCurrentMonth = new Date();
+let whTimeOff = [];
+let whWorkingHours = {
+  mon: { active: true, from: '09:00', to: '17:00' },
+  tue: { active: true, from: '09:00', to: '17:00' },
+  wed: { active: true, from: '09:00', to: '17:00' },
+  thu: { active: true, from: '09:00', to: '17:00' },
+  fri: { active: true, from: '09:00', to: '17:00' },
+  sat: { active: false, from: '09:00', to: '17:00' },
+  sun: { active: false, from: '09:00', to: '17:00' }
+};
+const whDayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const whDayNames = {
+  mon: 'monday',
+  tue: 'tuesday',
+  wed: 'wednesday',
+  thu: 'thursday',
+  fri: 'friday',
+  sat: 'saturday',
+  sun: 'sunday'
+};
+
+function slugifyInput(input) {
+  let value = input.value.toLowerCase();
+  value = value.replace(/[^a-z0-9\s-]/g, ''); // remove special chars
+  value = value.replace(/\s+/g, '-'); // replace spaces with hyphens
+  value = value.replace(/-+/g, '-'); // collapse hyphens
+  value = value.replace(/^-|-$/g, ''); // trim hyphens
+  input.value = value;
+  document.getElementById('slugStatus').textContent = '';
+}
+
+async function checkSlugAvailability() {
+  const slug = document.getElementById('bookingSlug').value.trim();
+  const statusEl = document.getElementById('slugStatus');
+  if (!slug) {
+    statusEl.textContent = '';
+    return;
+  }
+  const q = query(collection(fdb, 'users'), where('bookingSlug', '==', slug));
+  const snapshot = await getDocs(q);
+  const taken = !snapshot.empty && snapshot.docs[0].id !== auth.currentUser?.uid;
+  if (taken) {
+    statusEl.innerHTML = `<span style="color:var(--red);">❌ <span data-i18n="slug_taken">Taken, try another</span></span>`;
+  } else {
+    statusEl.innerHTML = `<span style="color:#4ade80;">✅ <span data-i18n="slug_available">Available</span></span>`;
+  }
+}
+
+function renderWorkingHours() {
+  const container = document.getElementById('workingHoursContainer');
+  container.innerHTML = '';
+  whDayKeys.forEach(dayKey => {
+    const day = whWorkingHours[dayKey];
+    const el = document.createElement('div');
+    el.style.background = 'var(--bg2)';
+    el.style.border = '1px solid var(--border)';
+    el.style.borderRadius = '12px';
+    el.style.padding = '12px';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.gap = '10px';
+    el.innerHTML = `
+      <div style="flex:1;">
+        <div style="font-size:14px; font-weight:600;" data-i18n="${whDayNames[dayKey]}">${whDayNames[dayKey]}</div>
+      </div>
+      <label style="display:flex; align-items:center; gap:5px; font-size:12px;">
+        <span data-i18n="active">Active</span>
+        <input type="checkbox" ${day.active ? 'checked' : ''} onchange="toggleDayActive('${dayKey}', this.checked)">
+      </label>
+      <div style="display:flex; gap:5px;">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="font-size:10px; text-transform:uppercase; color:var(--text3);" data-i18n="from">From</div>
+          <input type="time" value="${day.from}" onchange="setDayTime('${dayKey}', 'from', this.value)" ${day.active ? '' : 'disabled'} style="font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg3); color:var(--text);">
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="font-size:10px; text-transform:uppercase; color:var(--text3);" data-i18n="to">To</div>
+          <input type="time" value="${day.to}" onchange="setDayTime('${dayKey}', 'to', this.value)" ${day.active ? '' : 'disabled'} style="font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg3); color:var(--text);">
+        </div>
+      </div>
+    `;
+    container.appendChild(el);
+  });
+  renderTimeOffCalendar();
+}
+
+function toggleDayActive(dayKey, active) {
+  whWorkingHours[dayKey].active = active;
+  renderWorkingHours();
+}
+
+function setDayTime(dayKey, field, value) {
+  whWorkingHours[dayKey][field] = value;
+}
+
+async function saveWorkingHours() {
+  if (!auth.currentUser) return;
+  // Validate active days have from < to
+  for (const dayKey of whDayKeys) {
+    const day = whWorkingHours[dayKey];
+    if (day.active) {
+      const [fromH, fromM] = day.from.split(':').map(Number);
+      const [toH, toM] = day.to.split(':').map(Number);
+      if (fromH > toH || (fromH === toH && fromM >= toM)) {
+        alert(translations['error_time_validation'] || 'Please make sure all active "from" times are before "to" times!');
+        return;
+      }
+    }
+  }
+  const userRef = doc(fdb, 'users', auth.currentUser.uid);
+  const slug = document.getElementById('bookingSlug').value.trim() || null;
+  await updateDoc(userRef, {
+    workingHours: whWorkingHours,
+    bookingSlug: slug
+  });
+  showToast(translations['saved'] || 'Saved!');
+}
+
+function changeCalendarMonth(delta) {
+  whCurrentMonth.setMonth(whCurrentMonth.getMonth() + delta);
+  renderTimeOffCalendar();
+}
+
+function renderTimeOffCalendar() {
+  const container = document.getElementById('timeOffCalendar');
+  const monthLabel = document.getElementById('calendarMonthLabel');
+  const year = whCurrentMonth.getFullYear();
+  const month = whCurrentMonth.getMonth();
+
+  // Set label
+  monthLabel.textContent = new Date(year, month).toLocaleString(undefined, { month: 'long', year: 'numeric' });
+
+  // Clear container
+  container.innerHTML = '';
+
+  // Day headers (Sun-Sat, adjust if needed, but keep it standard)
+  const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  dayHeaders.forEach(d => {
+    const el = document.createElement('div');
+    el.style.textAlign = 'center';
+    el.style.fontSize = '10px';
+    el.style.textTransform = 'uppercase';
+    el.style.color = 'var(--text3)';
+    el.textContent = d;
+    container.appendChild(el);
+  });
+
+  // First day of month and number of days
+  const firstDay = new Date(year, month, 1).getDay(); // 0 = Sunday
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    container.appendChild(el);
+  }
+
+  // Days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayOfWeek = new Date(year, month, day).getDay(); // 0 = Sun, 1 = Mon ... 6 = Sat
+    const isDefaultOff = (dayOfWeek === 0 && !whWorkingHours.sun.active) ||
+                         (dayOfWeek === 1 && !whWorkingHours.mon.active) ||
+                         (dayOfWeek === 2 && !whWorkingHours.tue.active) ||
+                         (dayOfWeek === 3 && !whWorkingHours.wed.active) ||
+                         (dayOfWeek === 4 && !whWorkingHours.thu.active) ||
+                         (dayOfWeek === 5 && !whWorkingHours.fri.active) ||
+                         (dayOfWeek === 6 && !whWorkingHours.sat.active);
+    const hasTimeOff = whTimeOff.some(to => {
+      if (to.endDate) {
+        return dateStr >= to.date && dateStr <= to.endDate;
+      } else {
+        return dateStr === to.date;
+      }
+    });
+    const el = document.createElement('button');
+    el.style.border = '1px solid var(--border)';
+    el.style.borderRadius = '8px';
+    el.style.padding = '8px 4px';
+    el.style.fontSize = '14px';
+    el.style.fontWeight = '500';
+    el.style.cursor = 'pointer';
+    el.style.background = isDefaultOff || hasTimeOff ? 'var(--bg3)' : 'var(--bg2)';
+    el.style.color = isDefaultOff || hasTimeOff ? 'var(--text3)' : 'var(--text)';
+    el.textContent = day;
+    el.onclick = () => toggleSingleDayOff(dateStr);
+    container.appendChild(el);
+  }
+}
+
+function toggleSingleDayOff(dateStr) {
+  const existingIdx = whTimeOff.findIndex(to => to.date === dateStr && !to.endDate);
+  if (existingIdx >= 0) {
+    if (confirm(translations['confirm_delete_time_off'] || 'Remove this time off?')) {
+      const toDelete = whTimeOff[existingIdx];
+      deleteDoc(doc(fdb, 'timeOff', toDelete.id));
+      whTimeOff.splice(existingIdx, 1);
+      renderTimeOffCalendar();
+    }
+  } else {
+    addDoc(collection(fdb, 'timeOff'), {
+      userId: auth.currentUser.uid,
+      date: dateStr,
+      endDate: null,
+      reason: ''
+    }).then(docRef => {
+      whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, date: dateStr, endDate: null, reason: '' });
+      renderTimeOffCalendar();
+    });
+  }
+}
+
+function openVacationModal() {
+  document.getElementById('vacationFrom').value = whCurrentMonth.toISOString().split('T')[0];
+  document.getElementById('vacationTo').value = '';
+  document.getElementById('vacationReason').value = '';
+  document.getElementById('vacationModal').classList.add('open');
+}
+
+function closeVacationModal() {
+  document.getElementById('vacationModal').classList.remove('open');
+}
+
+async function saveVacationPeriod() {
+  const from = document.getElementById('vacationFrom').value;
+  const to = document.getElementById('vacationTo').value || from;
+  const reason = document.getElementById('vacationReason').value.trim();
+  if (!from) {
+    alert(translations['error_fill_all'] || 'Please fill all fields!');
+    return;
+  }
+  if (to < from) {
+    alert(translations['end_date_before_start'] || 'End date cannot be before start date');
+    return;
+  }
+  const docRef = await addDoc(collection(fdb, 'timeOff'), {
+    userId: auth.currentUser.uid,
+    date: from,
+    endDate: to === from ? null : to,
+    reason: reason
+  });
+  whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, date: from, endDate: to === from ? null : to, reason: reason });
+  closeVacationModal();
+  renderTimeOffCalendar();
+  showToast(translations['time_off_saved'] || 'Time off saved!');
+}
+
+// Initialize working hours and time off from user doc
+let whUnsubscribe = null;
+function initWorkingHoursListener() {
+  if (!auth.currentUser) return;
+  if (whUnsubscribe) whUnsubscribe();
+  const userRef = doc(fdb, 'users', auth.currentUser.uid);
+  whUnsubscribe = onSnapshot(userRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data.workingHours) whWorkingHours = { ...whWorkingHours, ...data.workingHours };
+      if (data.bookingSlug) document.getElementById('bookingSlug').value = data.bookingSlug;
+      renderWorkingHours();
+    }
+  });
+  // Time off listener
+  const toQuery = query(collection(fdb, 'timeOff'), where('userId', '==', auth.currentUser.uid));
+  onSnapshot(toQuery, (snap) => {
+    whTimeOff = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTimeOffCalendar();
+  });
+}
+
+// Call initWorkingHoursListener when user logs in
 
 function renderCalendar() {
   const s = document.getElementById('calendarStrip');
@@ -4517,6 +4862,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await refreshAppData();
     setTimeout(() => checkUpcomingAppointments(), 1500);
+    initWorkingHoursListener();
   }, 
   () => {
     console.log("Auth callback: User logged out.");

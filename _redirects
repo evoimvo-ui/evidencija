@@ -1,4 +1,5 @@
 
 https://radna-evidencija.ei-apps.com/*    https://workrecords.ei-apps.com/:splat    301!
 http://radna-evidencija.ei-apps.com/*     https://workrecords.ei-apps.com/:splat    301!
+/*    /index.html   200
 

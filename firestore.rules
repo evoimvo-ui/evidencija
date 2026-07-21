@@ -31,34 +31,14 @@ service cloud.firestore {
     function hasWriteAccess() {
       let userData = getUserData();
       
-      // Lifetime access
-      if (userData.subscriptionStatus == 'lifetime') {
-        return true;
-      }
-      
-      // Aktivna pretplata
-      if (userData.subscriptionStatus == 'active') {
-        return true;
-      }
-      
-      // Otkazana pretplata, ali još uvijek u plaćenom periodu
-      if (userData.subscriptionStatus == 'cancelled' && userData.nextBillingDate != null) {
-        return timestamp.value(request.time) < timestamp.value(userData.nextBillingDate);
-      }
-      
-      // Aktivni trial
-      if (userData.subscriptionStatus == 'trial' && userData.trialStartedAt != null) {
-        let trialEnd = userData.trialStartedAt + duration.value(30, 'd');
-        return request.time < trialEnd;
-      }
-      
-      // Ako nema subscriptionStatus at all, default to allowing trial access (to prevent blocking users)
-      if (userData.subscriptionStatus == null) {
-        return true;
-      }
-      
-      // U suprotnom, nema pristupa pisanju
-      return false;
+      // Lifetime access OR active subscription OR cancelled but still in paid period OR trial OR no subscription status at all
+      return (
+        userData.subscriptionStatus == 'lifetime' ||
+        userData.subscriptionStatus == 'active' ||
+        (userData.subscriptionStatus == 'cancelled' && userData.nextBillingDate != null && timestamp.value(request.time) < timestamp.value(userData.nextBillingDate)) ||
+        (userData.subscriptionStatus == 'trial' && userData.trialStartedAt != null && request.time < userData.trialStartedAt + duration.value(30, 'd')) ||
+        userData.subscriptionStatus == null
+      );
     }
 
     // --- PRAVILA ZA KOLEKCIJE ---

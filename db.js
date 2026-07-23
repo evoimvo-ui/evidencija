@@ -219,7 +219,7 @@ export async function getAllData(storeName, user = null) {
         let needsMigration = false;
         const decrypted = { ...item };
         
-        const fieldsToDecrypt = ['debtor', 'telefon', 'klijent', 'name', 'surname', 'email'];
+        const fieldsToDecrypt = ['debtor', 'telefon', 'klijent', 'name', 'surname', 'email', 'usluga'];
         
         for (const field of fieldsToDecrypt) {
           if (decrypted[field]) {

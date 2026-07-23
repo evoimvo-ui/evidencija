@@ -5571,7 +5571,7 @@ function showBookingConfirmation() {
     <div style="margin-bottom: 12px;"><strong>Service:</strong> ${publicBookingState.selectedService.name}</div>
     <div style="margin-bottom: 12px;"><strong>Date:</strong> ${publicBookingState.selectedDate}</div>
     <div style="margin-bottom: 12px;"><strong>Time:</strong> ${publicBookingState.selectedTime}</div>
-    <div><strong>Business:</strong> ${publicBookingState.userData.shopName || publicBookingState.userData.name}</div>
+    <div><strong>Business:</strong> ${publicBookingState.userData.businessName}</div>
   `;
   
   document.getElementById('bookingStep5').style.display = 'block';

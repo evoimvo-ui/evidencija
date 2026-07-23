@@ -36,16 +36,20 @@ async function decrypt(encoded, keyText = ENCRYPTION_KEY, saltText = SALT) {
   if (!encoded) return encoded;
   try {
     const combined = Buffer.from(encoded, 'base64');
-    if (combined.length < 13) throw new Error("Invalid cipher text or IV missing");
+    if (combined.length < 28) throw new Error("Invalid cipher text or IV missing"); // IV (12) + at least 16 bytes data/tag
     
     const iv = combined.slice(0, 12);
-    const data = combined.slice(12);
+    const ciphertextAndTag = combined.slice(12);
+    const tagLength = 16; // AES-GCM standard tag length
+    const ciphertext = ciphertextAndTag.slice(0, ciphertextAndTag.length - tagLength);
+    const authTag = ciphertextAndTag.slice(ciphertextAndTag.length - tagLength);
     
     const key = await getEncryptionKey(keyText, saltText);
     if (!key) throw new Error("Encryption key missing");
     
     const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-    let decrypted = decipher.update(data);
+    decipher.setAuthTag(authTag);
+    let decrypted = decipher.update(ciphertext);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString('utf8');
   } catch (e) {

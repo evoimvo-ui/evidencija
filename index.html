@@ -5387,6 +5387,16 @@ function renderPublicBookingServices() {
   const grid = document.getElementById('bookingServicesGrid');
   grid.innerHTML = '';
   
+  if (publicBookingState.services.length === 0) {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.style.padding = '20px';
+    emptyDiv.style.textAlign = 'center';
+    emptyDiv.style.color = 'var(--text2)';
+    emptyDiv.textContent = 'No services available yet';
+    grid.appendChild(emptyDiv);
+    return;
+  }
+  
   publicBookingState.services.forEach(service => {
     const btn = document.createElement('button');
     btn.className = 'service-btn' + (publicBookingState.selectedService?.id === service.id ? ' selected' : '');
@@ -5586,6 +5596,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initPublicBooking();
 
   initAuth(async (user, userData) => {
+    // If on public booking screen, do NOTHING else!
+    if (document.getElementById('publicBookingScreen').classList.contains('active')) {
+      console.log("Auth callback: On public booking screen, skipping login logic!");
+      return;
+    }
+
     console.log("Auth callback: User logged in.");
     
     fetch('https://hook.eu1.make.com/rod5siwexav8vjbxhibfpleb6bwma3vh', { 

@@ -150,11 +150,11 @@ exports.handler = async (event) => {
     if (shopId) {
       appointmentsQuery = db.collection('appointments')
         .where('shopId', '==', shopId)
-        .where('date', '==', date);
+        .where('datum', '==', date);
     } else {
       appointmentsQuery = db.collection('appointments')
         .where('userId', '==', userId)
-        .where('date', '==', date);
+        .where('datum', '==', date);
     }
     const appointmentsSnapshot = await appointmentsQuery.get();
       

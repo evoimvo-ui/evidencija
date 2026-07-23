@@ -96,12 +96,12 @@ exports.handler = async (event) => {
       if (shopId) {
         query = db.collection('appointments')
           .where('shopId', '==', shopId)
-          .where('date', '==', date)
+          .where('datum', '==', date)
           .where('vrijeme', '==', time);
       } else {
         query = db.collection('appointments')
           .where('userId', '==', userId)
-          .where('date', '==', date)
+          .where('datum', '==', date)
           .where('vrijeme', '==', time);
       }
       const existingAppts = await transaction.get(query);

@@ -2507,10 +2507,14 @@
   <div style="margin-bottom: 20px;">
     <div class="section-label" data-i18n="booking_link_name">Booking Link Name</div>
     <div style="display:flex; gap:10px; align-items:center;">
-      <input type="text" id="bookingSlug" class="input-plain" style="flex:1;" oninput="slugifyInput(this)" placeholder="your-business-name">
+      <input type="text" id="bookingSlug" class="input-plain" style="flex:1;" oninput="slugifyInput(this); updateBookingLinkDisplay();" placeholder="your-business-name">
       <button class="lang-btn" onclick="checkSlugAvailability()" data-i18n="check_availability">Check Availability</button>
     </div>
     <div id="slugStatus" style="margin-top:8px; font-size:14px;"></div>
+    <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+      <input type="text" id="fullBookingLink" class="input-plain" style="flex:1; font-size:14px; background:rgba(255,255,255,0.05);" readonly placeholder="https://your-domain.com/book/...">
+      <button class="lang-btn" onclick="copyBookingLink()">📋 Kopiraj</button>
+    </div>
     <div style="margin-top:8px; font-size:12px; color:var(--text2);" data-i18n="slug_note">This is not your registration name — this is a public identifier for your booking link.</div>
   </div>
 
@@ -4296,6 +4300,32 @@ function slugifyInput(input) {
   document.getElementById('slugStatus').textContent = '';
 }
 
+function updateBookingLinkDisplay() {
+  const slugInput = document.getElementById('bookingSlug');
+  const linkDisplay = document.getElementById('fullBookingLink');
+  if (!slugInput || !linkDisplay) return;
+  const baseUrl = window.location.origin;
+  const slug = slugInput.value.trim();
+  linkDisplay.value = slug ? `${baseUrl}/book/${slug}` : '';
+}
+
+async function copyBookingLink() {
+  const linkDisplay = document.getElementById('fullBookingLink');
+  if (!linkDisplay || !linkDisplay.value) return;
+  try {
+    await navigator.clipboard.writeText(linkDisplay.value);
+    showToast('Link kopiran u clipboard!');
+  } catch (e) {
+    linkDisplay.select();
+    document.execCommand('copy');
+    showToast('Link kopiran u clipboard!');
+  }
+}
+
+// Add functions to window
+window.updateBookingLinkDisplay = updateBookingLinkDisplay;
+window.copyBookingLink = copyBookingLink;
+
 async function checkSlugAvailability() {
   const slug = document.getElementById('bookingSlug').value.trim();
   const statusEl = document.getElementById('slugStatus');
@@ -4630,6 +4660,7 @@ function initWorkingHoursListener() {
       const data = snap.data();
       if (data.workingHours) whWorkingHours = { ...whWorkingHours, ...data.workingHours };
       if (data.bookingSlug) document.getElementById('bookingSlug').value = data.bookingSlug;
+      updateBookingLinkDisplay();
       renderWorkingHours();
     }
   });

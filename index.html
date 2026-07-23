@@ -2943,7 +2943,7 @@ import {
 } from './db.js';
 import { auth } from './firebase.js';
 import { db as fdb } from './firebase.js';
-import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc, onSnapshot, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 // Expose auth and Firestore functions on window for non-module script
 window.auth = auth;
@@ -2958,6 +2958,7 @@ window.addDoc = addDoc;
 window.updateDoc = updateDoc;
 window.onSnapshot = onSnapshot;
 window.deleteDoc = deleteDoc;
+window.setDoc = setDoc;
 
 // ── BLOK 1: Expose helpers na window za non-module skriptu ──
 window._isTrialExpired = isTrialExpired;

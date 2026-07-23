@@ -2531,6 +2531,7 @@
     </div>
     <div id="timeOffCalendar" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:4px;"></div>
     <button class="submit-btn" style="margin-top:12px; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.1);" onclick="openVacationModal()" data-i18n="add_vacation_period">➕ Add vacation period</button>
+    <div id="vacationList" style="margin-top:16px;"></div>
   </div>
 </div>
 
@@ -4393,6 +4394,33 @@ function renderTimeOffCalendar() {
 }
 
 async function toggleSingleDayOff(dateStr) {
+  // Check if date is part of a vacation period (has endDate)
+  const vacationIdx = whTimeOff.findIndex(to => {
+    if (to.endDate) {
+      return dateStr >= to.date && dateStr <= to.endDate;
+    }
+    return false;
+  });
+  
+  if (vacationIdx >= 0) {
+    // It's a vacation period
+    const vacation = whTimeOff[vacationIdx];
+    if (confirm(`Ovaj dan je dio godišnjeg odmora od ${vacation.date} do ${vacation.endDate}. Želite li izbrisati cijeli period?`)) {
+      try {
+        await deleteDoc(doc(fdb, 'timeOff', vacation.id));
+        whTimeOff.splice(vacationIdx, 1);
+        renderTimeOffCalendar();
+        renderVacationList(); // We'll add this function
+        showToast(translations['time_off_removed'] || 'Time off removed!');
+      } catch (error) {
+        console.error('Error removing vacation:', error);
+        showToast(translations['error_removing_time_off'] || 'Error removing time off!', true);
+      }
+    }
+    return;
+  }
+  
+  // Check if it's a single day off
   const existingIdx = whTimeOff.findIndex(to => to.date === dateStr && !to.endDate);
   if (existingIdx >= 0) {
     if (confirm(translations['confirm_delete_time_off'] || 'Remove this time off?')) {
@@ -4401,6 +4429,7 @@ async function toggleSingleDayOff(dateStr) {
         await deleteDoc(doc(fdb, 'timeOff', toDelete.id));
         whTimeOff.splice(existingIdx, 1);
         renderTimeOffCalendar();
+        renderVacationList();
         showToast(translations['time_off_removed'] || 'Time off removed!');
       } catch (error) {
         console.error('Error removing time off:', error);
@@ -4418,6 +4447,7 @@ async function toggleSingleDayOff(dateStr) {
       });
       whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, shopId: currentUser.shopId || null, date: dateStr, endDate: null, reason: '' });
       renderTimeOffCalendar();
+      renderVacationList();
       showToast(translations['time_off_saved'] || 'Time off saved!');
     } catch (error) {
       console.error('Error adding time off:', error);
@@ -4459,7 +4489,49 @@ async function saveVacationPeriod() {
   whTimeOff.push({ id: docRef.id, userId: auth.currentUser.uid, shopId: currentUser.shopId || null, date: from, endDate: to === from ? null : to, reason: reason });
   closeVacationModal();
   renderTimeOffCalendar();
+  renderVacationList();
   showToast(translations['time_off_saved'] || 'Time off saved!');
+}
+
+async function deleteVacationPeriod(id) {
+  if (confirm('Želite li izbrisati ovaj period godišnjeg odmora?')) {
+    try {
+      await deleteDoc(doc(fdb, 'timeOff', id));
+      whTimeOff = whTimeOff.filter(to => to.id !== id);
+      renderTimeOffCalendar();
+      renderVacationList();
+      showToast(translations['time_off_removed'] || 'Time off removed!');
+    } catch (error) {
+      console.error('Error removing vacation:', error);
+      showToast(translations['error_removing_time_off'] || 'Error removing time off!', true);
+    }
+  }
+}
+
+function renderVacationList() {
+  const container = document.getElementById('vacationList');
+  if (!container) return;
+  
+  // Filter vacation periods (have endDate)
+  const vacations = whTimeOff.filter(to => to.endDate);
+  
+  if (vacations.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  container.innerHTML = `
+    <div style="font-size:14px; font-weight:600; margin-bottom:8px;">Godišnji odmor</div>
+    ${vacations.map(v => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg2); border-radius:8px; margin-bottom:8px;">
+        <div>
+          <div style="font-weight:500;">${v.date} - ${v.endDate}</div>
+          ${v.reason ? `<div style="font-size:12px; color:var(--text2);">${v.reason}</div>` : ''}
+        </div>
+        <button class="lang-btn" style="background:var(--red);" onclick="deleteVacationPeriod('${v.id}')">🗑️</button>
+      </div>
+    `).join('')}
+  `;
 }
 
 // Initialize working hours and time off from user doc
@@ -4500,6 +4572,7 @@ function initWorkingHoursListener() {
     }
     whTimeOff = entries;
     renderTimeOffCalendar();
+    renderVacationList();
   };
   
   // Listen to user-specific timeOff

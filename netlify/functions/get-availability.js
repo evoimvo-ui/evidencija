@@ -62,7 +62,8 @@ exports.handler = async (event) => {
     console.log('[get-availability] User data:', { userId, shopId, workingHours: userData.workingHours });
 
     // Get working hours for the day of week
-    const dateObj = new Date(date);
+    const [year, month, day] = date.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day); // months are 0-indexed
     const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']; // Map getDay() to key
     const workingHours = { ...DEFAULT_WORKING_HOURS, ...userData.workingHours };
@@ -173,7 +174,8 @@ exports.handler = async (event) => {
 
     // If today, filter out past slots plus 30 minutes
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    // Get today's date in local time (YYYY-MM-DD)
+    const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
     const isToday = todayStr === date;
     
     console.log('[get-availability] Today check:', { todayStr, selectedDate: date, isToday });

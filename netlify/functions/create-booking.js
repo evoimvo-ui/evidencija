@@ -1,4 +1,20 @@
 const admin = require('firebase-admin');
+const crypto = require('crypto');
+
+const ENCRYPTION_KEY = 'pustopoljina-evidencija-v2';
+const SALT = 'evidencija-fixed-salt-2026';
+
+async function encrypt(text) {
+  if (!text) return text;
+  const iv = crypto.randomBytes(12);
+  const key = crypto.pbkdf2Sync(ENCRYPTION_KEY, Buffer.from(SALT), 100000, 32, 'sha256');
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  let encrypted = cipher.update(text, 'utf8');
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  const combined = Buffer.concat([iv, encrypted, authTag]);
+  return combined.toString('base64');
+}
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
@@ -102,12 +118,12 @@ exports.handler = async (event) => {
         shopId: shopId || null,
         datum: date,
         vrijeme: time,
-        klijent: clientName,
-        telefon: clientPhone,
+        klijent: await encrypt(clientName),
+        telefon: await encrypt(clientPhone),
         email: clientEmail || '',
         napomena: note || '',
         serviceId,
-        usluga: serviceData.name || '',
+        usluga: serviceData.name || '', // serviceData.name is already encrypted in Firestore
         userName: userData.name || '',
         source: 'public_booking',
         createdAt: admin.firestore.FieldValue.serverTimestamp()

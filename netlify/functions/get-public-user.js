@@ -124,10 +124,12 @@ exports.handler = async (event) => {
       servicesQuery = db.collection('services').where('userId', '==', userId);
     }
     const servicesSnapshot = await servicesQuery.get();
+    console.log('[get-public-user] Services snapshot size:', servicesSnapshot.size);
     const services = [];
     
     for (const doc of servicesSnapshot.docs) {
       const serviceData = { id: doc.id, ...doc.data() };
+      console.log('[get-public-user] Service:', { id: doc.id, ...doc.data() });
       
       // Decrypt service name
       if (serviceData.name) {
@@ -156,6 +158,7 @@ exports.handler = async (event) => {
       
       services.push(serviceData);
     }
+    console.log('[get-public-user] Services array:', services);
 
     return {
       statusCode: 200,

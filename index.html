@@ -2979,6 +2979,20 @@ window.closeModal = closeModal;
 window.showScreen = showScreen;
 window.refreshAppData = refreshAppData;
 
+// Working hours and vacation functions
+window.renderWorkingHours = renderWorkingHours;
+window.toggleDayActive = toggleDayActive;
+window.setDayTime = setDayTime;
+window.saveWorkingHours = saveWorkingHours;
+window.changeCalendarMonth = changeCalendarMonth;
+window.renderTimeOffCalendar = renderTimeOffCalendar;
+window.toggleSingleDayOff = toggleSingleDayOff;
+window.openVacationModal = openVacationModal;
+window.closeVacationModal = closeVacationModal;
+window.saveVacationPeriod = saveVacationPeriod;
+window.deleteVacationPeriod = deleteVacationPeriod;
+window.renderVacationList = renderVacationList;
+
 // Globalne varijable
 let currentUser = null;
 let currentAuthMode = 'initial';
@@ -4528,7 +4542,7 @@ function renderVacationList() {
           <div style="font-weight:500;">${v.date} - ${v.endDate}</div>
           ${v.reason ? `<div style="font-size:12px; color:var(--text2);">${v.reason}</div>` : ''}
         </div>
-        <button class="lang-btn" style="background:var(--red);" onclick="deleteVacationPeriod('${v.id}')">🗑️</button>
+        <button class="lang-btn" style="background:var(--red);" onclick="window.deleteVacationPeriod('${v.id}')">🗑️</button>
       </div>
     `).join('')}
   `;

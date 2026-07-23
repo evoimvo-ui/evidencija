@@ -5584,13 +5584,20 @@ async function loadPublicBookingAvailability() {
   if (!publicBookingState.selectedService || !publicBookingState.selectedDate) return;
   
   try {
-    const response = await fetch(`/.netlify/functions/get-availability?slug=${encodeURIComponent(publicBookingState.slug)}&date=${encodeURIComponent(publicBookingState.selectedDate)}&serviceId=${encodeURIComponent(publicBookingState.selectedService.id)}`);
+    const url = `/.netlify/functions/get-availability?slug=${encodeURIComponent(publicBookingState.slug)}&date=${encodeURIComponent(publicBookingState.selectedDate)}&serviceId=${encodeURIComponent(publicBookingState.selectedService.id)}`;
+    console.log('[loadPublicBookingAvailability] Fetching URL:', url);
+    const response = await fetch(url);
+    
+    console.log('[loadPublicBookingAvailability] Response status:', response.status);
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[loadPublicBookingAvailability] Error response:', errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
+    console.log('[loadPublicBookingAvailability] Response data:', data);
     
     renderPublicBookingTimeSlots(data.slots);
     

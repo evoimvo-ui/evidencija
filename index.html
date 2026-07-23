@@ -5585,12 +5585,18 @@ async function loadPublicBookingAvailability() {
   
   try {
     const response = await fetch(`/.netlify/functions/get-availability?slug=${encodeURIComponent(publicBookingState.slug)}&date=${encodeURIComponent(publicBookingState.selectedDate)}&serviceId=${encodeURIComponent(publicBookingState.selectedService.id)}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
     
     renderPublicBookingTimeSlots(data.slots);
     
   } catch (error) {
     console.error('Error loading availability:', error);
+    renderPublicBookingTimeSlots([]); // Show empty slots on error
     showToast('Error loading availability', true);
   }
 }
@@ -5599,7 +5605,7 @@ function renderPublicBookingTimeSlots(slots) {
   const container = document.getElementById('bookingTimeSlots');
   container.innerHTML = '';
   
-  if (slots.length === 0) {
+  if (!slots || slots.length === 0) {
     container.innerHTML = '<div style="text-align: center; color: var(--text3); padding: 20px;">No available slots for this date</div>';
     document.getElementById('bookingStep3').style.display = 'block';
     return;

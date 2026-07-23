@@ -123,6 +123,7 @@ exports.handler = async (event) => {
     }
     
     const serviceData = serviceDoc.data();
+    console.log('[get-availability] Service data:', serviceData);
     const durationMinutes = serviceData.trajanje_minuta || 30;
 
     // Generate candidate slots
@@ -171,14 +172,15 @@ exports.handler = async (event) => {
     console.log('[get-availability] Available slots after filtering booked:', availableSlots);
 
     // If today, filter out past slots plus 30 minutes
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dateOnly = new Date(date);
-    dateOnly.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const isToday = todayStr === date;
     
-    if (today.getTime() === dateOnly.getTime()) {
-      const now = new Date();
+    console.log('[get-availability] Today check:', { todayStr, selectedDate: date, isToday });
+    
+    if (isToday) {
       const nowPlus30 = new Date(now.getTime() + 30 * 60000);
+      // Get hours and minutes in local time (or use UTC? Let's use local for now)
       const nowHour = nowPlus30.getHours();
       const nowMin = nowPlus30.getMinutes();
       const nowTotalMinutes = nowHour * 60 + nowMin;

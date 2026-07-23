@@ -4476,12 +4476,47 @@ function initWorkingHoursListener() {
       renderWorkingHours();
     }
   });
-  // Time off listener
-  const toQuery = query(collection(fdb, 'timeOff'), where('userId', '==', auth.currentUser.uid));
-  onSnapshot(toQuery, (snap) => {
-    whTimeOff = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Time off listener: get both user-specific and shop-wide timeOff
+  let toUnsubscribe = null;
+  if (toUnsubscribe) toUnsubscribe();
+  
+  const fetchTimeOff = async () => {
+    if (!auth.currentUser) return;
+    const entries = [];
+    // Get user-specific timeOff
+    const userQuery = query(collection(fdb, 'timeOff'), where('userId', '==', auth.currentUser.uid));
+    const userSnap = await getDocs(userQuery);
+    userSnap.docs.forEach(d => entries.push({ id: d.id, ...d.data() }));
+    // If user has a shop, get shop-wide timeOff (entries without userId)
+    if (currentUser?.shopId) {
+      const shopQuery = query(collection(fdb, 'timeOff'), where('shopId', '==', currentUser.shopId));
+      const shopSnap = await getDocs(shopQuery);
+      shopSnap.docs.forEach(d => {
+        const data = d.data();
+        if (!data.userId) { // Avoid duplicates with user-specific entries
+          entries.push({ id: d.id, ...data });
+        }
+      });
+    }
+    whTimeOff = entries;
     renderTimeOffCalendar();
-  });
+  };
+  
+  // Listen to user-specific timeOff
+  const userQuery = query(collection(fdb, 'timeOff'), where('userId', '==', auth.currentUser.uid));
+  const userUnsub = onSnapshot(userQuery, fetchTimeOff);
+  
+  // Listen to shop-wide timeOff if user has a shop
+  let shopUnsub = null;
+  if (currentUser?.shopId) {
+    const shopQuery = query(collection(fdb, 'timeOff'), where('shopId', '==', currentUser.shopId));
+    shopUnsub = onSnapshot(shopQuery, fetchTimeOff);
+  }
+  
+  toUnsubscribe = () => {
+    userUnsub();
+    if (shopUnsub) shopUnsub();
+  };
 }
 
 // Call initWorkingHoursListener when user logs in

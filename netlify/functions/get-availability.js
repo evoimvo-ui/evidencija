@@ -60,12 +60,27 @@ exports.handler = async (event) => {
       };
     }
 
-    // Check timeOff
-    const timeOffSnapshot = await db.collection('timeOff')
+    // Check timeOff: both user-specific and shop-wide (if shop exists)
+    const timeOffEntries = [];
+    // Get user-specific timeOff
+    const userTimeOffSnap = await db.collection('timeOff')
       .where('userId', '==', userId)
       .get();
+    userTimeOffSnap.docs.forEach(doc => timeOffEntries.push(doc.data()));
+    // If shop exists, get shop-wide timeOff
+    if (shopId) {
+      const shopTimeOffSnap = await db.collection('timeOff')
+        .where('shopId', '==', shopId)
+        .get();
+      shopTimeOffSnap.docs.forEach(doc => {
+        const data = doc.data();
+        // Avoid duplicates if entry already has userId (user-specific)
+        if (!data.userId) {
+          timeOffEntries.push(data);
+        }
+      });
+    }
       
-    const timeOffEntries = timeOffSnapshot.docs.map(doc => doc.data());
     const isDateOff = timeOffEntries.some(entry => {
       if (!entry.endDate) {
         return entry.date === date;

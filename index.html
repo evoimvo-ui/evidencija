@@ -3926,6 +3926,29 @@ window.filterWorkerOptions = filterWorkerOptions;
 window.openAppointmentDetails = openAppointmentDetails;
 window.closeAppointmentDetailsModal = closeAppointmentDetailsModal;
 
+function openAppointmentModal() {
+  const modal = document.getElementById('appointmentModal');
+  if (modal) {
+    modal.classList.add('open');
+    // Populate services
+    renderAppointmentServices();
+  }
+}
+window.openAppointmentModal = openAppointmentModal;
+
+function closeAppointmentModal() {
+  closeModal();
+}
+window.closeAppointmentModal = closeAppointmentModal;
+
+async function renderAppointmentServices() {
+  const select = document.getElementById('appService');
+  if (!select) return;
+  
+  const services = await getAllData('services', currentUser);
+  select.innerHTML = services.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+}
+
 async function sendAppointmentReminder(id) {
   const apps = await getAllData('appointments', currentUser);
   const a = apps.find(x => x.id === id);

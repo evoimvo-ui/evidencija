@@ -4293,9 +4293,13 @@ async function saveWorkingHours() {
   const userSnap = await getDoc(userRef);
   const oldSlug = userSnap.exists() ? userSnap.data().bookingSlug : null;
   
-  // If old slug exists and is different from new, delete it
+  // If old slug exists and is different from new, delete it only if it exists in bookingSlugs
   if (oldSlug && oldSlug !== newSlug) {
-    await deleteDoc(doc(fdb, 'bookingSlugs', oldSlug));
+    const oldSlugRef = doc(fdb, 'bookingSlugs', oldSlug);
+    const oldSlugSnap = await getDoc(oldSlugRef);
+    if (oldSlugSnap.exists()) {
+      await deleteDoc(oldSlugRef);
+    }
   }
   
   // If new slug exists, create it in bookingSlugs

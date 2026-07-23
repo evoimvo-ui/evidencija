@@ -1,5 +1,10 @@
 const admin = require('firebase-admin');
 const crypto = require('crypto');
+const {
+  buildServiceDurationLookups,
+  getWorkingDayDetails,
+  isTimeSlotAvailable
+} = require('./booking-availability');
 
 const ENCRYPTION_KEY = 'pustopoljina-evidencija-v2';
 const SALT = 'evidencija-fixed-salt-2026';
@@ -88,25 +93,96 @@ exports.handler = async (event) => {
       };
     }
     const serviceData = serviceDoc.data();
+    // Provjera da usluga pripada istom shopu/korisniku
+    if (shopId) {
+      if (serviceData.shopId !== shopId) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Service does not belong to this shop' })
+        };
+      }
+    } else {
+      if (serviceData.userId !== userId) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Service does not belong to this shop' })
+        };
+      }
+    }
+    const durationMinutes = serviceData.trajanje_minuta || 30;
+    const { dayHours } = getWorkingDayDetails(date, userData.workingHours);
+    
+    // Check timeOff: both user-specific and shop-wide (if shop exists)
+    const timeOffEntries = [];
+    // Get user-specific timeOff
+    const userTimeOffSnap = await db.collection('timeOff')
+      .where('userId', '==', userId)
+      .get();
+    userTimeOffSnap.docs.forEach(doc => timeOffEntries.push(doc.data()));
+    // If shop exists, get shop-wide timeOff
+    if (shopId) {
+      const shopTimeOffSnap = await db.collection('timeOff')
+        .where('shopId', '==', shopId)
+        .get();
+      shopTimeOffSnap.docs.forEach(doc => {
+        const data = doc.data();
+        // Avoid duplicates if entry already has userId (user-specific)
+        if (!data.userId) {
+          timeOffEntries.push(data);
+        }
+      });
+    }
+      
+    const isDateOff = timeOffEntries.some(entry => {
+      if (!entry.endDate) {
+        return entry.date === date;
+      } else {
+        return entry.date <= date && entry.endDate >= date;
+      }
+    });
+    
+    if (isDateOff) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Slot no longer available' })
+      };
+    }
 
     // Use Firestore transaction to check slot availability and create appointment
     const result = await db.runTransaction(async (transaction) => {
-      // Check if slot is still available (check both userId and shopId)
-      let query;
+      // Get all existing appointments for the date (check both userId and shopId)
+      let appointmentsQuery;
+      let servicesQuery;
       if (shopId) {
-        query = db.collection('appointments')
+        appointmentsQuery = db.collection('appointments')
           .where('shopId', '==', shopId)
-          .where('datum', '==', date)
-          .where('vrijeme', '==', time);
+          .where('datum', '==', date);
+        servicesQuery = db.collection('services').where('shopId', '==', shopId);
       } else {
-        query = db.collection('appointments')
+        appointmentsQuery = db.collection('appointments')
           .where('userId', '==', userId)
-          .where('datum', '==', date)
-          .where('vrijeme', '==', time);
+          .where('datum', '==', date);
+        servicesQuery = db.collection('services').where('userId', '==', userId);
       }
-      const existingAppts = await transaction.get(query);
       
-      if (!existingAppts.empty) {
+      const [appointmentsSnapshot, servicesSnapshot] = await Promise.all([
+        transaction.get(appointmentsQuery),
+        transaction.get(servicesQuery)
+      ]);
+      
+      const appointments = appointmentsSnapshot.docs.map((doc) => doc.data());
+      const services = servicesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const serviceDurationLookups = buildServiceDurationLookups(services);
+      
+      const isAvailable = isTimeSlotAvailable({
+        dayHours,
+        time,
+        durationMinutes,
+        appointments,
+        serviceDurationLookups
+      });
+      
+      if (!isAvailable) {
         throw new Error('Slot no longer available');
       }
 

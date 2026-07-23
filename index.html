@@ -5827,10 +5827,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await initI18n();
-  initPaddle();
   
   // Check for public booking
   await initPublicBooking();
+  
+  // Initialize Paddle only if not on public booking screen
+  if (!document.getElementById('publicBookingScreen').classList.contains('active')) {
+    initPaddle();
+  }
 
   initAuth(async (user, userData) => {
     // If on public booking screen, do NOTHING else!

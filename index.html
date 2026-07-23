@@ -5366,7 +5366,7 @@ async function loadPublicUser(slug) {
     document.getElementById('publicBookingScreen').classList.add('active');
     
     // Set business name
-    document.getElementById('bookingBusinessName').textContent = data.userData.shopName || data.userData.name || 'Book Appointment';
+    document.getElementById('bookingBusinessName').textContent = data.userData.businessName || 'Book Appointment';
     
     // Render services
     renderPublicBookingServices();

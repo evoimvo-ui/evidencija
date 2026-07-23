@@ -128,8 +128,8 @@ exports.handler = async (event) => {
     const services = [];
     
     for (const doc of servicesSnapshot.docs) {
-      const serviceData = { id: doc.id, ...doc.data() };
-      console.log('[get-public-user] Service:', { id: doc.id, ...doc.data() });
+      const serviceData = { ...doc.data(), id: doc.id };
+      console.log('[get-public-user] Service:', { ...doc.data(), docId: doc.id });
       
       // Decrypt service name
       if (serviceData.name) {

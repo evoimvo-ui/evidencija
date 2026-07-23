@@ -14,9 +14,22 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+// Default working hours
+const DEFAULT_WORKING_HOURS = {
+  mon: { active: true, from: '09:00', to: '17:00' },
+  tue: { active: true, from: '09:00', to: '17:00' },
+  wed: { active: true, from: '09:00', to: '17:00' },
+  thu: { active: true, from: '09:00', to: '17:00' },
+  fri: { active: true, from: '09:00', to: '17:00' },
+  sat: { active: false, from: '09:00', to: '17:00' },
+  sun: { active: false, from: '09:00', to: '17:00' }
+};
+
 exports.handler = async (event) => {
   try {
     const { slug, date, serviceId } = event.queryStringParameters;
+    
+    console.log('[get-availability] Params:', { slug, date, serviceId });
     
     if (!slug || !date || !serviceId) {
       return {
@@ -45,15 +58,19 @@ exports.handler = async (event) => {
     
     const userData = userDoc.data();
     const shopId = userData.shopId;
+    
+    console.log('[get-availability] User data:', { userId, shopId, workingHours: userData.workingHours });
 
     // Get working hours for the day of week
     const dateObj = new Date(date);
     const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']; // Map getDay() to key
-    const workingHours = userData.workingHours || {};
+    const workingHours = { ...DEFAULT_WORKING_HOURS, ...userData.workingHours };
     const dayHours = workingHours[dayKeys[dayOfWeek]];
     
-    if (!dayHours || !dayHours.active) {
+    console.log('[get-availability] Day hours:', { dayOfWeek, dayKey: dayKeys[dayOfWeek], dayHours });
+    
+    if (!dayHours || !dayHours.active || !dayHours.from || !dayHours.to) {
       return {
         statusCode: 200,
         body: JSON.stringify({ slots: [] })
@@ -113,6 +130,8 @@ exports.handler = async (event) => {
     const [fromHour, fromMin] = dayHours.from.split(':').map(Number);
     const [toHour, toMin] = dayHours.to.split(':').map(Number);
     
+    console.log('[get-availability] Time range:', { fromHour, fromMin, toHour, toMin, durationMinutes });
+    
     let currentMinutes = fromHour * 60 + fromMin;
     const endMinutes = toHour * 60 + toMin;
     
@@ -122,6 +141,8 @@ exports.handler = async (event) => {
       slots.push(`${hour}:${min}`);
       currentMinutes += durationMinutes;
     }
+    
+    console.log('[get-availability] Generated slots:', slots);
 
     // Get existing appointments for that date (check both userId and shopId)
     let appointmentsQuery;
@@ -141,9 +162,13 @@ exports.handler = async (event) => {
       const appt = doc.data();
       bookedSlots.push(appt.vrijeme || appt.time); // Handle both old and new field names
     });
+    
+    console.log('[get-availability] Booked slots:', bookedSlots);
 
     // Filter out booked slots
     let availableSlots = slots.filter(slot => !bookedSlots.includes(slot));
+    
+    console.log('[get-availability] Available slots after filtering booked:', availableSlots);
 
     // If today, filter out past slots plus 30 minutes
     const today = new Date();
@@ -158,10 +183,14 @@ exports.handler = async (event) => {
       const nowMin = nowPlus30.getMinutes();
       const nowTotalMinutes = nowHour * 60 + nowMin;
       
+      console.log('[get-availability] Today, filtering slots after:', `${nowHour}:${nowMin}`);
+      
       availableSlots = availableSlots.filter(slot => {
         const [h, m] = slot.split(':').map(Number);
         return h * 60 + m >= nowTotalMinutes;
       });
+      
+      console.log('[get-availability] Available slots after filtering time:', availableSlots);
     }
 
     return {

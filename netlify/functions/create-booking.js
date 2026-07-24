@@ -6,8 +6,8 @@ const {
   isTimeSlotAvailable
 } = require('./booking-availability');
 
-const ENCRYPTION_KEY = 'pustopoljina-evidencija-v2';
-const SALT = 'evidencija-fixed-salt-2026';
+const ENCRYPTION_KEY = process.env.BOOKING_ENCRYPTION_KEY;
+const SALT = process.env.BOOKING_ENCRYPTION_SALT;
 
 async function encrypt(text) {
   if (!text) return text;

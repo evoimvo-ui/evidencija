@@ -1,4 +1,9 @@
 const admin = require('firebase-admin');
+const {
+  buildServiceDurationLookups,
+  generateAvailableStartTimes,
+  getWorkingDayDetails
+} = require('./booking-availability');
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
@@ -13,17 +18,6 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore();
-
-// Default working hours
-const DEFAULT_WORKING_HOURS = {
-  mon: { active: true, from: '09:00', to: '17:00' },
-  tue: { active: true, from: '09:00', to: '17:00' },
-  wed: { active: true, from: '09:00', to: '17:00' },
-  thu: { active: true, from: '09:00', to: '17:00' },
-  fri: { active: true, from: '09:00', to: '17:00' },
-  sat: { active: false, from: '09:00', to: '17:00' },
-  sun: { active: false, from: '09:00', to: '17:00' }
-};
 
 exports.handler = async (event) => {
   try {
@@ -62,14 +56,9 @@ exports.handler = async (event) => {
     console.log('[get-availability] User data:', { userId, shopId, workingHours: userData.workingHours });
 
     // Get working hours for the day of week
-    const [year, month, day] = date.split('-').map(Number);
-    const dateObj = new Date(year, month - 1, day); // months are 0-indexed
-    const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']; // Map getDay() to key
-    const workingHours = { ...DEFAULT_WORKING_HOURS, ...userData.workingHours };
-    const dayHours = workingHours[dayKeys[dayOfWeek]];
+    const { dayOfWeek, dayKey, dayHours } = getWorkingDayDetails(date, userData.workingHours);
     
-    console.log('[get-availability] Day hours:', { dayOfWeek, dayKey: dayKeys[dayOfWeek], dayHours });
+    console.log('[get-availability] Day hours:', { dayOfWeek, dayKey, dayHours });
     
     if (!dayHours || !dayHours.active || !dayHours.from || !dayHours.to) {
       return {
@@ -127,25 +116,6 @@ exports.handler = async (event) => {
     console.log('[get-availability] Service data:', serviceData);
     const durationMinutes = serviceData.trajanje_minuta || 30;
 
-    // Generate candidate slots
-    const slots = [];
-    const [fromHour, fromMin] = dayHours.from.split(':').map(Number);
-    const [toHour, toMin] = dayHours.to.split(':').map(Number);
-    
-    console.log('[get-availability] Time range:', { fromHour, fromMin, toHour, toMin, durationMinutes });
-    
-    let currentMinutes = fromHour * 60 + fromMin;
-    const endMinutes = toHour * 60 + toMin;
-    
-    while (currentMinutes + durationMinutes <= endMinutes) {
-      const hour = Math.floor(currentMinutes / 60).toString().padStart(2, '0');
-      const min = (currentMinutes % 60).toString().padStart(2, '0');
-      slots.push(`${hour}:${min}`);
-      currentMinutes += durationMinutes;
-    }
-    
-    console.log('[get-availability] Generated slots:', slots);
-
     // Get existing appointments for that date (check both userId and shopId)
     let appointmentsQuery;
     if (shopId) {
@@ -158,19 +128,30 @@ exports.handler = async (event) => {
         .where('datum', '==', date);
     }
     const appointmentsSnapshot = await appointmentsQuery.get();
+    const servicesQuery = shopId
+      ? db.collection('services').where('shopId', '==', shopId)
+      : db.collection('services').where('userId', '==', userId);
+    const servicesSnapshot = await servicesQuery.get();
       
-    const bookedSlots = [];
-    appointmentsSnapshot.docs.forEach(doc => {
-      const appt = doc.data();
-      bookedSlots.push(appt.vrijeme || appt.time); // Handle both old and new field names
+    const appointments = appointmentsSnapshot.docs.map((doc) => doc.data());
+    const services = servicesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const serviceDurationLookups = buildServiceDurationLookups(services);
+    const existingIntervals = appointments.map((appointment) => ({
+      vrijeme: appointment.vrijeme || appointment.time,
+      serviceId: appointment.serviceId || null,
+      usluga: appointment.usluga || appointment.service || null
+    }));
+
+    console.log('[get-availability] Existing appointments:', existingIntervals);
+
+    let availableSlots = generateAvailableStartTimes({
+      dayHours,
+      durationMinutes,
+      appointments,
+      serviceDurationLookups
     });
     
-    console.log('[get-availability] Booked slots:', bookedSlots);
-
-    // Filter out booked slots
-    let availableSlots = slots.filter(slot => !bookedSlots.includes(slot));
-    
-    console.log('[get-availability] Available slots after filtering booked:', availableSlots);
+    console.log('[get-availability] Available slots after overlap filtering:', availableSlots);
 
     // If today, filter out past slots plus 30 minutes
     const now = new Date();

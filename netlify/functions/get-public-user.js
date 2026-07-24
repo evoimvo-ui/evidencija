@@ -1,9 +1,9 @@
 const admin = require('firebase-admin');
 const crypto = require('crypto');
 
-const ENCRYPTION_KEY = 'pustopoljina-evidencija-v2';
+const ENCRYPTION_KEY = process.env.BOOKING_ENCRYPTION_KEY;
 const OLD_ENCRYPTION_KEY = 'evidencija-ex-key-2024';
-const SALT = 'evidencija-fixed-salt-2026';
+const SALT = process.env.BOOKING_ENCRYPTION_SALT;
 const OLD_SALT = 'evidencija-fixed-salt-2024';
 
 // Initialize Firebase Admin

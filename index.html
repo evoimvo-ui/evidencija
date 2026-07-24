@@ -2163,6 +2163,13 @@
       <div class="services-grid" id="bookingServicesGrid"></div>
     </div>
     
+    <!-- Step 1.5: Select Worker (shop-wide only) -->
+    <div id="bookingStepWorker" style="display:none;">
+      <div class="section-label" data-i18n="public_select_worker">Select Worker</div>
+      <select id="bookingWorkerSelect" class="input-plain" style="width: 100%; padding: 12px; border-radius: 8px;">
+      </select>
+    </div>
+    
     <!-- Step 2: Select Date -->
     <div id="bookingStep2" style="display:none;">
       <div class="section-label" data-i18n="public_select_date">Select Date</div>
@@ -2516,6 +2523,11 @@
       <button class="lang-btn" onclick="copyBookingLink()">📋 Kopiraj</button>
     </div>
     <div style="margin-top:8px; font-size:12px; color:var(--text2);" data-i18n="slug_note">This is not your registration name — this is a public identifier for your booking link.</div>
+  </div>
+
+  <div id="workerBookingLinksSection" style="display:none; margin-bottom:20px;">
+    <div class="section-label" data-i18n="worker_booking_links">Booking Linkovi Radnika</div>
+    <div id="workerBookingLinksList" style="display:flex; flex-direction:column; gap:10px;"></div>
   </div>
 
   <div style="margin-bottom: 20px;">
@@ -4263,6 +4275,7 @@ function showScreen(name) {
   if (name === 'radno-vrijeme') { 
     document.querySelector('.nav-btn.full-width')?.classList.add('active');
     renderWorkingHours(); 
+    renderWorkerBookingLinks();
   }
   window.scrollTo(0, 0);
 }
@@ -4343,6 +4356,171 @@ async function checkSlugAvailability() {
   }
 }
 
+function generateRandomSlugSuffix() {
+  return Math.floor(100 + Math.random() * 900).toString();
+}
+
+async function checkWorkerSlugUniqueness(slug) {
+  if (!slug) return false;
+  const docRef = doc(fdb, 'bookingSlugs', slug);
+  const docSnap = await getDoc(docRef);
+  return !docSnap.exists();
+}
+
+async function generateWorkerSlug(workerUid, workerName) {
+  try {
+    // Normalize worker name to slug-friendly format
+    let baseSlug = workerName.toLowerCase();
+    baseSlug = baseSlug.replace(/[^a-z0-9\s-]/g, '');
+    baseSlug = baseSlug.replace(/\s+/g, '-');
+    baseSlug = baseSlug.replace(/-+/g, '-');
+    baseSlug = baseSlug.replace(/^-|-$/g, '');
+    
+    if (!baseSlug) {
+      baseSlug = 'radnik';
+    }
+
+    // Try up to 10 times with different random suffixes
+    let finalSlug = null;
+    for (let i = 0; i < 10; i++) {
+      const candidate = `${baseSlug}-${generateRandomSlugSuffix()}`;
+      const isAvailable = await checkWorkerSlugUniqueness(candidate);
+      if (isAvailable) {
+        finalSlug = candidate;
+        break;
+      }
+    }
+
+    if (!finalSlug) {
+      showToast('Greška: Nije moguće generisati jedinstveni slug!', true);
+      return;
+    }
+
+    const slugData = {
+      userId: workerUid,
+      shopId: currentUser?.shopId || null,
+      workerId: workerUid,
+      updatedAt: new Date().toISOString()
+    };
+
+    await setDoc(doc(fdb, 'bookingSlugs', finalSlug), slugData);
+    showToast(`Booking link za ${workerName} kreiran!`);
+    await renderWorkerBookingLinks();
+  } catch (error) {
+    console.error('Greška pri kreiranju worker slug-a:', error);
+    showToast('Greška pri kreiranju linka!', true);
+  }
+}
+
+async function deleteWorkerSlug(slug, workerName) {
+  if (!confirm(`Želite li obrisati booking link za ${workerName}?`)) return;
+  try {
+    await deleteDoc(doc(fdb, 'bookingSlugs', slug));
+    showToast('Booking link obrisan!');
+    await renderWorkerBookingLinks();
+  } catch (error) {
+    console.error('Greška pri brisanju slug-a:', error);
+    showToast('Greška pri brisanju linka!', true);
+  }
+}
+
+async function copyWorkerLink(slug) {
+  if (!slug) return;
+  const fullLink = `${window.location.origin}/book/${slug}`;
+  try {
+    await navigator.clipboard.writeText(fullLink);
+    showToast('Link kopiran u clipboard!');
+  } catch (e) {
+    showToast('Link kopiran u clipboard!');
+  }
+}
+
+async function renderWorkerBookingLinks() {
+  const section = document.getElementById('workerBookingLinksSection');
+  const list = document.getElementById('workerBookingLinksList');
+  if (!section || !list) return;
+
+  // Show section only for owner users with shopId
+  if (!currentUser || currentUser.role !== 'owner' || !currentUser.shopId) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  try {
+    // 1. Get all workers in the shop
+    const workersQuery = query(collection(fdb, "users"), where("shopId", "==", currentUser.shopId));
+    const workersSnap = await getDocs(workersQuery);
+    const workers = [];
+    workersSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.uid !== currentUser.uid) { // exclude owner himself/herself
+        workers.push({
+          uid: d.uid,
+          name: d.name || d.email || 'Nepoznati radnik',
+          email: d.email || ''
+        });
+      }
+    });
+
+    // 2. Get all existing booking slugs for this shop
+    const slugsQuery = query(collection(fdb, "bookingSlugs"), where("shopId", "==", currentUser.shopId));
+    const slugsSnap = await getDocs(slugsQuery);
+    const slugByWorkerUid = new Map(); // workerUid -> slug
+    slugsSnap.forEach(doc => {
+      const data = doc.data();
+      if (data.workerId) {
+        slugByWorkerUid.set(data.workerId, doc.id);
+      }
+    });
+
+    // 3. Render list
+    list.innerHTML = workers.map(worker => {
+      const existingSlug = slugByWorkerUid.get(worker.uid);
+      const fullLink = existingSlug ? `${window.location.origin}/book/${existingSlug}` : '';
+
+      return `
+        <div class="list-item" style="padding:12px; border-radius:12px; background:var(--bg2); border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <strong style="font-size:14px;">${worker.name}</strong>
+              ${worker.email ? `<br><small style="color:var(--text2); font-size:12px;">${worker.email}</small>` : ''}
+            </div>
+            <div style="display:flex; gap:5px;">
+              ${existingSlug ? `
+                <button class="btn-icon" onclick="window.copyWorkerLink('${existingSlug}')">📋</button>
+                <button class="btn-icon del" onclick="window.deleteWorkerSlug('${existingSlug}', '${worker.name.replace(/'/g, "\\'")}')">×</button>
+              ` : `
+                <button class="lang-btn" style="background:var(--accent); color:white;" onclick="window.generateWorkerSlug('${worker.uid}', '${worker.name.replace(/'/g, "\\'")}')">Generiši link</button>
+              `}
+            </div>
+          </div>
+          ${existingSlug ? `
+            <div style="display:flex; gap:5px; align-items:center;">
+              <input type="text" class="input-plain" style="flex:1; font-size:12px; background:rgba(255,255,255,0.05);" value="${fullLink}" readonly>
+            </div>
+          ` : `
+            <div style="font-size:12px; color:var(--text2);">Još uvijek nema booking link za ovog radnika.</div>
+          `}
+        </div>
+      `;
+    }).join('');
+
+    if (workers.length === 0) {
+      list.innerHTML = `<div style="font-size:13px; color:var(--text2); text-align:center; padding:15px;">Još nemate pozvanih radnika.</div>`;
+    }
+
+  } catch (error) {
+    console.error('Greška pri renderovanju worker booking linkova:', error);
+    list.innerHTML = `<div style="font-size:13px; color:var(--red);">Greška pri učitavanju.</div>`;
+  }
+}
+
+// Expose worker booking link functions to window
+window.generateWorkerSlug = generateWorkerSlug;
+window.deleteWorkerSlug = deleteWorkerSlug;
+window.copyWorkerLink = copyWorkerLink;
+
 function renderWorkingHours() {
   const container = document.getElementById('workingHoursContainer');
   container.innerHTML = '';
@@ -4421,10 +4599,13 @@ async function saveWorkingHours() {
   
   // If new slug exists, create it in bookingSlugs
   if (newSlug) {
-    await setDoc(doc(fdb, 'bookingSlugs', newSlug), {
+    const slugData = {
       userId: auth.currentUser.uid,
+      shopId: currentUser?.shopId || null,
+      workerId: currentUser?.role === 'worker' ? auth.currentUser.uid : null,
       updatedAt: new Date().toISOString()
-    });
+    };
+    await setDoc(doc(fdb, 'bookingSlugs', newSlug), slugData);
   }
   
   // Update user document
@@ -5534,7 +5715,10 @@ let publicBookingState = {
   services: [],
   selectedService: null,
   selectedDate: null,
-  selectedTime: null
+  selectedTime: null,
+  isWorkerSpecific: false,
+  shopWorkers: [],
+  selectedWorker: null // null means "all" or worker-specific slug
 };
 
 async function initPublicBooking() {
@@ -5585,6 +5769,12 @@ async function loadPublicUser(slug) {
     const data = await response.json();
     publicBookingState.userData = data.userData;
     publicBookingState.services = data.services;
+    publicBookingState.isWorkerSpecific = data.isWorkerSpecific;
+    publicBookingState.shopWorkers = data.shopWorkers;
+    // If it's a worker-specific slug, set selectedWorker to that worker's id
+    if (data.isWorkerSpecific) {
+      publicBookingState.selectedWorker = data.userData.uid;
+    }
     
     // Show public booking screen
     document.getElementById('publicBookingScreen').classList.add('active');
@@ -5594,6 +5784,11 @@ async function loadPublicUser(slug) {
     
     // Render services
     renderPublicBookingServices();
+    
+    // If it's not worker-specific, render worker dropdown
+    if (!data.isWorkerSpecific && data.shopWorkers.length > 0) {
+      renderPublicBookingWorkerDropdown();
+    }
     
     // Set language based on browser
     const browserLang = navigator.language.substring(0, 2);
@@ -5605,6 +5800,26 @@ async function loadPublicUser(slug) {
     console.error('Error loading public user:', error);
     showToast('User not found', true);
   }
+}
+
+function renderPublicBookingWorkerDropdown() {
+  const select = document.getElementById('bookingWorkerSelect');
+  if (!select) return;
+  
+  let optionsHTML = `<option value="">All Workers</option>`;
+  publicBookingState.shopWorkers.forEach(worker => {
+    optionsHTML += `<option value="${worker.id}">${worker.name}</option>`;
+  });
+  select.innerHTML = optionsHTML;
+  
+  // Add event listener
+  select.onchange = () => {
+    publicBookingState.selectedWorker = select.value || null;
+    // If date is already selected, reload availability
+    if (publicBookingState.selectedDate) {
+      loadPublicBookingAvailability();
+    }
+  };
 }
 
 function renderPublicBookingServices() {
@@ -5641,6 +5856,12 @@ function renderPublicBookingServices() {
 function selectPublicBookingService(service) {
   publicBookingState.selectedService = service;
   renderPublicBookingServices();
+  
+  // Show worker dropdown if not worker-specific
+  if (!publicBookingState.isWorkerSpecific && publicBookingState.shopWorkers.length > 0) {
+    document.getElementById('bookingStepWorker').style.display = 'block';
+    renderPublicBookingWorkerDropdown();
+  }
   
   // Show date selection
   document.getElementById('bookingStep2').style.display = 'block';
@@ -5686,7 +5907,10 @@ async function loadPublicBookingAvailability() {
   if (!publicBookingState.selectedService || !publicBookingState.selectedDate) return;
   
   try {
-    const url = `/.netlify/functions/get-availability?slug=${encodeURIComponent(publicBookingState.slug)}&date=${encodeURIComponent(publicBookingState.selectedDate)}&serviceId=${encodeURIComponent(publicBookingState.selectedService.id)}`;
+    let url = `/.netlify/functions/get-availability?slug=${encodeURIComponent(publicBookingState.slug)}&date=${encodeURIComponent(publicBookingState.selectedDate)}&serviceId=${encodeURIComponent(publicBookingState.selectedService.id)}`;
+    if (publicBookingState.selectedWorker) {
+      url += `&workerId=${encodeURIComponent(publicBookingState.selectedWorker)}`;
+    }
     console.log('[loadPublicBookingAvailability] Fetching URL:', url);
     const response = await fetch(url);
     
@@ -5771,7 +5995,8 @@ async function submitBooking() {
         clientPhone,
         clientEmail,
         note,
-        website
+        website,
+        workerId: publicBookingState.selectedWorker
       })
     });
     

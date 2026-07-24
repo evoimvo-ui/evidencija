@@ -96,19 +96,36 @@ exports.handler = async (event) => {
       };
     }
     
-    const userId = bookingSlugDoc.data().userId;
-    const userDoc = await db.collection('users').doc(userId).get();
+    const bookingSlugData = bookingSlugDoc.data();
+    const ownerUserId = bookingSlugData.userId;
+    const workerId = bookingSlugData.workerId;
     
-    if (!userDoc.exists) {
+    const ownerUserDoc = await db.collection('users').doc(ownerUserId).get();
+    if (!ownerUserDoc.exists) {
       return {
         statusCode: 404,
         body: JSON.stringify({ error: 'User not found' })
       };
     }
-    const userData = userDoc.data();
-    const shopId = userData.shopId;
+    const ownerUserData = ownerUserDoc.data();
+    const shopId = ownerUserData.shopId;
     
-    let businessName = userData.name || 'Book Appointment';
+    // Determine effective user data
+    let effectiveUserData;
+    if (workerId) {
+      const workerDoc = await db.collection('users').doc(workerId).get();
+      if (!workerDoc.exists) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ error: 'Worker not found' })
+        };
+      }
+      effectiveUserData = workerDoc.data();
+    } else {
+      effectiveUserData = ownerUserData;
+    }
+    
+    let businessName = effectiveUserData.name || 'Book Appointment';
     if (shopId) {
       const shopDoc = await db.collection('shops').doc(shopId).get();
       if (shopDoc.exists) {
@@ -116,20 +133,52 @@ exports.handler = async (event) => {
       }
     }
 
-    // Get services - check both userId and shopId
-    let servicesQuery;
+    // Get shop workers if this is a shop
+    let shopWorkers = [];
     if (shopId) {
-      servicesQuery = db.collection('services').where('shopId', '==', shopId);
-    } else {
-      servicesQuery = db.collection('services').where('userId', '==', userId);
+      const workersSnapshot = await db.collection('users').where('shopId', '==', shopId).get();
+      shopWorkers = workersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        // Only return public fields
+        return {
+          id: doc.id,
+          name: data.name,
+          photoURL: data.photoURL,
+          workingHours: data.workingHours
+        };
+      });
     }
-    const servicesSnapshot = await servicesQuery.get();
-    console.log('[get-public-user] Services snapshot size:', servicesSnapshot.size);
+
+    // Get services - shared shop services + worker's personal services
+    let shopServices = [];
+    let userServices = [];
+    
+    if (shopId) {
+      const shopServicesQuery = db.collection('services').where('shopId', '==', shopId);
+      const shopServicesSnapshot = await shopServicesQuery.get();
+      shopServices = shopServicesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+    }
+    
+    const effectiveUserId = workerId || ownerUserId;
+    const userServicesQuery = db.collection('services').where('userId', '==', effectiveUserId);
+    const userServicesSnapshot = await userServicesQuery.get();
+    userServices = userServicesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+    
+    // Combine and deduplicate services
+    const serviceIds = new Set();
+    const uniqueServices = [];
+    const allServices = [...shopServices, ...userServices];
+    for (const service of allServices) {
+      if (!serviceIds.has(service.id)) {
+        serviceIds.add(service.id);
+        uniqueServices.push(service);
+      }
+    }
+    console.log('[get-public-user] Unique services count:', uniqueServices.length);
     const services = [];
     
-    for (const doc of servicesSnapshot.docs) {
-      const serviceData = { ...doc.data(), id: doc.id };
-      console.log('[get-public-user] Service:', { ...doc.data(), docId: doc.id });
+    for (const serviceData of uniqueServices) {
+      console.log('[get-public-user] Service:', serviceData);
       
       // Decrypt service name
       if (serviceData.name) {
@@ -160,14 +209,22 @@ exports.handler = async (event) => {
     }
     console.log('[get-public-user] Services array:', services);
 
+    // Only expose public fields for the effective user
+    const publicUserData = {
+      uid: effectiveUserData.uid,
+      name: effectiveUserData.name,
+      photoURL: effectiveUserData.photoURL,
+      workingHours: effectiveUserData.workingHours,
+      businessName
+    };
+    
     return {
       statusCode: 200,
       body: JSON.stringify({
-        userData: {
-          ...userData,
-          businessName
-        },
-        services
+        userData: publicUserData,
+        services,
+        isWorkerSpecific: !!workerId,
+        shopWorkers
       })
     };
 

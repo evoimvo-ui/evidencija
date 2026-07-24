@@ -21,9 +21,9 @@ const db = admin.firestore();
 
 exports.handler = async (event) => {
   try {
-    const { slug, date, serviceId } = event.queryStringParameters;
+    const { slug, date, serviceId, workerId } = event.queryStringParameters;
     
-    console.log('[get-availability] Params:', { slug, date, serviceId });
+    console.log('[get-availability] Params:', { slug, date, serviceId, workerId });
     
     if (!slug || !date || !serviceId) {
       return {
@@ -53,10 +53,30 @@ exports.handler = async (event) => {
     const userData = userDoc.data();
     const shopId = userData.shopId;
     
-    console.log('[get-availability] User data:', { userId, shopId, workingHours: userData.workingHours });
+    // Determine effective user (worker or main user) and their working hours
+    let effectiveUserId;
+    let effectiveWorkingHours;
+    if (workerId) {
+      // Get worker-specific data
+      const workerDoc = await db.collection('users').doc(workerId).get();
+      if (!workerDoc.exists) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ error: 'Worker not found' })
+        };
+      }
+      effectiveUserId = workerId;
+      effectiveWorkingHours = workerDoc.data().workingHours;
+    } else {
+      // Use main user/shop logic
+      effectiveUserId = userId;
+      effectiveWorkingHours = userData.workingHours;
+    }
+    
+    console.log('[get-availability] User data:', { userId, shopId, workerId, effectiveUserId, effectiveWorkingHours });
 
     // Get working hours for the day of week
-    const { dayOfWeek, dayKey, dayHours } = getWorkingDayDetails(date, userData.workingHours);
+    const { dayOfWeek, dayKey, dayHours } = getWorkingDayDetails(date, effectiveWorkingHours);
     
     console.log('[get-availability] Day hours:', { dayOfWeek, dayKey, dayHours });
     
@@ -67,11 +87,11 @@ exports.handler = async (event) => {
       };
     }
 
-    // Check timeOff: both user-specific and shop-wide (if shop exists)
+    // Check timeOff: both effective user-specific and shop-wide (if shop exists)
     const timeOffEntries = [];
-    // Get user-specific timeOff
+    // Get effective user-specific timeOff
     const userTimeOffSnap = await db.collection('timeOff')
-      .where('userId', '==', userId)
+      .where('userId', '==', effectiveUserId)
       .get();
     userTimeOffSnap.docs.forEach(doc => timeOffEntries.push(doc.data()));
     // If shop exists, get shop-wide timeOff
@@ -116,16 +136,24 @@ exports.handler = async (event) => {
     console.log('[get-availability] Service data:', serviceData);
     const durationMinutes = serviceData.trajanje_minuta || 30;
 
-    // Get existing appointments for that date (check both userId and shopId)
+    // Get existing appointments for that date
     let appointmentsQuery;
-    if (shopId) {
+    if (workerId) {
+      // Worker-specific: only appointments for this worker
       appointmentsQuery = db.collection('appointments')
-        .where('shopId', '==', shopId)
+        .where('userId', '==', workerId)
         .where('datum', '==', date);
     } else {
-      appointmentsQuery = db.collection('appointments')
-        .where('userId', '==', userId)
-        .where('datum', '==', date);
+      // Original logic: shop-wide if shopId, else user-wide
+      if (shopId) {
+        appointmentsQuery = db.collection('appointments')
+          .where('shopId', '==', shopId)
+          .where('datum', '==', date);
+      } else {
+        appointmentsQuery = db.collection('appointments')
+          .where('userId', '==', userId)
+          .where('datum', '==', date);
+      }
     }
     const appointmentsSnapshot = await appointmentsQuery.get();
     const servicesQuery = shopId

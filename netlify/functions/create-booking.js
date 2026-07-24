@@ -45,7 +45,7 @@ exports.handler = async (event) => {
     }
 
     const body = JSON.parse(event.body);
-    const { slug, date, time, serviceId, clientName, clientPhone, clientEmail, note, website } = body;
+    const { slug, date, time, serviceId, clientName, clientPhone, clientEmail, note, website, workerId: bodyWorkerId } = body;
 
     // Honeypot check - if website is filled, silently return success
     if (website) {
@@ -72,8 +72,10 @@ exports.handler = async (event) => {
       };
     }
     
-    const userId = bookingSlugDoc.data().userId;
-    const userDoc = await db.collection('users').doc(userId).get();
+    const bookingSlugData = bookingSlugDoc.data();
+    const ownerUserId = bookingSlugData.userId;
+    const slugWorkerId = bookingSlugData.workerId;
+    const userDoc = await db.collection('users').doc(ownerUserId).get();
     if (!userDoc.exists) {
       return {
         statusCode: 404,
@@ -83,6 +85,16 @@ exports.handler = async (event) => {
     
     const userData = userDoc.data();
     const shopId = userData.shopId;
+    
+    // Determine effective userId for the new appointment
+    let effectiveUserId;
+    if (slugWorkerId) {
+      effectiveUserId = slugWorkerId;
+    } else if (bodyWorkerId) {
+      effectiveUserId = bodyWorkerId;
+    } else {
+      effectiveUserId = ownerUserId;
+    }
 
     // Get service data
     const serviceDoc = await db.collection('services').doc(serviceId).get();
@@ -102,7 +114,7 @@ exports.handler = async (event) => {
         };
       }
     } else {
-      if (serviceData.userId !== userId) {
+      if (serviceData.userId !== ownerUserId) {
         return {
           statusCode: 400,
           body: JSON.stringify({ error: 'Service does not belong to this shop' })
@@ -110,13 +122,27 @@ exports.handler = async (event) => {
       }
     }
     const durationMinutes = serviceData.trajanje_minuta || 30;
-    const { dayHours } = getWorkingDayDetails(date, userData.workingHours);
     
-    // Check timeOff: both user-specific and shop-wide (if shop exists)
+    // Get effective user's working hours
+    let effectiveWorkingHours;
+    if (effectiveUserId !== ownerUserId) {
+      const effectiveUserDoc = await db.collection('users').doc(effectiveUserId).get();
+      if (effectiveUserDoc.exists) {
+        effectiveWorkingHours = effectiveUserDoc.data().workingHours;
+      } else {
+        effectiveWorkingHours = userData.workingHours;
+      }
+    } else {
+      effectiveWorkingHours = userData.workingHours;
+    }
+    
+    const { dayHours } = getWorkingDayDetails(date, effectiveWorkingHours);
+    
+    // Check timeOff: both effective user-specific and shop-wide (if shop exists)
     const timeOffEntries = [];
-    // Get user-specific timeOff
+    // Get effective user-specific timeOff
     const userTimeOffSnap = await db.collection('timeOff')
-      .where('userId', '==', userId)
+      .where('userId', '==', effectiveUserId)
       .get();
     userTimeOffSnap.docs.forEach(doc => timeOffEntries.push(doc.data()));
     // If shop exists, get shop-wide timeOff
@@ -150,19 +176,30 @@ exports.handler = async (event) => {
 
     // Use Firestore transaction to check slot availability and create appointment
     const result = await db.runTransaction(async (transaction) => {
-      // Get all existing appointments for the date (check both userId and shopId)
+      // Get all existing appointments for the date
       let appointmentsQuery;
       let servicesQuery;
-      if (shopId) {
+      if (slugWorkerId || bodyWorkerId) {
+        // Worker-specific: only appointments for effectiveUserId
+        appointmentsQuery = db.collection('appointments')
+          .where('userId', '==', effectiveUserId)
+          .where('datum', '==', date);
+      } else if (shopId) {
+        // Shop-wide: all appointments for the shop
         appointmentsQuery = db.collection('appointments')
           .where('shopId', '==', shopId)
           .where('datum', '==', date);
+      } else {
+        // Individual user: appointments for ownerUserId
+        appointmentsQuery = db.collection('appointments')
+          .where('userId', '==', ownerUserId)
+          .where('datum', '==', date);
+      }
+      
+      if (shopId) {
         servicesQuery = db.collection('services').where('shopId', '==', shopId);
       } else {
-        appointmentsQuery = db.collection('appointments')
-          .where('userId', '==', userId)
-          .where('datum', '==', date);
-        servicesQuery = db.collection('services').where('userId', '==', userId);
+        servicesQuery = db.collection('services').where('userId', '==', ownerUserId);
       }
       
       const [appointmentsSnapshot, servicesSnapshot] = await Promise.all([
@@ -186,11 +223,20 @@ exports.handler = async (event) => {
         throw new Error('Slot no longer available');
       }
 
+      // Get effective user's name for userName field
+      let effectiveUserName = userData.name || '';
+      if (effectiveUserId !== ownerUserId) {
+        const effectiveUserDoc = await db.collection('users').doc(effectiveUserId).get();
+        if (effectiveUserDoc.exists) {
+          effectiveUserName = effectiveUserDoc.data().name || '';
+        }
+      }
+      
       // Create appointment document using the app's field names
       const appointmentRef = db.collection('appointments').doc();
       transaction.set(appointmentRef, {
         id: appointmentRef.id,
-        userId,
+        userId: effectiveUserId,
         shopId: shopId || null,
         datum: date,
         vrijeme: time,
@@ -200,7 +246,7 @@ exports.handler = async (event) => {
         napomena: note || '',
         serviceId,
         usluga: serviceData.name || '', // serviceData.name is already encrypted in Firestore
-        userName: userData.name || '',
+        userName: effectiveUserName,
         source: 'public_booking',
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });

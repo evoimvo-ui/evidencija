@@ -196,7 +196,7 @@ exports.handler = async (event) => {
         vrijeme: time,
         klijent: await encrypt(clientName),
         telefon: await encrypt(clientPhone),
-        email: clientEmail || '',
+        email: clientEmail ? await encrypt(clientEmail) : '',
         napomena: note || '',
         serviceId,
         usluga: serviceData.name || '', // serviceData.name is already encrypted in Firestore

@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v26'; // Verzija v26 - Deletion request, Hours/Minutes, Stability fixes
+const CACHE = 'evidencija-v27'; // Verzija v27 - Booking link worker-specific slugovi, radno vrijeme, time-off, public booking frontend, lokalizacije tr/ur/zh + preostali jezici
 const FILES = [
   './', 
   './index.html', 

@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v27'; // Verzija v27 - Booking link worker-specific slugovi, radno vrijeme, time-off, public booking frontend, lokalizacije tr/ur/zh + preostali jezici
+const CACHE = 'evidencija-v29'; // Verzija v29 - Profesionalni print template i poboljšana statistika
 const FILES = [
   './', 
   './index.html', 

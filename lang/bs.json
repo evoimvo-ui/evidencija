@@ -265,5 +265,18 @@
     "public_slot_not_available": "Ovaj termin više nije dostupan. Molimo odaberite drugi.",
     "public_loading": "Učitavanje...",
     "public_error": "Došlo je do greške. Molimo pokušajte ponovo.",
-    "public_no_slots_available": "Nema dostupnih termina za ovaj datum"
+    "public_no_slots_available": "Nema dostupnih termina za ovaj datum",
+    "count": "Broj",
+    "total": "Ukupno",
+    "period_comparison": "POREĐENJE PERIODA",
+    "service_breakdown": "STATISTIKA PO USLUGAMA",
+    "avg_value": "Prosječna vrijednost unosa",
+    "paid_percentage": "Postotak naplaćenog",
+    "vs_previous_month": "u odnosu na prošli mjesec",
+    "no_data": "Nema podataka",
+    "summary": "Sažetak",
+    "itemized_list": "Lista unosa",
+    "generated_on": "Generisano:",
+    "report": "Izvještaj",
+    "title_clean": "Evidencija rada"
 }

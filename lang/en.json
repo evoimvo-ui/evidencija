@@ -264,5 +264,18 @@
     "public_slot_not_available": "This slot is no longer available. Please select another one.",
     "public_loading": "Loading...",
     "public_error": "An error occurred. Please try again.",
-    "public_no_slots_available": "No available slots for this date"
+    "public_no_slots_available": "No available slots for this date",
+    "count": "Count",
+    "total": "Total",
+    "period_comparison": "PERIOD COMPARISON",
+    "service_breakdown": "SERVICE BREAKDOWN",
+    "avg_value": "Average Entry Value",
+    "paid_percentage": "Percentage Paid",
+    "vs_previous_month": "vs previous month",
+    "no_data": "No data available",
+    "summary": "Summary",
+    "itemized_list": "Itemized Entries List",
+    "generated_on": "Generated on:",
+    "report": "Report",
+    "title_clean": "Work Records"
 }

@@ -341,6 +341,14 @@ import {
   writeBatch
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
+function isTemporaryError(e) {
+  if (!navigator.onLine) return true;
+  const tempCodes = ['unavailable', 'deadline-exceeded', 'resource-exhausted'];
+  if (e && e.code && tempCodes.includes(e.code)) return true;
+  if (e && e.message && (e.message.includes('network') || e.message.includes('fetch') || e.message.includes('timeout'))) return true;
+  return false;
+}
+
 let isSyncing = false;
 export async function syncWithFirestore(user) {
   if (!user || !navigator.onLine || isSyncing) return;
@@ -361,6 +369,8 @@ export async function syncWithFirestore(user) {
     console.log(`[Sync] Processing ${items.length} items in queue...`);
 
     for (const item of items) {
+      if (item.syncFailed) continue;
+      
       try {
         const collectionName = item.store;
         const docId = (item.id || (item.data && item.data.id))?.toString();
@@ -395,15 +405,34 @@ export async function syncWithFirestore(user) {
       } catch (e) {
         console.error(`[Sync] Failed item ${item.id}:`, e);
         
-        // Sigurnosni fiks: Ako stavka zapne zbog permisija ili trajnih grešaka,
-        // ukloni je iz reda nakon što uzrokuje grešku, kako ne bi blokirala odjavu.
-        // Ovo rješava "vječnu" poruku o nesinkroniziranim promjenama.
-        await new Promise((res) => {
-          const delTrans = db.transaction('sync_queue', 'readwrite');
-          delTrans.objectStore('sync_queue').delete(item.id);
-          delTrans.oncomplete = res;
-          delTrans.onerror = res;
-        });
+        const isTemp = isTemporaryError(e);
+        const MAX_RETRIES = 5;
+
+        if (isTemp) {
+          item.retryCount = (item.retryCount || 0) + 1;
+          
+          if (item.retryCount >= MAX_RETRIES) {
+            item.syncFailed = true;
+            item.lastError = e.message || 'Max retries reached';
+          }
+          
+          // Sačuvaj nazad u sync_queue (put) umjesto delete
+          await new Promise((res) => {
+            const updateTrans = db.transaction('sync_queue', 'readwrite');
+            updateTrans.objectStore('sync_queue').put(item);
+            updateTrans.oncomplete = res;
+            updateTrans.onerror = res;
+          });
+        } else {
+          // Sigurnosni fiks: Ako stavka zapne zbog permisija ili trajnih grešaka,
+          // ukloni je iz reda nakon što uzrokuje grešku, kako ne bi blokirala odjavu.
+          await new Promise((res) => {
+            const delTrans = db.transaction('sync_queue', 'readwrite');
+            delTrans.objectStore('sync_queue').delete(item.id);
+            delTrans.oncomplete = res;
+            delTrans.onerror = res;
+          });
+        }
       }
     }
   } catch (e) {

@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v30'; // Verzija v30 - Popravak verifikacije, logina i trial ikone za radnike
+const CACHE = 'evidencija-v31'; // Verzija v31 - Isključen keš za Netlify funkcije
 const FILES = [
   './', 
   './index.html', 
@@ -33,6 +33,14 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  
+  // Potpuno NetworkOnly ponašanje za dinamičke endpoint-e
+  if (url.pathname.startsWith('/.netlify/functions/')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
   // Keširamo samo GET zahtjeve
   if (e.request.method !== 'GET') return;
 

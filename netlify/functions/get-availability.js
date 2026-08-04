@@ -19,6 +19,13 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+async function workerBelongsToShop(workerId, shopId, dbInstance) {
+  if (!shopId || !workerId) return false;
+  const workerDoc = await dbInstance.collection('users').doc(workerId).get();
+  if (!workerDoc.exists) return false;
+  return workerDoc.data().shopId === shopId;
+}
+
 exports.handler = async (event) => {
   try {
     const { slug, date, serviceId, workerId } = event.queryStringParameters;
@@ -57,6 +64,13 @@ exports.handler = async (event) => {
     let effectiveUserId;
     let effectiveWorkingHours;
     if (workerId) {
+      const isValidWorker = await workerBelongsToShop(workerId, shopId, db);
+      if (!isValidWorker) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Worker does not belong to this shop' })
+        };
+      }
       // Get worker-specific data
       const workerDoc = await db.collection('users').doc(workerId).get();
       if (!workerDoc.exists) {
@@ -73,7 +87,7 @@ exports.handler = async (event) => {
       effectiveWorkingHours = userData.workingHours;
     }
     
-    console.log('[get-availability] User data:', { userId, shopId, workerId, effectiveUserId, effectiveWorkingHours });
+    console.log('[get-availability] User data resolved:', { userId, shopId, workerId, effectiveUserId });
 
     // Get working hours for the day of week
     const { dayOfWeek, dayKey, dayHours } = getWorkingDayDetails(date, effectiveWorkingHours);
@@ -133,7 +147,7 @@ exports.handler = async (event) => {
     }
     
     const serviceData = serviceDoc.data();
-    console.log('[get-availability] Service data:', serviceData);
+    console.log('[get-availability] Service resolved:', { serviceId, serviceName: serviceData.name });
     const durationMinutes = serviceData.trajanje_minuta || 30;
 
     // Get existing appointments for that date
@@ -208,7 +222,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ slots: availableSlots, userData, serviceData })
+      body: JSON.stringify({ slots: availableSlots })
     };
 
   } catch (error) {

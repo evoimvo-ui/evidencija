@@ -4,7 +4,7 @@
 <base href="/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://browser.sentry-cdn.com https://cdn.jsdelivr.net https://cdn.paddle.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://ei-apps.com https://www.ei-apps.com; connect-src 'self' https://firestore.googleapis.com https://*.googleapis.com https://hook.eu1.make.com https://sentry.io https://*.sentry.io https://paddle.com https://api.paddle.com https://wa.me; frame-ancestors 'none'">
 <link rel="icon" href="/icon-512.png" type="image/png">
 <meta name="theme-color" content="#0f0f0f">
 <script src="https://browser.sentry-cdn.com/8.34.0/bundle.min.js" crossorigin="anonymous"></script>
@@ -2599,7 +2599,7 @@
     <div id="slugStatus" style="margin-top:8px; font-size:14px;"></div>
     <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
       <input type="text" id="fullBookingLink" class="input-plain" style="flex:1; font-size:14px; background:rgba(255,255,255,0.05);" readonly placeholder="https://your-domain.com/book/...">
-      <button class="lang-btn" onclick="copyBookingLink()">📋 Kopiraj</button>
+      <button class="lang-btn" onclick="copyBookingLink()" data-i18n="copy_link">📋 Copy</button>
     </div>
     <div style="margin-top:8px; font-size:12px; color:var(--text2);" data-i18n="slug_note">This is not your registration name — this is a public identifier for your booking link.</div>
   </div>
@@ -6239,7 +6239,7 @@ async function loadPublicUser(slug) {
     document.getElementById('publicBookingScreen').classList.add('active');
     
     // Set business name
-    document.getElementById('bookingBusinessName').textContent = data.userData.businessName || 'Book Appointment';
+    document.getElementById('bookingBusinessName').textContent = data.userData.businessName || translations['public_book_appointment'] || 'Book Appointment';
     
     // Render services
     renderPublicBookingServices();
@@ -6257,7 +6257,7 @@ async function loadPublicUser(slug) {
     
   } catch (error) {
     console.error('Error loading public user:', error);
-    showToast('User not found', true);
+    showToast(translations['public_user_not_found'] || 'User not found', true);
   }
 }
 
@@ -6265,7 +6265,7 @@ function renderPublicBookingWorkerDropdown() {
   const select = document.getElementById('bookingWorkerSelect');
   if (!select) return;
   
-  let optionsHTML = `<option value="">All Workers</option>`;
+  let optionsHTML = `<option value="">${translations['public_all_workers'] || 'All Workers'}</option>`;
   publicBookingState.shopWorkers.forEach(worker => {
     optionsHTML += `<option value="${worker.id}">${worker.name}</option>`;
   });
@@ -6290,7 +6290,7 @@ function renderPublicBookingServices() {
     emptyDiv.style.padding = '20px';
     emptyDiv.style.textAlign = 'center';
     emptyDiv.style.color = 'var(--text2)';
-    emptyDiv.textContent = 'No services available yet';
+    emptyDiv.textContent = translations['public_no_services'] || 'No services available yet';
     grid.appendChild(emptyDiv);
     return;
   }
@@ -6337,7 +6337,10 @@ function renderPublicBookingCalendar() {
   for (let i = 0; i < 14; i++) { // Show next 14 days
     const date = new Date(today);
     date.setDate(today.getDate() + i);
-    const dateStr = date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const dayName = dayNames[date.getDay()];
@@ -6389,7 +6392,7 @@ async function loadPublicBookingAvailability() {
   } catch (error) {
     console.error('Error loading availability:', error);
     renderPublicBookingTimeSlots([]); // Show empty slots on error
-    showToast('Error loading availability', true);
+    showToast(translations['public_error_loading'] || 'Error loading availability', true);
   }
 }
 
@@ -6398,7 +6401,7 @@ function renderPublicBookingTimeSlots(slots) {
   container.innerHTML = '';
   
   if (!slots || slots.length === 0) {
-    container.innerHTML = '<div style="text-align: center; color: var(--text3); padding: 20px;">No available slots for this date</div>';
+    container.innerHTML = `<div style="text-align: center; color: var(--text3); padding: 20px;">${translations['public_no_slots_available'] || 'No available slots for this date'}</div>`;
     document.getElementById('bookingStep3').style.display = 'block';
     return;
   }
@@ -6435,7 +6438,7 @@ async function submitBooking() {
   const website = document.getElementById('bookingWebsite').value.trim(); // Honeypot
   
   if (!clientName || !clientPhone) {
-    showToast('Please fill in all required fields', true);
+    showToast(translations['public_required_fields'] || 'Please fill in all required fields', true);
     return;
   }
   
@@ -6461,7 +6464,7 @@ async function submitBooking() {
     
     if (response.status === 409) {
       // Slot no longer available
-      showToast('This slot is no longer available. Please select another time.', true);
+      showToast(translations['public_slot_not_available'] || 'This slot is no longer available. Please select another time.', true);
       await loadPublicBookingAvailability();
       return;
     }
@@ -6475,7 +6478,7 @@ async function submitBooking() {
     
   } catch (error) {
     console.error('Error submitting booking:', error);
-    showToast('Error submitting booking. Please try again.', true);
+    showToast(translations['public_submit_error'] || 'Error submitting booking. Please try again.', true);
   }
 }
 
@@ -6489,10 +6492,10 @@ function showBookingConfirmation() {
   // Show confirmation
   const detailsContainer = document.getElementById('bookingConfirmedDetails');
   detailsContainer.innerHTML = `
-    <div style="margin-bottom: 12px;"><strong>Service:</strong> ${publicBookingState.selectedService.name}</div>
-    <div style="margin-bottom: 12px;"><strong>Date:</strong> ${publicBookingState.selectedDate}</div>
-    <div style="margin-bottom: 12px;"><strong>Time:</strong> ${publicBookingState.selectedTime}</div>
-    <div><strong>Business:</strong> ${publicBookingState.userData.businessName}</div>
+    <div style="margin-bottom: 12px;"><strong>${translations['public_confirm_service'] || 'Service:'}</strong> ${publicBookingState.selectedService.name}</div>
+    <div style="margin-bottom: 12px;"><strong>${translations['public_confirm_date'] || 'Date:'}</strong> ${publicBookingState.selectedDate}</div>
+    <div style="margin-bottom: 12px;"><strong>${translations['public_confirm_time'] || 'Time:'}</strong> ${publicBookingState.selectedTime}</div>
+    <div><strong>${translations['public_confirm_business'] || 'Business:'}</strong> ${publicBookingState.userData.businessName}</div>
   `;
   
   document.getElementById('bookingStep5').style.display = 'block';
@@ -6529,11 +6532,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log("Auth callback: User logged in.");
     
-    fetch('https://hook.eu1.make.com/rod5siwexav8vjbxhibfpleb6bwma3vh', { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' }, 
-      body: JSON.stringify({ email: user.email }) 
-    });
+    // Make webhook — fire-and-forget, ne smije uticati na login
+    try {
+      const webhookController = new AbortController();
+      setTimeout(() => webhookController.abort(), 5000);
+      fetch('https://hook.eu1.make.com/rod5siwexav8vjbxhibfpleb6bwma3vh', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ email: user.email }),
+        signal: webhookController.signal
+      }).catch(err => console.warn('[Webhook] Make webhook failed (non-blocking):', err.message));
+    } catch (err) {
+      console.warn('[Webhook] Make webhook error (non-blocking):', err.message);
+    }
     
     // 1. STROGA PROVJERA VERIFIKACIJE
     if (user && !user.emailVerified) {

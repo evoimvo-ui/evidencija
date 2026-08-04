@@ -35,6 +35,13 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+async function workerBelongsToShop(workerId, shopId, dbInstance) {
+  if (!shopId || !workerId) return false;
+  const workerDoc = await dbInstance.collection('users').doc(workerId).get();
+  if (!workerDoc.exists) return false;
+  return workerDoc.data().shopId === shopId;
+}
+
 exports.handler = async (event) => {
   try {
     if (event.httpMethod !== 'POST') {
@@ -91,6 +98,13 @@ exports.handler = async (event) => {
     if (slugWorkerId) {
       effectiveUserId = slugWorkerId;
     } else if (bodyWorkerId) {
+      const isValidWorker = await workerBelongsToShop(bodyWorkerId, shopId, db);
+      if (!isValidWorker) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Worker does not belong to this shop' })
+        };
+      }
       effectiveUserId = bodyWorkerId;
     } else {
       effectiveUserId = ownerUserId;

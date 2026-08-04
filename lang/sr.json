@@ -264,5 +264,19 @@
     "public_slot_not_available": "Овој термин више није доступан. Молимо изаберите други.",
     "public_loading": "Учитавање...",
     "public_error": "Дошло је до грешке. Молимо покушајте поново.",
-    "public_no_slots_available": "Нема доступних термина за овај датум"
+    "public_no_slots_available": "Нема доступних термина за овај датум",
+    "public_select_worker": "Изаберите радника",
+    "public_all_workers": "Сви радници",
+    "public_no_services": "Још нема доступних услуга",
+    "public_user_not_found": "Корисник није пронађен",
+    "public_error_loading": "Грешка при учитавању доступности",
+    "public_required_fields": "Молимо попуните сва обавезна поља",
+    "public_submit_error": "Грешка при слању резервације. Покушајте поново.",
+    "public_book_appointment": "Закажите термин",
+    "public_confirm_service": "Услуга:",
+    "public_confirm_date": "Датум:",
+    "public_confirm_time": "Време:",
+    "public_confirm_business": "Фирма:",
+    "worker_booking_links": "Линкови радника за резервацију",
+    "copy_link": "📋 Копирај"
 }

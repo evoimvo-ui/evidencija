@@ -32,9 +32,32 @@ exports.handler = async (event) => {
   }
 
   try {
+    // 1. Extract Bearer token from headers
+    const authHeader = event.headers.authorization || event.headers.Authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized: No token provided' }) };
+    }
+    const idToken = authHeader.split('Bearer ')[1];
+
+    let decodedToken;
+    try {
+      // 2. Verify token with admin.auth()
+      decodedToken = await admin.auth().verifyIdToken(idToken);
+    } catch (error) {
+      console.error('[Firebase Auth] Error verifying token:', error.message);
+      return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized: Invalid token' }) };
+    }
+
+    // 3. uid from verified token is the source of truth
+    const uid = decodedToken.uid;
     const { userId, autoRenewal } = JSON.parse(event.body);
 
-    // Dohvati korisnika iz Firestore
+    // 4 & 5. Verify the requested userId matches the authenticated uid
+    if (userId !== uid) {
+      return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden: Subscription does not belong to this user' }) };
+    }
+
+    // Fetch user from Firestore
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return { statusCode: 404, body: JSON.stringify({ error: 'User not found' }) };

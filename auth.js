@@ -38,6 +38,7 @@ let currentAuthState = AUTH_STATES.LOGGED_OUT;
 let currentAuthUser = null;
 let currentAuthData = null;
 let isRegistering = false; // Guard flag
+let justRegistered = false; // Štiti verificationScreen od sakrivanja odmah nakon registracije
 
 /**
  * Određuje trenutno stanje autentifikacije na osnovu Firebase korisnika i Firestore podataka.
@@ -321,7 +322,11 @@ export function initAuth(onLoggedIn, onLoggedOut) {
 
     try {
       if (!user) {
-        hideVerificationScreen();
+        // Ako smo upravo završili registraciju, signOut je namjerno pozvan.
+        // NE sakrivamo verificationScreen koji je handleRegister upravo prikazao.
+        if (!justRegistered) {
+          hideVerificationScreen();
+        }
         onLoggedOut();
         return;
       }
@@ -438,14 +443,18 @@ export async function register(name, email, pass, role = 'solo') {
     await checkAndApplyInvites(user.uid, email.toLowerCase());
 
     // 3. ODMAH ODJAVA - SPREČAVANJE RACE CONDITION-A
-    // onAuthStateChanged će reagovati, ali pošto je signOut() pozvan odmah,
-    // sesija će biti prekinuta prije nego što bilo kakav UI stigne da se učita.
+    // Postavljamo justRegistered PRIJE signOut kako bi onAuthStateChanged
+    // callback koji signOut trigeruje znao da NE treba sakriti verificationScreen.
+    justRegistered = true;
     await signOut(auth);
+    // Reset flaga nakon što onAuthStateChanged sigurno obradi logout
+    setTimeout(() => { justRegistered = false; }, 3000);
 
     console.log("KORAK 1: Email poslat, dokument kreiran, korisnik odjavljen.");
     return { success: true, email: email };
   } catch (e) {
     console.error("[Auth] Registration error:", e);
+    justRegistered = false;
     throw e;
   } finally {
     isRegistering = false; // Deaktiviraj guard bez obzira na ishod

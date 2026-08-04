@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v29'; // Verzija v29 - Profesionalni print template i poboljšana statistika
+const CACHE = 'evidencija-v30'; // Verzija v30 - Popravak verifikacije, logina i trial ikone za radnike
 const FILES = [
   './', 
   './index.html', 

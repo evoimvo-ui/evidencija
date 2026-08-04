@@ -3432,6 +3432,8 @@ async function handleLogin() {
     // onAuthStateChanged će pozvati onLoggedIn callback koji vrši UI promjene
   } catch (e) { 
     errorEl.textContent = e.message; 
+  } finally {
+    // Uvijek resetujemo dugme — onAuthStateChanged promijeniti će UI ako je login uspješan
     btn.disabled = false;
     btn.textContent = translations['login_btn'] || 'Prijavi se';
   }
@@ -3454,28 +3456,32 @@ function updateBillingSettingsUI() {
 
   // Update status label
   let statusText = '';
-  switch (state.state) {
-    case 'trial_active':
-      statusText = translations['trial_active'] || `Probni period (${state.daysLeft} dana)`;
-      break;
-    case 'trial_expired':
-      statusText = translations['trial_expired'] || 'Probni period istekao';
-      break;
-    case 'subscription_active':
-      statusText = translations['subscription_active'] || 'Aktivna pretplata';
-      break;
-    case 'subscription_cancelled_active':
-      statusText = translations['subscription_cancelled_active'] || `Pretplata otkazana (${state.daysLeft} dana)`;
-      break;
-    case 'subscription_expired':
-      statusText = translations['subscription_expired'] || 'Pretplata istekla';
-      break;
-    case 'subscription_paused':
-      statusText = translations['subscription_paused'] || 'Pretplata pauzirana';
-      break;
-    case 'lifetime':
-      statusText = translations['subscription_lifetime'] || 'Lifetime';
-      break;
+  if (currentUser?.role === 'worker') {
+    statusText = translations['worker_label'] || 'Radnik';
+  } else {
+    switch (state.state) {
+      case 'trial_active':
+        statusText = (translations['trial_active'] || `Probni period (${state.daysLeft} dana)`).replace('${d}', state.daysLeft);
+        break;
+      case 'trial_expired':
+        statusText = translations['trial_expired'] || 'Probni period istekao';
+        break;
+      case 'subscription_active':
+        statusText = translations['subscription_active'] || 'Aktivna pretplata';
+        break;
+      case 'subscription_cancelled_active':
+        statusText = (translations['subscription_cancelled_active'] || `Pretplata otkazana (${state.daysLeft} dana)`).replace('${d}', state.daysLeft);
+        break;
+      case 'subscription_expired':
+        statusText = translations['subscription_expired'] || 'Pretplata istekla';
+        break;
+      case 'subscription_paused':
+        statusText = translations['subscription_paused'] || 'Pretplata pauzirana';
+        break;
+      case 'lifetime':
+        statusText = translations['subscription_lifetime'] || 'Lifetime';
+        break;
+    }
   }
   statusLabel.textContent = statusText;
 
@@ -5921,6 +5927,12 @@ function blok1UpdateTrialBanner(userData) {
   const banner = document.getElementById('trialBanner');
   if (!banner) return;
   
+  // Workers belong to a shop and do not have individual trial banners
+  if (userData?.role === 'worker') {
+    banner.style.display = 'none';
+    return;
+  }
+
   const state = window._getSubscriptionState(userData);
   const trans = window._translations || {};
   
@@ -6111,6 +6123,17 @@ window.checkAndShowTos = function(user, userData) {
 };
 
 window.checkAppAccess = function(user, userData) {
+  // Workers belong to a shop and do not have individual subscription locks
+  if (userData?.role === 'worker') {
+    document.getElementById('trialExpiredScreen').classList.remove('active');
+    document.getElementById('subscriptionExpiredScreen').classList.remove('active');
+    document.getElementById('subscriptionPausedScreen').classList.remove('active');
+    const appContent = document.getElementById('appContent');
+    if (appContent) appContent.style.display = 'block';
+    blok1UpdateTrialBanner(userData);
+    return;
+  }
+
   const state = window._getSubscriptionState(userData);
 
   // Check access

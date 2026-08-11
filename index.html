@@ -2892,6 +2892,10 @@
 <div class="modal-overlay" id="clientDetailsModal">
   <div class="modal">
     <h3 id="detailsClientName">-</h3>
+    <div class="section-label" data-i18n="phone">Telefon</div>
+    <input class="input-plain" type="tel" id="detailsClientPhone" placeholder="+387..." data-i18n-placeholder="phone_placeholder" onchange="updateClientContact()">
+    <div class="section-label" data-i18n="email">Email</div>
+    <input class="input-plain" type="email" id="detailsClientEmail" placeholder="email@primjer.com" data-i18n-placeholder="email_placeholder" onchange="updateClientContact()">
     <div class="section-label" data-i18n="category">Kategorija</div>
     <select id="clientCategory" class="input-plain" style="width:100%;" onchange="updateClientCategory()">
       <option value="none" data-i18n="none">Nema</option>
@@ -2899,6 +2903,11 @@
       <option value="regular" data-i18n="regular">Stalni</option>
       <option value="problematic" data-i18n="problematic">Problematični</option>
     </select>
+    <div class="section-label" style="display:flex; justify-content:space-between; align-items:center;">
+      <span data-i18n="note">Napomena</span>
+      <button id="clearClientNoteBtn" class="btn-icon del" onclick="clearClientNote()" style="display:none; font-size:12px; padding:2px 8px; border-radius:6px;" title="Obriši napomenu">×</button>
+    </div>
+    <textarea id="detailsClientNote" class="input-plain" rows="3" style="resize:vertical; width:100%;" placeholder="..." data-i18n-placeholder="placeholder_dots" onchange="updateClientNote()" onblur="updateClientNote()"></textarea>
     <div class="section-label" data-i18n="history">Istorija usluga</div>
     <div id="clientHistoryList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;"></div>
     <div class="modal-btns">
@@ -5534,7 +5543,7 @@ async function renderClients() {
   // Semantička deduplikacija i filtriranje
   const clients = getDeduplicatedClients(rawClients).filter(c => {
     const fullName = `${c.name} ${c.surname}`.toLowerCase();
-    return fullName.includes(searchTerm) || (c.phone && c.phone.includes(searchTerm));
+    return fullName.includes(searchTerm) || (c.phone && c.phone.includes(searchTerm)) || (c.email && c.email.toLowerCase().includes(searchTerm));
   }).sort((a, b) => a.name.localeCompare(b.name));
 
   list.innerHTML = clients.length === 0 
@@ -5545,11 +5554,18 @@ async function renderClients() {
         const catKey = getCategoryKey(c.category);
         const badgeColor = catKey === 'vip' ? '#fbbf24' : (catKey === 'problematic' ? 'var(--red)' : '#16a34a');
         const badgeTextColor = catKey === 'vip' ? '#000' : '#fff';
+        const contactParts = [];
+        if (!isCorrupted) {
+          if (c.phone) contactParts.push(`📞 ${c.phone}`);
+          if (c.email) contactParts.push(`✉️ ${c.email}`);
+        }
+        const contactLine = contactParts.length > 0 ? `<small style="color: var(--text2); font-size: 12px;">${contactParts.join(' &nbsp;•&nbsp; ')}</small>` : '';
+        const noteBadge = (!isCorrupted && c.note && c.note.trim()) ? `<span style="font-size:11px; color:var(--accent); margin-left:8px;">📝</span>` : '';
         return `
       <div class="appointment-item" onclick="openClientDetails('${c.id}')" style="padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid ${isCorrupted ? 'var(--red)' : 'var(--border)'}; background: var(--bg2); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
         <div class="appointment-info" style="flex: 1;">
-          <strong style="font-size: 16px; color: var(--text);">${displayName}</strong><br>
-          <small style="color: var(--text2); font-size: 13px;">${isCorrupted ? '' : (c.phone || '')}</small>
+          <strong style="font-size: 16px; color: var(--text);">${displayName}${noteBadge}</strong><br>
+          ${contactLine}
           ${!isCorrupted && catKey !== 'none' ? `<br><span class="badge" style="background: ${badgeColor}; font-size:10px; font-weight: 700; padding:4px 10px; border-radius:12px; color:${badgeTextColor}; display: inline-block; margin-top: 6px;">${translations[catKey] || catKey}</span>` : ''}
         </div>
         <button class="btn-icon del" onclick="event.stopPropagation(); handleDeleteClient('${c.id}')" style="margin-left: 10px;">×</button>
@@ -5617,7 +5633,12 @@ async function openClientDetails(id) {
   if (!client) return;
 
   document.getElementById('detailsClientName').textContent = `${client.name} ${client.surname}`;
+  document.getElementById('detailsClientPhone').value = client.phone || '';
+  document.getElementById('detailsClientEmail').value = client.email || '';
   document.getElementById('clientCategory').value = getCategoryKey(client.category);
+  document.getElementById('detailsClientNote').value = client.note || '';
+  const clearBtn = document.getElementById('clearClientNoteBtn');
+  if (clearBtn) clearBtn.style.display = (client.note && client.note.trim()) ? 'inline-block' : 'none';
   
   // Učitaj istoriju
   const rawEntries = await getAllData('entries', currentUser);
@@ -5708,6 +5729,47 @@ async function updateClientCategory() {
     renderClients();
   }
 }
+
+async function updateClientContact() {
+  if (!selectedClientId) return;
+  const phone = document.getElementById('detailsClientPhone').value.trim();
+  const email = document.getElementById('detailsClientEmail').value.trim();
+  const clients = await getAllData('clients', currentUser);
+  const client = clients.find(c => c.id === selectedClientId);
+  if (client) {
+    client.phone = phone;
+    client.email = email;
+    await saveData('clients', client);
+    await syncWithFirestore(currentUser);
+    renderClients();
+  }
+}
+
+async function updateClientNote() {
+  if (!selectedClientId) return;
+  const note = document.getElementById('detailsClientNote').value;
+  const clients = await getAllData('clients', currentUser);
+  const client = clients.find(c => c.id === selectedClientId);
+  if (client) {
+    client.note = note;
+    await saveData('clients', client);
+    await syncWithFirestore(currentUser);
+    const clearBtn = document.getElementById('clearClientNoteBtn');
+    if (clearBtn) clearBtn.style.display = (note && note.trim()) ? 'inline-block' : 'none';
+    renderClients();
+  }
+}
+
+async function clearClientNote() {
+  if (!selectedClientId) return;
+  const textarea = document.getElementById('detailsClientNote');
+  if (textarea) textarea.value = '';
+  await updateClientNote();
+}
+
+window.updateClientContact = updateClientContact;
+window.updateClientNote = updateClientNote;
+window.clearClientNote = clearClientNote;
 
 async function openClientSelectionModal(context = 'entry') {
   clientSelectionContext = context;

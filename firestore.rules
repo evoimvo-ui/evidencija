@@ -64,7 +64,8 @@ service cloud.firestore {
     // 3. Pozivnice (Invites)
     match /invites/{inviteId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isSignedIn() && getUserData().role == 'owner';
+      allow create, delete: if isSignedIn() && getUserData().role == 'owner';
+      allow update: if isSignedIn() && (getUserData().role == 'owner' || (request.auth.token.email != null && request.auth.token.email == resource.data.email));
     }
     
     // 4. Logovi (Logs) - samo slanje logova s klijenta, bez čitanja

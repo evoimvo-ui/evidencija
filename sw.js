@@ -1,4 +1,4 @@
-const CACHE = 'evidencija-v31'; // Verzija v31 - Isključen keš za Netlify funkcije
+const CACHE = 'evidencija-v32'; // Verzija v32 - Isključen keš za Netlify funkcije
 const FILES = [
   './', 
   './index.html', 
